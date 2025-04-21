@@ -1,5 +1,8 @@
-﻿import dash
-from dash import Dash, dcc, html
+﻿from dashboard.filtros import layout_filtros
+from dashboard.tablas import layout_datos
+from dashboard.graficos import layout_graficos
+import dash
+from dash import Dash, dcc, html, dash_table
 import plotly.express as px
 import pandas as pd
 from dashboard.app import creardash
@@ -60,4 +63,61 @@ def crear_dash_app(flask_app):
 
         return data_paginada, (len(df) // page_size) + (1 if len(df) % page_size > 0 else 0)
 
+
+    @app.callback(
+        dash.Output('page-content', 'children'),
+        dash.Input('url', 'pathname')
+    )
+    def mostrar_contenido(pathname):
+        if pathname == '/dash/' or pathname == '/dash':
+            return layout_graficos(fig)
+        elif pathname == '/dash/datos':
+            return layout_datos(df)
+        elif pathname == '/dash/filtros':
+            return layout_filtros(idioma, entidades)
+        else:
+            return html.H2("Página no encontrada")
+    
+    @app.callback(
+        dash.Output("sidebar", "style"),
+        dash.Output("menu-content", "style"),
+        dash.Output("main-content", "style"),  # <-- nuevo
+        dash.Output("menu-collapsed", "data"),
+        dash.Input("toggle-menu", "n_clicks"),
+        dash.State("menu-collapsed", "data"),
+    )
+    def toggle_menu(n_clicks, is_collapsed):
+        if n_clicks is None:
+            raise dash.exceptions.PreventUpdate
+
+        collapsed = not is_collapsed
+
+        if collapsed:
+            sidebar_style = {
+                "position": "fixed", "top": "0", "left": "0",
+                "width": "40px", "height": "100%",
+                "backgroundColor": "#2c3e50", "paddingTop": "20px",
+                "zIndex": "1000", "overflow": "hidden"
+            }
+            menu_content_style = {"display": "none"}
+            content_style = {"marginLeft": "50px", "transition": "margin-left 0.3s ease", "padding": "20px"}
+        else:
+            sidebar_style = {
+                "position": "fixed", "top": "0", "left": "0",
+                "width": "250px", "height": "100%",
+                "backgroundColor": "#2c3e50", "paddingTop": "20px",
+                "zIndex": "1000", "overflow": "hidden"
+            }
+            menu_content_style = {"display": "block"}
+            content_style = {"marginLeft": "260px", "transition": "margin-left 0.3s ease", "padding": "20px"}
+
+        return sidebar_style, menu_content_style, content_style, collapsed
+
+    @app.callback(
+        dash. Output("toggle-menu", "children"),
+        dash.Input("menu-collapsed", "data")
+    )
+    def update_arrow(collapsed):
+        return "⮞" if collapsed else "⮜"
+    
     return app

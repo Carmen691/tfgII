@@ -24,6 +24,8 @@ def creardash(app, datos, df, idioma, entidades):
 
     # Layout del Dashboard
     layout = html.Div([
+        dcc.Location(id='url', refresh=False),
+
         html.H1("Dashboard con Combos"),
 
         # Dropdown para seleccionar idioma
@@ -47,7 +49,7 @@ def creardash(app, datos, df, idioma, entidades):
             style={'width': '50%', 'fontSize': '16px', 'padding': '5px'}
         ),
 
-        # Gráfico
+        # Grï¿½fico
         dcc.Graph(id="grafico", figure=fig),
 
         # Tabla con los datos
@@ -59,15 +61,15 @@ def creardash(app, datos, df, idioma, entidades):
         data=df.iloc[:10].to_dict('records'),
         # Estilo de la tabla
         style_table={'height': '400px', 'overflowY': 'auto', 'overflowX': 'auto'},  # Scroll vertical y horizontal
-        style_cell={'textAlign': 'center', 'minWidth': '150px', 'width': '150px', 'maxWidth': '200px'},  # Ajustar tamaño de celdas
+        style_cell={'textAlign': 'center', 'minWidth': '150px', 'width': '150px', 'maxWidth': '200px'},  # Ajustar tamaï¿½o de celdas
         style_header={'fontWeight': 'bold', 'backgroundColor': 'lightgrey'},  # Estilo del encabezado
         
-        # Paginación
-        page_size=10,  # Número de filas por página
-        page_action='custom',  # Activar paginación
+        # Paginaciï¿½n
+        page_size=10,  # Nï¿½mero de filas por pï¿½gina
+        page_action='custom',  # Activar paginaciï¿½n
         page_current=0,
 
-        # Filtros y ordenación
+        # Filtros y ordenaciï¿½n
         #sort_action="native",  # Permitir ordenar columnas
         #filter_action="native"  # Permitir filtrar datos
     ),
@@ -77,7 +79,7 @@ def creardash(app, datos, df, idioma, entidades):
     )
 
     ])
-
-    return layout 
+        
+    return layout
 
 
