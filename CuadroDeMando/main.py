@@ -2,18 +2,16 @@
 import json
 import bcrypt  
 from start.home import crear_dash_app  # Importamos la función del dashboard  
-
+import data.querys as dq
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_segura'
 crear_dash_app(app)
-
-# Cargar usuarios desde JSON
-def load_users():
-    with open('usuarios.json', 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-users = load_users()
+@app.before_request
+def proteger_dash():
+    # Si la ruta empieza con /dash y el usuario no está logueado, redirige a login
+    if request.path.startswith('/dash') and 'user' not in session:
+        return redirect(url_for('login'))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -23,10 +21,11 @@ def login():
         username = request.form['username']
         password = request.form['password'].encode('utf-8')
 
-        if username in users:
-            hashed = users[username].encode('utf-8')
-            if bcrypt.checkpw(password, hashed):
+        if dq.existe_usuario(username):
+            passwd = dq.obtener_pwd(username).encode('utf-8')
+            if bcrypt.checkpw(password, passwd):
                 session['user'] = username
+                session['admin'] = dq.obtener_admin(username)
                 return redirect(url_for('dashboard'))
         error = "Usuario o contraseña incorrectos"
     
@@ -37,7 +36,8 @@ def login():
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
-    return render_template('dashboard.html', username=session['user'])
+    return redirect('/dash')
+    #return render_template('dashboard.html', username=session['user'])
 
 
 @app.route('/logout')

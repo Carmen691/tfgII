@@ -1,4 +1,5 @@
 from dash import html, dcc
+from dash import dash_table
 
 def layout_filtros(idioma, entidades):
     return html.Div([
@@ -8,7 +9,7 @@ def layout_filtros(idioma, entidades):
         dcc.Dropdown(
             id='idioma-dropdown',
             options=[{'label': cat, 'value': cat} for cat in idioma["nombre"].unique()],
-            value="Espanol",
+            value="Español",
             style={'width': '50%'}
         ),
 
@@ -94,25 +95,14 @@ def layout_filtros(idioma, entidades):
             labelStyle={'display': 'block'}
         ),
 
-        html.Br(),
-        html.Div([
-            html.Button("Importar auditoría", id="btn-importar", n_clicks=0),
-            dcc.Upload(
-                id='upload-data',
-                children=html.Div(['Arrastra o selecciona un archivo']),
-                style={
-                    'width': '100%',
-                    'height': '60px',
-                    'lineHeight': '60px',
-                    'borderWidth': '1px',
-                    'borderStyle': 'dashed',
-                    'borderRadius': '5px',
-                    'textAlign': 'center',
-                    'margin': '10px'
-                },
-                multiple=True
-            ),
-            html.Br(),
-            html.Button("Editar datos manualmente", id="btn-editar", n_clicks=0)
-        ])
+        dcc.Loading(
+            id="loading-filtros",
+            type="circle",
+            children=html.Div([
+                dash_table.DataTable(id='tabla-datos'),
+                dcc.Graph(id='grafico-general'),
+                dcc.Graph(id='grafico-porcentaje'),
+                dcc.Graph(id='grafico-mapa-calor')
+            ])
+        )
     ])

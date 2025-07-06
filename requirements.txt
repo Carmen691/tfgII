@@ -1,11 +1,13 @@
-sqlalchemy            # Para la conexión a la base de datos
-mysql-connector-python  # MySQL
+sqlalchemy            # Para la conexiï¿½n a la base de datos
 dash                  # Para el dashboard
 flask                 # Flask como backend
 pandas                # Manipular datos
-numpy                 # Cálculos numéricos
-plotly                # Para gráficos interactivos en Dash
+numpy                 # Cï¿½lculos numï¿½ricos
+plotly                # Para grï¿½ficos interactivos en Dash
 sqlalchemy
 PyMySql
 dash-bootstrap-components
 bcrypt
+cryptography
+openpyxl
+re
