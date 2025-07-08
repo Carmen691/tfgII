@@ -27,6 +27,7 @@ def crear_dash_app(flask_app):
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
     entidades = pd.DataFrame(qr.obtener_entidades(), columns=["id", "nombre", "id_tipo"])
     usuarios = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
+    auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre"])
     datos = pd.DataFrame(qr.obtener_datos(), columns = ["id_principio", "principio", "id_entidad", "entidad",
                                                         "id_criterio", "criterio", "id_descripcion", "descripcion", 
                                                         "observaciones", "version"])
@@ -43,19 +44,15 @@ def crear_dash_app(flask_app):
     
     opciones_cumplimiento = pd.DataFrame(qr.obtener_opciones_cumplimiento(), columns = ["id_escala", "descripcion"])
 
-    dropdown_opciones = [
-        {"label": row["descripcion"], "value": row["id_escala"]}
-        for index, row in opciones_cumplimiento.iterrows()
-    ]
 
     # Datos de ejemplo
     df_datos = pd.DataFrame({
         "Criterios": datos["criterio"],
-        "Valores": datos["id_descripcion"],
+        "Valores": datos["descripcion"],
         "Entidades": datos["entidad"],
     })
 
-    df_datos["Valores"] = df_datos["Valores"].astype(str)
+    df_datos["Valores"] = df_datos["Valores"]
     df_datos["Entidades"] = df_datos["Entidades"].astype(str)
 
     fig = px.bar(df_datos, x="Entidades", y="Valores", 
@@ -129,13 +126,13 @@ def crear_dash_app(flask_app):
         if pathname == '/dash/cuadroMando':
             return layout_graficos(fig, figPorcentaje, figMapaCalor)
         elif pathname == '/dash/datos':
-            return layout_datos(df_datos, dropdown_opciones)
+            return layout_datos(df_datos)
         elif pathname == '/dash/filtros':
             return layout_filtros(idioma, entidades)
         elif pathname == '/dash/administracion/usuarios':
             return layout_usuarios(idioma, usuarios)
         elif pathname == '/dash/administracion/auditorias':
-            return layout_gestion(idioma, usuarios)
+            return layout_gestion(idioma, auditorias)
         elif pathname == '/dash/importar':
             return layout_importar(idioma, tiposEntidad, tiposWCAG)
         else:
@@ -183,28 +180,28 @@ def crear_dash_app(flask_app):
     def update_arrow(collapsed):
         return "⮞" if collapsed else "⮜"
 
-    @app.callback(
-        dash.Output('dropdown-celda', 'children'),
-        dash.Output('store-celda-seleccionada', 'data'),
-        dash.Input('tabla-datos', 'active_cell'),
-        dash.State('tabla-datos', 'data'),
-        prevent_initial_call=True
-    )
-    def mostrar_dropdown(active_cell, data):
-        print("Celda activa:", active_cell)
-        if not active_cell or active_cell["column_id"] != "Valores":
-            return dash.no_update, None
+    # @app.callback(
+    #     dash.Output('dropdown-celda', 'children'),
+    #     dash.Output('store-celda-seleccionada', 'data'),
+    #     dash.Input('tabla-datos', 'active_cell'),
+    #     dash.State('tabla-datos', 'data'),
+    #     prevent_initial_call=True
+    # )
+    # def mostrar_dropdown(active_cell, data):
+    #     print("Celda activa:", active_cell)
+    #     if not active_cell or active_cell["column_id"] != "Valores":
+    #         return dash.no_update, None
 
-        fila = active_cell["row"]
-        valor_actual = data[fila]["Valores"]
+    #     fila = active_cell["row"]
+    #     valor_actual = data[fila]["Valores"]
 
-        dropdown = dcc.Dropdown(
-            id='dropdown-editor',
-            options=[{'label': op['label'], 'value': op['value']} for op in dropdown_opciones],
-            value=valor_actual,
-            clearable=False
-        )
-        return dropdown, active_cell
+    #     dropdown = dcc.Dropdown(
+    #         id='dropdown-editor',
+    #         options=[{'label': op['label'], 'value': op['value']} for op in dropdown_opciones],
+    #         value=valor_actual,
+    #         clearable=False
+    #     )
+    #     return dropdown, active_cell
     
     @app.callback(
         dash.Output('store-datos', 'data'),
@@ -228,36 +225,35 @@ def crear_dash_app(flask_app):
         nuevos_datos[fila_absoluta]["Valores"] = valor_nuevo
         return nuevos_datos, {"refrescar": True}
 
-    @app.callback(
-        dash.Output('tabla-datos', 'data'),
-        dash.Output('tabla-datos', 'page_count'),
-        dash.Input('tabla-datos', 'page_current'),
-        dash.Input('tabla-datos', 'page_size'),
-        dash.Input('store-datos', 'data'),
-    )
-    def actualizar_o_refrescar_tabla(page_current, page_size, store_datos):
-        ctx = dash.callback_context
+    # @app.callback(
+    #     dash.Output('tabla-datos', 'data'),
+    #     dash.Output('tabla-datos', 'page_count'),
+    #     dash.Input('tabla-datos', 'page_current'),
+    #     dash.Input('tabla-datos', 'page_size'),
+    #     dash.Input('store-datos', 'data'),
+    # )
+    # def actualizar_o_refrescar_tabla(page_current, page_size, store_datos):
+    #     ctx = dash.callback_context
+    #     print(store_datos)
+    #     if not store_datos:
+    #         return [], 0
 
-        if not store_datos:
-            return [], 0
+    #     # Detectar qué input disparó el callback
+    #     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-        # Detectar qué input disparó el callback
-        triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    #     # Si es la primera carga o cambio en store, mantenemos la página actual
+    #     if triggered_id == "store-datos":
+    #         if page_current is None:
+    #             page_current = 0
+    #         if page_size is None:
+    #             page_size = 10
 
-        # Si es la primera carga o cambio en store, mantenemos la página actual
-        if triggered_id == "store-datos":
-            # ¡IMPORTANTE! evitar usar valores None
-            if page_current is None:
-                page_current = 0
-            if page_size is None:
-                page_size = 10
+    #     # Calcular paginación
+    #     inicio = page_current * page_size
+    #     fin = inicio + page_size
+    #     page_count = -(-len(store_datos) // page_size)  # Redondeo hacia arriba
 
-        # Calcular paginación
-        inicio = page_current * page_size
-        fin = inicio + page_size
-        page_count = -(-len(store_datos) // page_size)  # Redondeo hacia arriba
-
-        return store_datos[inicio:fin], page_count
+    #     return store_datos[inicio:fin], page_count
     
     @app.callback(dash.Output('output-data-upload', 'children'),
                 dash.Input('upload-data', 'contents'),
@@ -355,9 +351,15 @@ def crear_dash_app(flask_app):
     )
     def guardar_texto(n_clicks, valor_input):
         if not valor_input:
-            return 'No escribiste nada', dash.no_update
+            return 'No hay texto para guardar', dash.no_update
 
         mensaje = qr.guardar_nuevo_tipo_entidad(valor_input)
+
+        if mensaje == 0:
+            return '❌ Error al guardar el nuevo tipo', dash.no_update
+        else:
+            return '✅ Tipo guardado correctamente', {'refresh': True}
+
         
         # Cambia el contenido de refresh-trigger para forzar que otros callbacks dependientes se actualicen
         return mensaje, {'refresh': True}
@@ -371,92 +373,96 @@ def crear_dash_app(flask_app):
     def toggle_collapse(n_clicks, is_open):
         print(f"Click: {n_clicks}, Abierto: {is_open}") 
         return not is_open
-     
-    @app.callback(
-        dash.Output("modal-confirmacion", "is_open"),
-        [dash.Input("borrar-usuario-button", "n_clicks"),
-        dash.Input("cancelar-eliminar", "n_clicks"),
-        dash.Input("confirmar-eliminar", "n_clicks")],
-        [dash.State("modal-confirmacion", "is_open")]
-    )
-    def toggle_modal(n_borrar, n_cancelar, n_confirmar, is_open):
-        ctx = dash.callback_context
-        if not ctx.triggered:
-            return is_open
-        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-        if trigger_id == "borrar-usuario-button":
-            return True
-        elif trigger_id in ["cancelar-eliminar", "confirmar-eliminar"]:
-            return False
-        return is_open
-    
-
+        
     @app.callback(
         dash.Output("usuarios-dropdown", "options"),
-        dash.Input("confirmar-eliminacion", "n_clicks"),
-        dash.State("usuarios-dropdown", "value"),
-        prevent_initial_call=True
-    )
-    def eliminar_usuario(n_clicks, usuario_seleccionado):
-        if usuario_seleccionado:
-            # aquí va tu lógica para eliminar el usuario
-            print(f"Eliminando usuario: {usuario_seleccionado}")
-            # Recarga la lista de usuarios, actualiza el dropdown, etc.
-        return [{'label': usu, 'value': usu} for usu in usuarios["usuario"].unique()]
-
-
-    @app.callback(
+        dash.Output("modal-confirmacion", "is_open"),
         dash.Output("modal-confirmacion-anadir", "is_open"),
-        [dash.Input("add-usuario-button", "n_clicks"),
-        dash.Input("cancelar-anadir", "n_clicks"),
-        dash.Input("confirmar-anadir", "n_clicks")],
-        [dash.State("modal-confirmacion-anadir", "is_open")]
+        dash.Output("mensaje-usuario", "children"),
+        dash.Output("mensaje-usuario", "style"),
+        [
+            dash.Input("borrar-usuario-button", "n_clicks"),
+            dash.Input("cancelar-eliminar", "n_clicks"),
+            dash.Input("confirmar-eliminar", "n_clicks"),
+            dash.Input("add-usuario-button", "n_clicks"),
+            dash.Input("cancelar-anadir", "n_clicks"),
+            dash.Input("confirmar-anadir", "n_clicks"),
+        ],
+        [
+            dash.State("modal-confirmacion", "is_open"),
+            dash.State("modal-confirmacion-anadir", "is_open"),
+            dash.State("usuarios-dropdown", "value"),
+            dash.State("input-usuario", "value"),
+            dash.State("input-passwd", "value"),
+            dash.State("check-admin", "value"),
+        ]
     )
-    def toggle_modal_anadir(n_add, n_cancel, n_confirm, is_open):
+    def gestionar_usuarios(
+        n_borrar, n_cancelar_del, n_confirmar_del,
+        n_add, n_cancelar_add, n_confirmar_add,
+        is_open_del, is_open_add,
+        usuario_a_borrar, nuevo_usuario, nuevo_pass, es_admin
+    ):
         ctx = dash.callback_context
         if not ctx.triggered:
-            return is_open
+            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}
+
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
-        if trigger_id == "add-usuario-button":
-            return True
-        elif trigger_id in ["cancelar-anadir", "confirmar-anadir"]:
-            return False
-        return is_open
-    
-    @app.callback(
-        dash.Output("mensaje-anadir", "children"),
-        dash.Output("input-usuario", "value"),
-        dash.Output("input-passwd", "value"),
-        dash.Input("confirmar-anadir", "n_clicks"),
-        dash.State("input-usuario", "value"),
-        dash.State("input-passwd", "value"),
-        dash.State("check-admin", "value"),
-        prevent_initial_call=True
-    )
-    def confirmar_anadir_usuario(n_confirmar, usuario, passwd, admin):
-        if n_confirmar:
-            if not usuario or not passwd:
-                return "⚠️ Por favor completa todos los campos.", dash.no_update, dash.no_update
+        mensaje, estilo = "", {"marginTop": "10px"}
+        opciones = dash.no_update
 
-            exito = qr.guardar_nuevo_usuario(usuario, passwd, bool(admin))
-            if not exito:
-                return "⚠️ El usuario ya existe. Usa otro nombre.", dash.no_update, dash.no_update
+        try:
+            if trigger_id == "borrar-usuario-button":
+                return dash.no_update, True, is_open_add, "", estilo
 
-            return "✅ Usuario añadido correctamente.", "", ""
-        
-        # fallback si por algún motivo no entra en ninguno
-        return dash.no_update, dash.no_update, dash.no_update
-    
+            elif trigger_id == "cancelar-eliminar":
+                return dash.no_update, False, is_open_add, "", estilo
+
+            elif trigger_id == "confirmar-eliminar":
+                qr.eliminar_usuario(usuario_a_borrar)
+                usuarios_actualizados = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
+                opciones = [{'label': usu, 'value': usu} for usu in usuarios_actualizados["usuario"].unique()]
+                mensaje = "✅ Usuario eliminado correctamente"
+                estilo = {"color": "green", "marginTop": "10px"}
+                return opciones, False, is_open_add, mensaje, estilo
+
+            elif trigger_id == "add-usuario-button":
+                return dash.no_update, is_open_del, True, "", estilo
+
+            elif trigger_id == "cancelar-anadir":
+                return dash.no_update, is_open_del, False, "", estilo
+
+            elif trigger_id == "confirmar-anadir":
+                qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
+                usuarios_actualizados = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
+                opciones = [{'label': usu, 'value': usu} for usu in usuarios_actualizados["usuario"].unique()]
+                mensaje = "✅ Usuario añadido correctamente"
+                estilo = {"color": "green", "marginTop": "10px"}
+                return opciones, is_open_del, False, mensaje, estilo
+
+        except Exception as e:
+            if trigger_id == "confirmar-eliminar":
+                mensaje = f"❌ Error al eliminar usuario: {e}"
+                estilo = {"color": "red", "marginTop": "10px"}
+                return dash.no_update, False, is_open_add, mensaje, estilo
+
+            elif trigger_id == "confirmar-anadir":
+                mensaje = f"❌ Error al añadir usuario: {e}"
+                estilo = {"color": "red", "marginTop": "10px"}
+                return dash.no_update, is_open_del, False, mensaje, estilo
+
+        return dash.no_update, is_open_del, is_open_add, "", estilo
+
     @app.callback(
         dash.Output('borrar-usuario-button', 'disabled'),
         dash.Input('usuarios-dropdown', 'value')
     )
-    def toggle_boton_eliminar(value):
-        # Si no hay usuario seleccionado, deshabilita el botón
-        return value is None or value == ''
-
+    def toggle_boton_añadir(usuario):
+        # Deshabilita el botón si usuario o contraseña están vacíos o None
+        if usuario:
+            return False  # habilitar botón
+        return True  # deshabilitar botón
 
     @app.callback(
         dash.Output('add-usuario-button', 'disabled'),
@@ -497,6 +503,30 @@ def crear_dash_app(flask_app):
         figura_mapa_calor = {}
 
         return data, columns, figura_general, figura_porcentaje, figura_mapa_calor
+
+    
+    @app.callback(
+        dash.Output("auditorias-dropdown", "options"),
+        dash.Output("mensaje-audtioria", "children"),
+        dash.Output("mensaje-audtioria", "style"),
+        dash.Input("borrar-auditoria-button", "n_clicks"),
+        dash.State("auditorias-dropdown", "value"),
+        prevent_initial_call=True
+    )
+    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada):
+        if not auditoria_seleccionada:
+            return dash.no_update, "❌ Selecciona una auditoría para eliminar", {"color": "red"}
+
+        try:
+            qr.eliminar_auditoria(auditoria_seleccionada)  # Tu función que hace el borrado
+            df_actualizado = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre"])     # Refresca los datos
+            opciones_actualizadas = [
+                {"label": str(aud), "value": str(aud)} for aud in df_actualizado["nombre"].unique()
+            ]
+            return opciones_actualizadas, "✅ Auditoría eliminada correctamente", {"color": "green"}
+
+        except Exception as e:
+            return dash.no_update, f"❌ Error al eliminar la auditoría: {e}", {"color": "red"}
 
     return app
 

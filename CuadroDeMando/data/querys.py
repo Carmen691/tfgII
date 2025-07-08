@@ -1,4 +1,5 @@
 import re
+import bcrypt
 import pandas as pd
 from modules.db_connection import get_db_connection
 from sqlalchemy import create_engine, text
@@ -24,6 +25,42 @@ def obtener_usuarios():
     datos = result.fetchall()
     conn.close()
     return datos
+
+def obtener_auditorias():
+    conn = get_db_connection()
+    result = conn.execute(text("SELECT id, nombre FROM tipos_entidad"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
+def eliminar_auditoria(auditoria):
+    conn = get_db_connection()
+
+    try:
+        with conn.begin():  # Inicia transacción automática (también hace commit)
+            conn.execute(text("""
+                DELETE FROM dashboard.mediciones_wcag
+                WHERE id_entidad IN (
+                    SELECT id FROM dashboard.entidades
+                    WHERE nombre = :auditoria
+                )
+            """), {"auditoria": auditoria})
+
+            conn.execute(text("""
+                DELETE FROM dashboard.entidades
+                WHERE id_tipo = (
+                    SELECT id FROM dashboard.tipos_entidad
+                    WHERE nombre = :auditoria
+                )
+            """), {"auditoria": auditoria})
+
+            conn.execute(text("""
+                DELETE FROM dashboard.tipos_entidad
+                WHERE nombre = :auditoria
+            """), {"auditoria": auditoria})
+
+    finally:
+        conn.close()
 
 def obtener_pwd(username):
     conn = get_db_connection()
@@ -148,12 +185,12 @@ def guardar_nuevo_tipo_entidad(valor_input):
     result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
     if result.rowcount > 0:
         conn.close()
-        return "Ya existe ese valor en el dropdown"
+        return result.rowcount
     else:
         conn.execute(text("INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
         conn.commit()
         conn.close()
-        return "Se ha dado de alta correctamente"
+        return 0
     
 
 def guardar_entidades(id_tipo, columnas_limpias):
@@ -224,17 +261,34 @@ def guardar_nuevo_usuario(usuario, passwd, admin):
     existe_usuario = text(f"SELECT COUNT(*) FROM usuarios WHERE usuario = '{usuario}'")
     result = conn.execute(existe_usuario, {"usuario": usuario}).scalar()
 
+    if admin:
+        admin = 1
+    else:
+        admin = 0
+
     if result > 0:
         conn.close()
         return False
     
+    passwd_bytes = passwd.encode("utf-8")
+    pwd_converted = bcrypt.hashpw(passwd_bytes, bcrypt.gensalt())
     # Preparar datos para inserción masiva
-    datos = [{'usuario': usuario, 'pwd': passwd, 'es_admin': admin}]
+    datos = [{'usuario': usuario, 'pwd': pwd_converted, 'es_admin': admin}]
     # Insertar datos con executemany
-    sql = text("INSERT INTO usuarios (usuario, pwd, es_admin) VALUES (:nombre, :id_tipo, :es_admin)")
+    sql = text("INSERT INTO usuarios (usuario, pwd, es_admin) VALUES (:usuario, :pwd, :es_admin)")
     conn.execute(sql, datos)
 
     conn.commit()
     conn.close()
 
-    
+
+def eliminar_usuario(usuario):
+    conn = get_db_connection()
+
+    datos = [{'usuario': usuario}]
+    sql = text("delete from usuarios where usuario = :usuario")
+    conn.execute(sql, datos)
+
+    conn.commit()
+    conn.close()
+

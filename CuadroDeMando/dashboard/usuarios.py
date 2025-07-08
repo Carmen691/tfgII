@@ -52,6 +52,7 @@ def layout_usuarios(idioma, usuarios):
                 dbc.Button("Añadir", id="confirmar-anadir", color="success", n_clicks=0),
             ]),
         ], id="modal-confirmacion-anadir", is_open=False),
+        html.Div(id="mensaje-usuario", style={"marginTop": "10px"}),
     ], style={'display': 'flex', 'alignItems': 'center'}),
     html.Div(id="mensaje-anadir", style={"color": "red", "marginTop": "10px"}),
 

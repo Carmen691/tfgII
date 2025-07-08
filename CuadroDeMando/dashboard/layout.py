@@ -71,7 +71,7 @@ def crear_layout():
         # Contenido principal
         html.Div([
             dcc.Store(id="auth-status", storage_type="session"),
-            html.Div(id='page-content', style={'width': '80%', 'padding': '20px'})
+            html.Div(id='page-content', style={'width': '100%', 'padding': '20px'})
         ], id="main-content", style={"marginLeft": "260px", "padding": "20px"})
     ])
 
