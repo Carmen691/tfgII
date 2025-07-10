@@ -214,6 +214,13 @@ def obtener_entidades_por_id(id_entidad):
     conn.close()
     return datos
 
+def obtener_entidades_por_nombre(nombre_entidad):
+    conn = get_db_connection()
+    result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = (Select id from tipos_entidad where nombre = '{nombre_entidad}')"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
 def guardar_valores(id_tipo, id_wcag, df):
     entidades = obtener_entidades_por_id(id_tipo)
 

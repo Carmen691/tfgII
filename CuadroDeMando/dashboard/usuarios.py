@@ -55,6 +55,4 @@ def layout_usuarios(idioma, usuarios):
         html.Div(id="mensaje-usuario", style={"marginTop": "10px"}),
     ], style={'display': 'flex', 'alignItems': 'center'}),
     html.Div(id="mensaje-anadir", style={"color": "red", "marginTop": "10px"}),
-
-
 ])

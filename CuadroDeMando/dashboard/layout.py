@@ -2,16 +2,22 @@
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 
-external_stylesheets=[
-    dbc.themes.BOOTSTRAP,
-    "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+# external_stylesheets=[
+#     dbc.themes.BOOTSTRAP,
+#     "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+# ]
+
+external_stylesheets = [
+    "https://codepen.io/chriddyp/pen/bWLwgP.css"  # El CSS por defecto de Dash, funciona bien
 ]
+
 
 def crear_layout():
     return html.Div([
         dcc.Location(id='url', refresh=False),
         # Estado del menú (colapsado o no)
         dcc.Store(id="menu-collapsed", data=False),
+        dcc.Store(id='filtros-store', storage_type='session'),
 
         # Menú lateral con botón
         html.Div([

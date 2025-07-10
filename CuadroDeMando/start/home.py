@@ -1,5 +1,7 @@
 ﻿import copy
 import datetime
+
+from flask import session
 from dashboard.filtros import layout_filtros
 from dashboard.tablas import layout_datos
 from dashboard.graficos import layout_graficos
@@ -16,11 +18,15 @@ import io
 import base64
 import dash_bootstrap_components as dbc
 
-external_stylesheets=[
-    dbc.themes.BOOTSTRAP,
-    "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
-]
 
+# external_stylesheets=[
+#     dbc.themes.BOOTSTRAP,
+#     "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
+# ]
+
+external_stylesheets = [
+    "https://codepen.io/chriddyp/pen/bWLwgP.css"  # El CSS por defecto de Dash, funciona bien
+]
 
 
 def crear_dash_app(flask_app): 
@@ -45,7 +51,6 @@ def crear_dash_app(flask_app):
     opciones_cumplimiento = pd.DataFrame(qr.obtener_opciones_cumplimiento(), columns = ["id_escala", "descripcion"])
 
 
-    # Datos de ejemplo
     df_datos = pd.DataFrame({
         "Criterios": datos["criterio"],
         "Valores": datos["descripcion"],
@@ -109,9 +114,12 @@ def crear_dash_app(flask_app):
     )
 
 
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css']
-    app = Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    #external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css']
 
+    external_stylesheets = [
+    "https://codepen.io/chriddyp/pen/bWLwgP.css"  # El CSS por defecto de Dash, funciona bien
+    ]
+    app = Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
     layout_dashboard = crear_layout()
     app.layout = layout_dashboard
@@ -123,12 +131,14 @@ def crear_dash_app(flask_app):
     )
     def mostrar_contenido(pathname):    
         print("PATHNAME:", pathname)
-        if pathname == '/dash/cuadroMando':
+        if pathname == '/dash/':
+            return dcc.Location(href='/dash/filtros', id='redir')
+        elif pathname == '/dash/cuadroMando':
             return layout_graficos(fig, figPorcentaje, figMapaCalor)
         elif pathname == '/dash/datos':
             return layout_datos(df_datos)
         elif pathname == '/dash/filtros':
-            return layout_filtros(idioma, entidades)
+            return layout_filtros(idioma, tiposEntidad, entidades)
         elif pathname == '/dash/administracion/usuarios':
             return layout_usuarios(idioma, usuarios)
         elif pathname == '/dash/administracion/auditorias':
@@ -203,27 +213,27 @@ def crear_dash_app(flask_app):
     #     )
     #     return dropdown, active_cell
     
-    @app.callback(
-        dash.Output('store-datos', 'data'),
-        dash.Output('store-refresh-trigger', 'data'),
-        dash.Input('dropdown-editor', 'value'),
-        dash.State('store-celda-seleccionada', 'data'),
-        dash.State('store-datos', 'data'),
-        dash.State('tabla-datos', 'page_current'),
-        dash.State('tabla-datos', 'page_size'),
-        prevent_initial_call=True
-    )
-    def actualizar_valor_nuevo(valor_nuevo, celda_seleccionada, datos_store, page_current, page_size):
-        if not celda_seleccionada:
-            raise dash.exceptions.PreventUpdate
+    # @app.callback(
+    #     dash.Output('store-datos', 'data'),
+    #     dash.Output('store-refresh-trigger', 'data'),
+    #     dash.Input('dropdown-editor', 'value'),
+    #     dash.State('store-celda-seleccionada', 'data'),
+    #     dash.State('store-datos', 'data'),
+    #     dash.State('tabla-datos', 'page_current'),
+    #     dash.State('tabla-datos', 'page_size'),
+    #     prevent_initial_call=True
+    # )
+    # def actualizar_valor_nuevo(valor_nuevo, celda_seleccionada, datos_store, page_current, page_size):
+    #     if not celda_seleccionada:
+    #         raise dash.exceptions.PreventUpdate
 
-        fila_relativa = celda_seleccionada["row"]
-        fila_absoluta = page_current * page_size + fila_relativa
+    #     fila_relativa = celda_seleccionada["row"]
+    #     fila_absoluta = page_current * page_size + fila_relativa
 
-        nuevos_datos = copy.deepcopy(datos_store)
-        print(valor_nuevo)
-        nuevos_datos[fila_absoluta]["Valores"] = valor_nuevo
-        return nuevos_datos, {"refrescar": True}
+    #     nuevos_datos = copy.deepcopy(datos_store)
+    #     print(valor_nuevo)
+    #     nuevos_datos[fila_absoluta]["Valores"] = valor_nuevo
+    #     return nuevos_datos, {"refrescar": True}
 
     # @app.callback(
     #     dash.Output('tabla-datos', 'data'),
@@ -476,36 +486,6 @@ def crear_dash_app(flask_app):
         return True  # deshabilitar botón
 
     @app.callback(
-        #dash.Output('tabla-datos', 'data'),
-        #dash.Output('tabla-datos', 'columns'),
-        dash.Output('grafico-general', 'figure'),
-        dash.Output('grafico-porcentaje', 'figure'),
-        dash.Output('grafico-mapa-calor', 'figure'),
-        [
-            dash.Input('idioma-dropdown', 'value'),
-            dash.Input('entidad-dropdown', 'value'),
-            dash.Input('principios-checklist', 'value'),
-            dash.Input('wcag-version-checklist', 'value'),
-            dash.Input('nivel-checklist', 'value'),
-            dash.Input('pautas-dropdown', 'value'),
-            dash.Input('agrupacion-radio', 'value'),
-            dash.Input('escala-radio', 'value'),
-        ]
-    )
-    def actualizar_datos(idioma, entidades, principios, versiones, niveles, pautas, agrupacion, escala):
-        # Aquí haces el filtrado y generas los outputs correspondientes
-        print('Hola')
-        # Ejemplo mínimo
-        data = [{"col1": "valor1", "col2": "valor2"}]
-        columns = [{"name": "col1", "id": "col1"}, {"name": "col2", "id": "col2"}]
-        figura_general = {}  # tu plotly figure
-        figura_porcentaje = {}
-        figura_mapa_calor = {}
-
-        return data, columns, figura_general, figura_porcentaje, figura_mapa_calor
-
-    
-    @app.callback(
         dash.Output("auditorias-dropdown", "options"),
         dash.Output("mensaje-audtioria", "children"),
         dash.Output("mensaje-audtioria", "style"),
@@ -527,6 +507,76 @@ def crear_dash_app(flask_app):
 
         except Exception as e:
             return dash.no_update, f"❌ Error al eliminar la auditoría: {e}", {"color": "red"}
+
+
+    @app.callback(
+        dash.Output('entidad-dropdown', 'options'),
+        dash.Output('entidad-dropdown', 'value'),
+        dash.Input('tipo-entidad-dropdown', 'value')
+    )
+    def filtrar_entidades_por_tipo(tipo_seleccionado):
+        entidades_filtradas =  pd.DataFrame(qr.obtener_entidades_por_nombre(tipo_seleccionado), columns=["id", "nombre", "id_tipo"])
+        nombres = entidades_filtradas["nombre"].unique()
+        return [{'label': e, 'value': e} for e in entidades_filtradas["nombre"].unique()], list(nombres)
+
+
+    @app.callback(
+        dash.Output('filtros-store', 'data'),
+        dash.Input('boton-actualizar', 'n_clicks'),
+        dash.State('idioma-dropdown', 'value'),
+        dash.State('tipo-entidad-dropdown', 'value'),
+        dash.State('entidad-dropdown', 'value')
+    )
+    def guardar_filtros(n, idioma, tipo_ent, entidad):
+        return dict(idioma=idioma, tipo_ent=tipo_ent, entidad=entidad)
+
+    @app.callback(
+        dash.Output('tabla-datos', 'data'),
+        dash.Input('url', 'pathname'),
+        dash.State('filtros-store', 'data')
+    )
+    def actualizar_tabla(path, filtros):
+        if path != '/dash/datos' or not filtros:
+            return []
+
+        df = df_datos  # aquí cargas tu DataFrame original
+
+        #if filtros.get('idioma'):
+        #    df = df[df['Idioma'] == filtros['idioma']]
+        #if filtros.get('tipo_ent'):
+        #    df = df[df['TipoEntidad'] == filtros['tipo_ent']]
+        if filtros.get('entidad'):
+            df = df[df['Entidades'].isin(filtros['entidad'])]
+
+        return df.to_dict('records')
+
+    @app.callback(
+        dash.Output("auth-status", "data"),
+        dash.Input("url", "pathname"),  # al cargar cualquier página
+    )
+    def cargar_auth(pathname):
+        if 'user' in session:
+            return {"usuario": session["user"], "es_admin": session["admin"]}
+        return {"usuario": None, "es_admin": False}
+
+    @app.callback(
+        dash.Output("admin-toggle", "style"),
+        dash.Input("auth-status", "data"),
+        prevent_initial_call=False
+    )
+    def mostrar_admin(data):
+        if data and data.get("es_admin"):
+            return {
+                "width": "100%",
+                "padding": "10px",
+                "cursor": "pointer",
+                "backgroundColor": "#444",
+                "color": "white",
+                "marginTop": "10px"
+            }
+        # Si no es admin, ocultar
+        return {"display": "none"}
+
 
     return app
 
