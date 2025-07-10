@@ -550,6 +550,55 @@ def crear_dash_app(flask_app):
 
         return df.to_dict('records')
 
+
+    @app.callback(
+        dash.Output('grafico-general', 'figure'),
+        dash.Output('grafico-porcentaje', 'figure'),
+        dash.Input('filtros-store', 'data')
+    )
+    def actualizar_graficos(filtros):
+        if not filtros:
+            raise dash.exceptions.PreventUpdate
+
+        df = df_datos
+
+        if filtros.get('entidad'):
+            df = df[df['Entidades'].isin(filtros['entidad'])]
+
+
+        # Aquí devuelves nuevas figuras (usa Plotly)
+        fig1 = px.bar(df, x="Entidades", y="Valores", 
+             title="Cumplimiento de WCAG por Entidad",
+             labels={"value": "Numero de Criterios", "variable": "Estado"},
+             color ="Criterios",
+             barmode="stack",
+             category_orders={"Entidades": df_datos["Entidades"].unique().tolist()})  # Forzar el orden de las entidades
+    
+        df_porcentajes = pd.DataFrame({
+        "Principio" : porcentaje_cumplimiento["principio"],
+        "No Conseguido": porcentaje_cumplimiento["num_no_conseguido"],
+        "Parcialmente Conseguido": porcentaje_cumplimiento["num_parcialmente_conseguido"],
+        "No Aplicable" : porcentaje_cumplimiento["num_no_aplicable"],
+        "Ampliamente Conseguido" : porcentaje_cumplimiento["num_ampliamente_conseguido"],
+        "Totalmente Conseguido" : porcentaje_cumplimiento["num_totalmente_conseguido"]
+        })
+
+        df_melt = df_porcentajes.melt(
+            id_vars=["Principio"], 
+            var_name="Estado", 
+            value_name="Valores"
+        )
+
+        # Ahora sí puedes hacer el pie chart
+        fig2 = px.pie(
+            df_melt,
+            names="Estado",
+            values="Valores",
+            title="Cumplimiento de Principios"
+        )
+        
+        return fig1, fig2
+
     @app.callback(
         dash.Output("auth-status", "data"),
         dash.Input("url", "pathname"),  # al cargar cualquier página
