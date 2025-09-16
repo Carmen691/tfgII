@@ -1,52 +1,53 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import data.querys as bd
 
 def layout_usuarios(idioma, usuarios):
     return html.Div([
-        html.H2("Eliminar usuarios"),
+        html.H2(bd.obtener_textos_interfaz(idioma, "usuarios", "eliminar_usuarios")),
 
         html.Div([
-            html.Label("Usuarios:", style={'marginRight': '10px', 'alignSelf': 'center'}),
+            html.Label(bd.obtener_textos_interfaz(idioma, "usuarios", "usuarios"), style={'marginRight': '10px', 'alignSelf': 'center'}),
             dcc.Dropdown(
                 id='usuarios-dropdown',
-                placeholder="Selecciona...",
+                placeholder=bd.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
                 options=[{'label': usu, 'value': usu} for usu in usuarios["usuario"].unique()],
                 style={'width': '300px', 'marginRight': '10px'}
             ),
-            html.Button('Eliminar', id='borrar-usuario-button', n_clicks=0),
+            html.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "eliminar"), id='borrar-usuario-button', n_clicks=0),
             dbc.Modal([
-                dbc.ModalHeader("Confirmación"),
-                dbc.ModalBody("¿Estás seguro de que deseas eliminar este usuario?"),
+                dbc.ModalHeader(bd.obtener_textos_interfaz(idioma, "usuarios", "confirmacion")),
+                dbc.ModalBody(bd.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion")),
                 dbc.ModalFooter([
-                    dbc.Button("Cancelar", id="cancelar-eliminar", className="ms-auto", n_clicks=0),
-                    dbc.Button("Eliminar", id="confirmar-eliminar", color="danger", n_clicks=0),
+                    dbc.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "cancelar"), id="cancelar-eliminar", className="ms-auto", n_clicks=0),
+                    dbc.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "eliminar"), id="confirmar-eliminar", color="danger", n_clicks=0),
                 ])
             ], id="modal-confirmacion", is_open=False),
         ], style={'display': 'flex', 'alignItems': 'center', 'marginBottom': '15px'}),
 
-        html.H2("Añadir usuarios"),
+        html.H2(bd.obtener_textos_interfaz(idioma, "usuarios", "anadir_usuarios")),
         html.Div([
         dcc.Input(
             id='input-usuario',
             type='text',
-            placeholder='Escribe el usuario...',
+            placeholder=bd.obtener_textos_interfaz(idioma, "usuarios", "esc_usuario"),
             style={'width': '200px', 'marginRight': '10px'}
         ),
         dcc.Input(
             id='input-passwd',
             type='password',
-            placeholder='Escribe la contraseña...',
+            placeholder=bd.obtener_textos_interfaz(idioma, "usuarios", "esc_contrasena"),
             style={'width': '200px', 'marginRight': '10px'}
         ),
         dbc.Checkbox(
             id="check-admin",
-            label="Administrador",
+            label="Admin",
             style={'marginRight': '15px', 'alignSelf': 'center'}
         ),
-        html.Button('Añadir', id='add-usuario-button', n_clicks=0),
+        html.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "anadir"), id='add-usuario-button', n_clicks=0),
         dbc.Modal([
-            dbc.ModalHeader("Confirmación"),
-            dbc.ModalBody("¿Estás seguro de que deseas añadir este usuario?"),
+            dbc.ModalHeader(bd.obtener_textos_interfaz(idioma, "usuarios", "confirmacion")),
+            dbc.ModalBody(bd.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion_usu")),
             dbc.ModalFooter([
                 dbc.Button("Cancelar", id="cancelar-anadir", className="ms-auto", n_clicks=0),
                 dbc.Button("Añadir", id="confirmar-anadir", color="success", n_clicks=0),

@@ -127,10 +127,11 @@ def crear_dash_app(flask_app):
 
     @app.callback(
         dash.Output('page-content', 'children'),
+        dash.Input('store-idioma', 'data'),
         dash.Input('url', 'pathname')
     )
-    def mostrar_contenido(pathname):    
-        print("PATHNAME:", pathname)
+    def mostrar_contenido(idioma, pathname):    
+        print("IDIOMA:", idioma)
         if pathname == '/dash/':
             return dcc.Location(href='/dash/filtros', id='redir')
         elif pathname == '/dash/cuadroMando':
@@ -529,6 +530,18 @@ def crear_dash_app(flask_app):
     )
     def guardar_filtros(n, idioma, tipo_ent, entidad):
         return dict(idioma=idioma, tipo_ent=tipo_ent, entidad=entidad)
+
+
+    @app.callback(
+        dash.Output('store-idioma', 'data'),
+        dash.Output('url', 'href'),  # redirige a la misma página
+        dash.Input('idioma-dropdown', 'value'),
+        dash.State('url', 'pathname')
+    )
+    def cambiar_idioma(nuevo_idioma, pathname):
+        if pathname is None:
+            pathname = '/dash/filtros'  # por defecto
+        return nuevo_idioma, pathname
 
     @app.callback(
         dash.Output('tabla-datos', 'data'),

@@ -18,10 +18,11 @@ def crear_layout():
         # Estado del menú (colapsado o no)
         dcc.Store(id="menu-collapsed", data=False),
         dcc.Store(id='filtros-store', storage_type='session'),
+        dcc.Store(id='store-idioma', data='es'),  # Store global para idioma
 
-        # Menú lateral con botón
+        # Barra superior (header)
         html.Div([
-            # Botón de colapso (siempre visible)
+            # Botón de menú colapsable (izquierda)
             html.Button("⮜", id="toggle-menu", style={
                 "position": "absolute",
                 "top": "10px",
@@ -37,8 +38,25 @@ def crear_layout():
                 "fontSize": "20px"
             }),
 
+            # Selector de idioma (derecha)
+            dcc.Dropdown(
+                id='idioma-dropdown',
+                options=[
+                    {'label': 'Español', 'value': 'es'},
+                    {'label': 'English', 'value': 'en'}
+                ],
+                value='es',
+                clearable=False,
+                style={
+                    "width": "100px",
+                    "marginLeft": "auto",
+                    "marginRight": "10px"
+                }
+            )
+        ], style={"position": "relative", "height": "50px", "marginBottom": "10px"}),
 
-            # Contenido del menú
+        # Menú lateral con botón
+        html.Div([
             html.Div([
                 html.H2("", style={"color": "white", "padding": "20px"}),
                 dcc.Link("Filtros", href="/dash/filtros", style={"display": "block", "padding": "10px", "color": "white"}),
@@ -59,13 +77,11 @@ def crear_layout():
                     "color": "white",
                     "marginTop": "10px"
                 }),
-
-                # Collapse con submenú
                 dbc.Collapse([
                     dcc.Link("Usuarios", href="/dash/administracion/usuarios", style={"display": "block", "padding": "10px 10px 10px 30px", "color": "white"}),
                     dcc.Link("Gestión de auditorías", href="/dash/administracion/auditorias", style={"display": "block", "padding": "10px 10px 10px 30px", "color": "white"}),
                 ], id="admin-collapse", is_open=False),
-            html.A("Cerrar sesión", href="/logout", target="_self", className="nav-link", style={"display": "block", "padding": "10px", "color": "white"})
+                html.A("Cerrar sesión", href="/logout", target="_self", className="nav-link", style={"display": "block", "padding": "10px", "color": "white"})
             ], id="menu-content")
         ], id="sidebar", style={
             "position": "fixed", "top": "0", "left": "0",
@@ -80,4 +96,3 @@ def crear_layout():
             html.Div(id='page-content', style={'width': '100%', 'padding': '20px'})
         ], id="main-content", style={"marginLeft": "260px", "padding": "20px"})
     ])
-

@@ -4,14 +4,6 @@ import dash_bootstrap_components as dbc
 
 def layout_filtros(idioma, tiposEntidad, entidades):    
     return html.Div([
-        html.Label("Idioma:"),
-        dcc.Dropdown(
-            id='idioma-dropdown',
-            options=[{'label': cat, 'value': cat} for cat in idioma["nombre"].unique()],
-            value="Español",
-            style={'width': '100%'}
-        ),
-        html.Br(),
         html.Label("Tipo entidad:"),
         dcc.Dropdown(
             id='tipo-entidad-dropdown',

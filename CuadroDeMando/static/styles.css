@@ -1,49 +1,75 @@
 body.login-page {
-    background-color: #e6e6ff;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
 .login-box {
-    background: #e6e6ff;
-    padding: 30px;
-    border-radius: 8px;
-    width: 200px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    width: 350px;
+    text-align: center;
+    animation: fadeIn 1s ease-in-out;
 }
 
 .login-box h3 {
-    text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    font-size: 1.6rem;
+    color: #333;
+    letter-spacing: 1px;
 }
 
 .login-box input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 30px;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+    transition: border 0.3s;
 }
 
-.login-box button {
-    width: 60%;
-    padding: 10px;
-    background-color: #9999ff;
-    color: white;
+.login-box input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+#login-button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
-    border-radius: 50% 20% / 10% 40%;
-    text-align: center;
-    display: block;
-    margin: 0 auto;
+    transition: background 0.3s ease;
+}
+
+#login-button:hover {
+    background: linear-gradient(135deg, #5a6fd1, #653d91);
 }
 
 .error {
-    color: red;
-    margin-top: 10px;
-    text-align: center;
+    margin-top: 15px;
+    padding: 10px;
+    background: #ffe5e5;
+    color: #d9534f;
+    border-radius: 8px;
+    font-size: 0.9rem;
 }
 
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

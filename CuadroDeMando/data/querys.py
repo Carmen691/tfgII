@@ -299,3 +299,18 @@ def eliminar_usuario(usuario):
     conn.commit()
     conn.close()
 
+
+def obtener_textos_interfaz(idioma_codigo, seccion, clave):
+    """
+    Devuelve el texto dependiendo del idioma seleccionado
+    """
+    conn = get_db_connection()
+    result = conn.execute(text(f"""SELECT ui.texto FROM traducciones_ui ui
+            JOIN idiomas i ON i.id = ui.id_idioma
+            WHERE i.codigo = '{idioma_codigo}' 
+            AND ui.seccion = '{seccion}' AND ui.clave = '{clave}'"""))
+    dato = result.fetchone()
+    conn.close()
+    return dato[0]
+
+        
