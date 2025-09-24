@@ -19,7 +19,7 @@ def layout_usuarios(idioma, usuarios):
                 dbc.ModalHeader(bd.obtener_textos_interfaz(idioma, "usuarios", "confirmacion")),
                 dbc.ModalBody(bd.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion")),
                 dbc.ModalFooter([
-                    dbc.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "cancelar"), id="cancelar-eliminar", className="ms-auto", n_clicks=0),
+                    dbc.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "cancelar"),className="boton-azul", id="cancelar-eliminar", n_clicks=0),
                     dbc.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "eliminar"), id="confirmar-eliminar", color="danger", n_clicks=0),
                 ])
             ], id="modal-confirmacion", is_open=False),

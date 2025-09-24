@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <title>Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <style>
-        iframe {
-            width: 100%;
-            height: 90vh;
-            border: none;
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Aquí insertamos el dashboard de Dash -->
-    <iframe src="/dash"></iframe>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>📊 Mi Dashboard</h1>
+        <form action="{{ url_for('logout') }}" method="POST" style="margin:0;">
+            <button type="submit" class="logout">Cerrar sesión</button>
+        </form>
+    </div>
+
+    <!-- Contenedor del dashboard -->
+    <div class="dashboard-container">
+        <iframe src="/dash/"></iframe>
+    </div>
 
 </body>
 </html>

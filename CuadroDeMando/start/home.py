@@ -19,13 +19,8 @@ import base64
 import dash_bootstrap_components as dbc
 
 
-# external_stylesheets=[
-#     dbc.themes.BOOTSTRAP,
-#     "https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
-# ]
-
 external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css"  # El CSS por defecto de Dash, funciona bien
+    "https://codepen.io/chriddyp/pen/bWLwgP.css"
 ]
 
 
@@ -50,6 +45,7 @@ def crear_dash_app(flask_app):
     
     opciones_cumplimiento = pd.DataFrame(qr.obtener_opciones_cumplimiento(), columns = ["id_escala", "descripcion"])
 
+    #df_estadisticas = pd.DataFrame(qr.obtener_estadisticas(), columns = ["id_escala", "descripcion"])
 
     df_datos = pd.DataFrame({
         "Criterios": datos["criterio"],
@@ -114,12 +110,10 @@ def crear_dash_app(flask_app):
     )
 
 
-    #external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css']
-
     external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css"  # El CSS por defecto de Dash, funciona bien
+    "https://codepen.io/chriddyp/pen/bWLwgP.css"
     ]
-    app = Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True, external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True, external_stylesheets=external_stylesheets)
 
     layout_dashboard = crear_layout()
     app.layout = layout_dashboard
@@ -150,9 +144,18 @@ def crear_dash_app(flask_app):
             return html.H2("Página no encontrada")
     
     @app.callback(
+        dash.Output("admin-collapse", "is_open"),
+        dash.Input("admin-toggle", "n_clicks"),
+        dash.State("admin-collapse", "is_open")
+    )
+    def toggle_admin_menu(n_clicks, is_open):
+        if not n_clicks:  # primera carga o nunca pulsado
+            return False
+        return not is_open
+
+    @app.callback(
         dash.Output("sidebar", "style"),
-        dash.Output("menu-content", "style"),
-        dash.Output("main-content", "style"),  # <-- nuevo
+        dash.Output("main-content", "style"),
         dash.Output("menu-collapsed", "data"),
         dash.Input("toggle-menu", "n_clicks"),
         dash.State("menu-collapsed", "data"),
@@ -166,23 +169,27 @@ def crear_dash_app(flask_app):
         if collapsed:
             sidebar_style = {
                 "position": "fixed", "top": "0", "left": "0",
-                "width": "40px", "height": "100%",
+                "width": "60px", "height": "100%",
                 "backgroundColor": "#2c3e50", "paddingTop": "20px",
-                "zIndex": "1000", "overflow": "hidden"
+                "zIndex": "1000", "overflow": "hidden",
+                "transition": "width 0.3s ease"
             }
-            menu_content_style = {"display": "none"}
-            content_style = {"marginLeft": "50px", "transition": "margin-left 0.3s ease", "padding": "20px"}
+            content_style = {
+                "marginLeft": "70px", "transition": "margin-left 0.3s ease", "padding": "20px"
+            }
         else:
             sidebar_style = {
                 "position": "fixed", "top": "0", "left": "0",
                 "width": "250px", "height": "100%",
                 "backgroundColor": "#2c3e50", "paddingTop": "20px",
-                "zIndex": "1000", "overflow": "hidden"
+                "zIndex": "1000", "overflow": "hidden",
+                "transition": "width 0.3s ease"
             }
-            menu_content_style = {"display": "block"}
-            content_style = {"marginLeft": "260px", "transition": "margin-left 0.3s ease", "padding": "20px"}
+            content_style = {
+                "marginLeft": "260px", "transition": "margin-left 0.3s ease", "padding": "20px"
+            }
 
-        return sidebar_style, menu_content_style, content_style, collapsed
+        return sidebar_style, content_style, collapsed
 
     @app.callback(
         dash. Output("toggle-menu", "children"),
@@ -374,16 +381,6 @@ def crear_dash_app(flask_app):
         
         # Cambia el contenido de refresh-trigger para forzar que otros callbacks dependientes se actualicen
         return mensaje, {'refresh': True}
-
-    @app.callback(
-        dash.Output("admin-collapse", "is_open"),
-        dash.Input("admin-toggle", "n_clicks"),
-        dash.State("admin-collapse", "is_open"),
-        prevent_initial_call=True
-    )
-    def toggle_collapse(n_clicks, is_open):
-        print(f"Click: {n_clicks}, Abierto: {is_open}") 
-        return not is_open
         
     @app.callback(
         dash.Output("usuarios-dropdown", "options"),

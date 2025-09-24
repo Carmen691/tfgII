@@ -9,7 +9,7 @@ def layout_importar(idioma, datosEntidades, datosWCAG):
         dcc.Dropdown(
             id='dropdown-sugerencias',
             options=[{'label': row['nombre'], 'value': row['id']} for _, row in datosEntidades.iterrows()],
-            placeholder='Opciones sugeridas',
+            placeholder='Selecciona...',
             style={'width': '300px'}
         ),
         html.Br(),
@@ -27,7 +27,7 @@ def layout_importar(idioma, datosEntidades, datosWCAG):
         dcc.Dropdown(
             id='dropdown-wcag',
             options=[{'label': row['version'], 'value': row['id']} for _, row in datosWCAG.iterrows()],
-            placeholder='Opciones sugeridas',
+            placeholder='Selecciona...',
             style={'width': '300px'}
         ),
         html.Br(),
