@@ -3,7 +3,7 @@ import data.querys as bd
 
 def layout_gestion(idioma, auditorias):
     return html.Div([
-    html.H2("Eliminar auditorías"),
+    html.H2(bd.obtener_textos_interfaz(idioma, "gestion", "titulo")),
 
     html.Label(bd.obtener_textos_interfaz(idioma, "gestion", "auditorias")),
     dcc.Dropdown(
@@ -12,6 +12,6 @@ def layout_gestion(idioma, auditorias):
         style={'width': '50%'}
     ),
     html.Br(),
-    html.Button('Eliminar', id='borrar-auditoria-button', n_clicks=0),
+    html.Button(bd.obtener_textos_interfaz(idioma, "usuarios", "eliminar"), id='borrar-auditoria-button', n_clicks=0),
     html.Div(id="mensaje-audtioria", style={"marginTop": "10px"})
     ])

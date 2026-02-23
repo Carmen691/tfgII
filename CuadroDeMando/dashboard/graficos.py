@@ -6,6 +6,23 @@ def layout_graficos(fig, figPorcentaje, figMapaCalor):
         dcc.Graph(id='grafico-porcentaje', figure=figPorcentaje),
         dcc.Graph(id='grafico-mapa-calor', figure=figMapaCalor),
 
+        html.Div(
+            children=[
+                html.H4("Estadísticas WCAG", style={"margin-bottom": "10px"}),
+                html.P("Total Entidades: 25"),
+                html.P("Total Mediciones: 120"),
+                html.P("Cumplimientos: 85"),
+                html.P("Porcentaje Cumplimiento: 70.8%"),
+            ],
+            style={
+                "border": "1px solid #ccc",
+                "border-radius": "10px",
+                "padding": "15px",
+                "width": "250px",
+                "text-align": "center",
+                "box-shadow": "2px 2px 10px rgba(0,0,0,0.1)"
+            }
+        )
         # html.H4("Estadísticas"),
         # dcc.Datatable(
         #     id='tabla-estadisticas',

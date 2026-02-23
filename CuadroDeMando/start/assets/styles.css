@@ -2,7 +2,7 @@ body {
     background: #f0f2f5; /* gris muy claro */
 }
 
-body button:not(#tabla-datos button) {
+body button:not(#tabla-datos button):not(#admin-toggle) {
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
@@ -345,4 +345,11 @@ textarea[disabled] {
     border: 1px solid #ccc !important;
     background: #ffffff !important;
     box-shadow: none !important;
+}
+
+/* Link activo */
+#sidebar a.active {
+    background: #1abc9c !important;
+    color: #ffffff !important;
+    padding-left: 28px;
 }

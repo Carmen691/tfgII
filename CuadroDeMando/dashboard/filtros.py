@@ -10,7 +10,9 @@ def layout_filtros(idioma, tiposEntidad, entidades):
             options=[{'label': cat, 'value': cat} for cat in tiposEntidad["nombre"].unique()],
             multi=False,
             value=tiposEntidad["nombre"].unique()[0],
-            style={'width': '100%'}
+            style={'width': '100%'},
+            persistence=True,
+            persistence_type='session'
         ),
         html.Br(),
         html.Label("Entidad:"),
@@ -18,8 +20,10 @@ def layout_filtros(idioma, tiposEntidad, entidades):
             id='entidad-dropdown',
             options=[{'label': cat, 'value': cat} for cat in entidades["nombre"].unique()],
             multi=True,
-            value=list(entidades),
-            style={'width': '100%'}
+            value=None,
+            style={'width': '100%'},
+            persistence=True,
+            persistence_type='session'
         ),
 
     #     html.Br(),

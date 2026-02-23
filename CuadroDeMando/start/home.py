@@ -78,7 +78,7 @@ def crear_dash_app(flask_app):
         value_name="Valores"
     )
 
-    # Ahora sí puedes hacer el pie chart
+    # pie chart
     figPorcentaje = px.pie(
         df_melt,
         names="Estado",
@@ -143,15 +143,15 @@ def crear_dash_app(flask_app):
         else:
             return html.H2("Página no encontrada")
     
-    @app.callback(
-        dash.Output("admin-collapse", "is_open"),
-        dash.Input("admin-toggle", "n_clicks"),
-        dash.State("admin-collapse", "is_open")
-    )
-    def toggle_admin_menu(n_clicks, is_open):
-        if not n_clicks:  # primera carga o nunca pulsado
-            return False
-        return not is_open
+    # @app.callback(
+    #     dash.Output("admin-collapse", "is_open"),
+    #     dash.Input("admin-toggle", "n_clicks"),
+    #     dash.State("admin-collapse", "is_open")
+    # )
+    # def toggle_admin_menu(n_clicks, is_open):
+    #     if not n_clicks:  # primera carga o nunca pulsado
+    #         return False
+    #     return not is_open
 
     @app.callback(
         dash.Output("sidebar", "style"),
@@ -198,6 +198,54 @@ def crear_dash_app(flask_app):
     def update_arrow(collapsed):
         return "⮞" if collapsed else "⮜"
 
+
+
+    @app.callback(
+        dash.Output("link-filtros", "className"),
+        dash.Output("link-cuadro", "className"),
+        dash.Output("link-datos", "className"),
+        dash.Output("link-importar", "className"),
+        dash.Output("link-usuarios", "className"),
+        dash.Output("link-auditorias", "className"),
+        dash.Output("admin-toggle", "className"),
+        dash.Output("admin-collapse", "is_open"),
+
+        dash.Input("url", "pathname"),
+        dash.Input("admin-toggle", "n_clicks"),
+
+        dash.State("admin-collapse", "is_open"),
+    )
+    def actualizar_menu(pathname, n_clicks, is_open):
+
+        if not pathname:
+            pathname = ""
+
+        def normal(base):
+            return base
+
+        def active(base):
+            return base + " active"
+
+        admin_from_url = pathname.startswith("/dash/administracion")
+
+        # 👉 lógica combinada
+        if n_clicks:
+            admin_open = not is_open
+        else:
+            admin_open = admin_from_url
+
+        return (
+            active("sidebar-link") if pathname == "/dash/filtros" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/dash/cuadroMando" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/dash/datos" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/dash/importar" else normal("sidebar-link"),
+
+            active("sidebar-sublink") if pathname == "/dash/administracion/usuarios" else normal("sidebar-sublink"),
+            active("sidebar-sublink") if pathname == "/dash/administracion/auditorias" else normal("sidebar-sublink"),
+
+            active("sidebar-link") if admin_open else normal("sidebar-link"),
+            admin_open
+        )
     # @app.callback(
     #     dash.Output('dropdown-celda', 'children'),
     #     dash.Output('store-celda-seleccionada', 'data'),
@@ -380,7 +428,7 @@ def crear_dash_app(flask_app):
 
         
         # Cambia el contenido de refresh-trigger para forzar que otros callbacks dependientes se actualicen
-        return mensaje, {'refresh': True}
+        #return mensaje, {'refresh': True}
         
     @app.callback(
         dash.Output("usuarios-dropdown", "options"),
@@ -510,23 +558,38 @@ def crear_dash_app(flask_app):
     @app.callback(
         dash.Output('entidad-dropdown', 'options'),
         dash.Output('entidad-dropdown', 'value'),
-        dash.Input('tipo-entidad-dropdown', 'value')
+        dash.Input('tipo-entidad-dropdown', 'value'),
+        dash.State('entidad-dropdown', 'value')
     )
-    def filtrar_entidades_por_tipo(tipo_seleccionado):
-        entidades_filtradas =  pd.DataFrame(qr.obtener_entidades_por_nombre(tipo_seleccionado), columns=["id", "nombre", "id_tipo"])
-        nombres = entidades_filtradas["nombre"].unique()
-        return [{'label': e, 'value': e} for e in entidades_filtradas["nombre"].unique()], list(nombres)
+    def filtrar_entidades_por_tipo(tipo_seleccionado, valores_actuales):
+        entidades_filtradas = pd.DataFrame(
+            qr.obtener_entidades_por_nombre(tipo_seleccionado),
+            columns=["id", "nombre", "id_tipo"]
+        )
 
+        nombres = entidades_filtradas["nombre"].unique().tolist()
+
+        options = [{'label': e, 'value': e} for e in nombres]
+
+        # Primera carga → seleccionar todas
+        if valores_actuales is None:
+            return options, nombres
+
+        # Mantener solo las que sigan existiendo
+        nuevos_valores = [v for v in valores_actuales if v in nombres]
+
+        return options, nuevos_valores
 
     @app.callback(
         dash.Output('filtros-store', 'data'),
         dash.Input('boton-actualizar', 'n_clicks'),
-        dash.State('idioma-dropdown', 'value'),
         dash.State('tipo-entidad-dropdown', 'value'),
-        dash.State('entidad-dropdown', 'value')
+        dash.State('entidad-dropdown', 'value'),
+        dash.State('idioma-dropdown', 'value')
     )
-    def guardar_filtros(n, idioma, tipo_ent, entidad):
-        return dict(idioma=idioma, tipo_ent=tipo_ent, entidad=entidad)
+    def guardar_filtros(n_clicks, tipo_ent, entidad, idioma):
+        if n_clicks:
+            return dict(idioma=idioma, tipo_ent=tipo_ent, entidad=entidad)
 
 
     @app.callback(
@@ -576,7 +639,7 @@ def crear_dash_app(flask_app):
             df = df[df['Entidades'].isin(filtros['entidad'])]
 
 
-        # Aquí devuelves nuevas figuras (usa Plotly)
+        # Nuevos gráficos
         fig1 = px.bar(df, x="Entidades", y="Valores", 
              title="Cumplimiento de WCAG por Entidad",
              labels={"value": "Numero de Criterios", "variable": "Estado"},
@@ -599,7 +662,7 @@ def crear_dash_app(flask_app):
             value_name="Valores"
         )
 
-        # Ahora sí puedes hacer el pie chart
+        # Pie chart
         fig2 = px.pie(
             df_melt,
             names="Estado",
@@ -692,10 +755,6 @@ def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):
         qr.guardar_entidades(valor_dropdown, columnas_limpias)
 
         qr.guardar_valores(valor_dropdown, valor_wcag, df)
-
-
-        
-        # Vamos a insertar 
 
         return
     except Exception as error:

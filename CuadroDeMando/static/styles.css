@@ -1,7 +1,7 @@
 /* Inicio sesion */
 body.login-page {
     margin: 0;
-    padding: 0;
+    pading: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea, #764ba2);
     height: 100vh;
@@ -139,4 +139,28 @@ body {
 
 #cancelar-eliminar:active {
     transform: scale(0.95);
+}
+
+#admin-toggle {
+    all: unset; /* 💥 elimina estilos de botón global */
+
+    display: block;
+    width: 100%;
+    padding: 12px 20px;
+    color: #ecf0f1;
+    cursor: pointer;
+    font-size: 16px;
+    background: transparent;
+    border-radius: 0;
+}
+
+/* Hover igual que links */
+#admin-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    padding-left: 28px;
+    color: #52867c;
+}
+
+#admin-collapse {
+    transition: all 0.3s ease;
 }

@@ -53,22 +53,22 @@ def crear_layout():
         # Menú lateral con botón
         html.Div([
             html.H2("Menú", className="sidebar-title"),
-            dcc.Link("Filtros", href="/dash/filtros", className="sidebar-link"),
-            dcc.Link("Cuadro de mando", href="/dash/cuadroMando", className="sidebar-link"),
-            dcc.Link("Tabla de datos", href="/dash/datos", className="sidebar-link"),
-            dcc.Link("Importar datos", href="/dash/importar", className="sidebar-link"),
+            dcc.Link("Filtros", href="/dash/filtros", className="sidebar-link", id="link-filtros"),
+            dcc.Link("Cuadro de mando", href="/dash/cuadroMando", className="sidebar-link", id="link-cuadro"),
+            dcc.Link("Tabla de datos", href="/dash/datos", className="sidebar-link", id="link-datos"),
+            dcc.Link("Importar datos", href="/dash/importar", className="sidebar-link", id="link-importar"),
+
             html.Div([
                 html.Span("Panel de administración", className="sidebar-admin-text"),
                 html.I(className="bi bi-chevron-down sidebar-admin-icon")
             ], 
-            id="admin-toggle", 
-            n_clicks=0, 
-            role="button", 
-            tabIndex=0, 
+            id="admin-toggle",
+            className="sidebar-link", 
+            n_clicks=0,
             style={"cursor": "pointer"}),
             dbc.Collapse([
-                dcc.Link("Usuarios", href="/dash/administracion/usuarios", className="sidebar-sublink"),
-                dcc.Link("Gestión de auditorías", href="/dash/administracion/auditorias", className="sidebar-sublink"),
+                dcc.Link("Usuarios", href="/dash/administracion/usuarios", className="sidebar-sublink", id="link-usuarios"),
+                dcc.Link("Gestión de auditorías", href="/dash/administracion/auditorias", className="sidebar-sublink", id="link-auditorias"),
             ], id="admin-collapse", is_open=False),
             html.A("Cerrar sesión", href="/logout", target="_self", className="nav-link")
         ], id="sidebar"),
