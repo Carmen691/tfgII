@@ -2,10 +2,12 @@
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 
+# external_stylesheets = [
+#     "https://codepen.io/chriddyp/pen/bWLwgP.css"
+# ]
 external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css"
+    dbc.themes.BOOTSTRAP
 ]
-
 
 def crear_layout():
     return html.Div([
@@ -60,7 +62,7 @@ def crear_layout():
 
             html.Div([
                 html.Span("Panel de administración", className="sidebar-admin-text"),
-                html.I(className="bi bi-chevron-down sidebar-admin-icon")
+                html.I(className="bi bi-chevron-down sidebar-admin-icon", style={"float": "right"})
             ], 
             id="admin-toggle",
             className="sidebar-link", 

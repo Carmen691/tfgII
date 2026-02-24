@@ -9,7 +9,7 @@ from dashboard.usuarios import layout_usuarios
 from dashboard.gestion import layout_gestion
 from dashboard.importar import layout_importar
 import dash
-from dash import Dash, ctx, dcc, html, dash_table
+from dash import Dash, callback_context, ctx, dcc, html, dash_table
 import plotly.express as px
 import pandas as pd
 import data.querys as qr
@@ -19,10 +19,12 @@ import base64
 import dash_bootstrap_components as dbc
 
 
+# external_stylesheets = [
+#     "https://codepen.io/chriddyp/pen/bWLwgP.css"
+# ]
 external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css"
+    dbc.themes.BOOTSTRAP
 ]
-
 
 def crear_dash_app(flask_app): 
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
@@ -110,8 +112,11 @@ def crear_dash_app(flask_app):
     )
 
 
+    # external_stylesheets = [
+    # "https://codepen.io/chriddyp/pen/bWLwgP.css"
+    # ]
     external_stylesheets = [
-    "https://codepen.io/chriddyp/pen/bWLwgP.css"
+    dbc.themes.BOOTSTRAP
     ]
     app = Dash(__name__, server=flask_app, url_base_pathname='/dash/', suppress_callback_exceptions=True, external_stylesheets=external_stylesheets)
 
@@ -199,6 +204,16 @@ def crear_dash_app(flask_app):
         return "⮞" if collapsed else "⮜"
 
 
+    @app.callback(
+        dash.Output("admin-collapse", "is_open"),
+        dash.Input("admin-toggle", "n_clicks"),
+        dash.State("admin-collapse", "is_open"),
+    )
+    def toggle_admin(n, is_open):
+        if n > 0:
+            return not is_open
+        return is_open
+
 
     @app.callback(
         dash.Output("link-filtros", "className"),
@@ -208,14 +223,10 @@ def crear_dash_app(flask_app):
         dash.Output("link-usuarios", "className"),
         dash.Output("link-auditorias", "className"),
         dash.Output("admin-toggle", "className"),
-        dash.Output("admin-collapse", "is_open"),
 
         dash.Input("url", "pathname"),
-        dash.Input("admin-toggle", "n_clicks"),
-
-        dash.State("admin-collapse", "is_open"),
     )
-    def actualizar_menu(pathname, n_clicks, is_open):
+    def actualizar_menu(pathname):
 
         if not pathname:
             pathname = ""
@@ -226,13 +237,7 @@ def crear_dash_app(flask_app):
         def active(base):
             return base + " active"
 
-        admin_from_url = pathname.startswith("/dash/administracion")
-
-        # 👉 lógica combinada
-        if n_clicks:
-            admin_open = not is_open
-        else:
-            admin_open = admin_from_url
+        admin_active = pathname.startswith("/dash/administracion")
 
         return (
             active("sidebar-link") if pathname == "/dash/filtros" else normal("sidebar-link"),
@@ -243,9 +248,56 @@ def crear_dash_app(flask_app):
             active("sidebar-sublink") if pathname == "/dash/administracion/usuarios" else normal("sidebar-sublink"),
             active("sidebar-sublink") if pathname == "/dash/administracion/auditorias" else normal("sidebar-sublink"),
 
-            active("sidebar-link") if admin_open else normal("sidebar-link"),
-            admin_open
+            active("sidebar-link") if admin_active else normal("sidebar-link"),
         )
+
+    # @app.callback(
+    #     dash.Output("link-filtros", "className"),
+    #     dash.Output("link-cuadro", "className"),
+    #     dash.Output("link-datos", "className"),
+    #     dash.Output("link-importar", "className"),
+    #     dash.Output("link-usuarios", "className"),
+    #     dash.Output("link-auditorias", "className"),
+    #     dash.Output("admin-toggle", "className"),
+    #     dash.Output("admin-collapse", "is_open"),
+
+    #     dash.Input("url", "pathname"),
+    #     dash.Input("admin-toggle", "n_clicks"),
+
+    #     dash.State("admin-collapse", "is_open"),
+    # )
+    # def actualizar_menu(pathname, n_clicks, is_open):
+
+    #     if not pathname:
+    #         pathname = ""
+
+    #     def normal(base):
+    #         return base
+
+    #     def active(base):
+    #         return base + " active"
+
+    #     admin_from_url = pathname.startswith("/dash/administracion")
+    #     ctx = callback_context
+    #     trigger = ctx.triggered[0]["prop_id"].split(".")[0]
+
+    #     if trigger == "admin-toggle":
+    #         admin_open = not is_open
+    #     else:
+    #         admin_open = admin_from_url
+
+    #     return (
+    #         active("sidebar-link") if pathname == "/dash/filtros" else normal("sidebar-link"),
+    #         active("sidebar-link") if pathname == "/dash/cuadroMando" else normal("sidebar-link"),
+    #         active("sidebar-link") if pathname == "/dash/datos" else normal("sidebar-link"),
+    #         active("sidebar-link") if pathname == "/dash/importar" else normal("sidebar-link"),
+
+    #         active("sidebar-sublink") if pathname == "/dash/administracion/usuarios" else normal("sidebar-sublink"),
+    #         active("sidebar-sublink") if pathname == "/dash/administracion/auditorias" else normal("sidebar-sublink"),
+
+    #         active("sidebar-link") if admin_open else normal("sidebar-link"),
+    #         admin_open
+    #     )
     # @app.callback(
     #     dash.Output('dropdown-celda', 'children'),
     #     dash.Output('store-celda-seleccionada', 'data'),
@@ -688,14 +740,7 @@ def crear_dash_app(flask_app):
     )
     def mostrar_admin(data):
         if data and data.get("es_admin"):
-            return {
-                "width": "100%",
-                "padding": "10px",
-                "cursor": "pointer",
-                "backgroundColor": "#444",
-                "color": "white",
-                "marginTop": "10px"
-            }
+            return {}
         # Si no es admin, ocultar
         return {"display": "none"}
 

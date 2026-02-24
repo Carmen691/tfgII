@@ -141,26 +141,35 @@ body {
     transform: scale(0.95);
 }
 
-#admin-toggle {
-    all: unset; /* 💥 elimina estilos de botón global */
-
-    display: block;
+#admin-collapse {
+    display: block !important;
     width: 100%;
-    padding: 12px 20px;
-    color: #ecf0f1;
-    cursor: pointer;
-    font-size: 16px;
-    background: transparent;
-    border-radius: 0;
 }
 
-/* Hover igual que links */
-#admin-toggle:hover {
-    background: rgba(255, 255, 255, 0.1);
-    padding-left: 28px;
-    color: #52867c;
+/* 🔥 CLAVE */
+#admin-collapse.collapse:not(.show) {
+    display: none !important;
+}
+
+#admin-collapse.collapse.show {
+    display: block !important;
+}
+
+#admin-collapse a {
+    display: block;
+    width: 100%;
+    padding: 10px 20px 10px 40px;
+    box-sizing: border-box;
 }
 
 #admin-collapse {
-    transition: all 0.3s ease;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#sidebar a,
+#admin-toggle {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
 }
