@@ -9,7 +9,7 @@ from dashboard.usuarios import layout_usuarios
 from dashboard.gestion import layout_gestion
 from dashboard.importar import layout_importar
 import dash
-from dash import Dash, callback_context, ctx, dcc, html, dash_table
+from dash import Dash, callback_context, ctx, dcc, html, dash_table, no_update
 import plotly.express as px
 import pandas as pd
 import data.querys as qr
@@ -89,6 +89,68 @@ def crear_dash_app(flask_app):
     )
 
 
+    df_principios = (
+        datos
+        .assign(cumple=datos["id_descripcion"].ge(4).astype(int))
+        .groupby("principio")["cumple"]
+        .mean()
+        .reset_index()
+    )
+
+    df_principios["cumplimiento"] = df_principios["cumple"] * 100
+
+    figPrincipios = px.bar(
+        df_principios,
+        x="cumplimiento",
+        y="principio",
+        orientation="h",
+        text="cumplimiento"
+    )
+
+    figPrincipios.update_layout(
+        title="Cumplimiento por principios WCAG",
+        xaxis_title="%",
+        yaxis_title=""
+    )
+
+    figPrincipios.update_traces(
+        texttemplate='%{text:.1f}%',
+        textposition='outside'
+    )
+    #df_principios = datos[["principio", "id_descripcion"]]
+    #df_principios.columns = ["principio", "cumplimiento"]
+    # figPrincipios = px.bar(
+    #     df_principios,
+    #     x="cumplimiento",
+    #     y="principio",
+    #     orientation="h",
+    #     text="cumplimiento"
+    # )
+
+    # figPrincipios.update_layout(
+    #     title="Cumplimiento por principios WCAG",
+    #     xaxis_title="%",
+    #     yaxis_title="",
+    # )
+
+    # figPrincipios.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
+
+    # figNiveles = px.bar(
+    #     datos,
+    #     x="nivel",
+    #     y="total",
+    #     color="estado",
+    #     barmode="stack",
+    #     text="total"
+    # )
+
+    # figNiveles.update_layout(
+    #     title="Cumplimiento por nivel WCAG",
+    #     xaxis_title="Nivel",
+    #     yaxis_title="Total"
+    # )
+
+
     # Calcula el porcentaje de cumplimiento
     mapa_calor["cumplimiento_total"] = mapa_calor["ampliamente_conseguido"] + mapa_calor["totalmente_conseguido"]
 
@@ -127,14 +189,16 @@ def crear_dash_app(flask_app):
     @app.callback(
         dash.Output('page-content', 'children'),
         dash.Input('store-idioma', 'data'),
-        dash.Input('url', 'pathname')
+        dash.Input('url', 'pathname'),
+        dash.State('store-tipo-entidad', 'data')
     )
-    def mostrar_contenido(idioma, pathname):    
+    def mostrar_contenido(idioma, pathname, tipoEntidad):    
         print("IDIOMA:", idioma)
         if pathname == '/dash/':
             return dcc.Location(href='/dash/filtros', id='redir')
         elif pathname == '/dash/cuadroMando':
-            return layout_graficos(fig, figPorcentaje, figMapaCalor)
+            figNiveles = None
+            return layout_graficos(figPrincipios, figPorcentaje, figNiveles, tipoEntidad)
         elif pathname == '/dash/datos':
             return layout_datos(df_datos)
         elif pathname == '/dash/filtros':
@@ -606,43 +670,46 @@ def crear_dash_app(flask_app):
         except Exception as e:
             return dash.no_update, f"❌ Error al eliminar la auditoría: {e}", {"color": "red"}
 
-
     @app.callback(
         dash.Output('entidad-dropdown', 'options'),
         dash.Output('entidad-dropdown', 'value'),
         dash.Input('tipo-entidad-dropdown', 'value'),
-        dash.State('entidad-dropdown', 'value')
+        dash.State('entidad-store', 'data')
     )
-    def filtrar_entidades_por_tipo(tipo_seleccionado, valores_actuales):
+    def filtrar_entidades(tipo, valores_guardados):
+
         entidades_filtradas = pd.DataFrame(
-            qr.obtener_entidades_por_nombre(tipo_seleccionado),
+            qr.obtener_entidades_por_nombre(tipo),
             columns=["id", "nombre", "id_tipo"]
         )
 
         nombres = entidades_filtradas["nombre"].unique().tolist()
-
         options = [{'label': e, 'value': e} for e in nombres]
 
-        # Primera carga → seleccionar todas
-        if valores_actuales is None:
+        if not valores_guardados:
             return options, nombres
 
-        # Mantener solo las que sigan existiendo
-        nuevos_valores = [v for v in valores_actuales if v in nombres]
+        nuevos = [v for v in valores_guardados if v in nombres]
 
-        return options, nuevos_valores
+        if not nuevos:
+            nuevos = nombres
+
+        return options, nuevos
+
+
 
     @app.callback(
-        dash.Output('filtros-store', 'data'),
+        dash.Output('entidad-store', 'data'),
+        dash.Output('store-tipo-entidad', 'data'),
         dash.Input('boton-actualizar', 'n_clicks'),
         dash.State('tipo-entidad-dropdown', 'value'),
         dash.State('entidad-dropdown', 'value'),
         dash.State('idioma-dropdown', 'value')
     )
     def guardar_filtros(n_clicks, tipo_ent, entidad, idioma):
-        if n_clicks:
-            return dict(idioma=idioma, tipo_ent=tipo_ent, entidad=entidad)
-
+        if n_clicks > 0:
+            return entidad, tipo_ent
+        return dash.no_update, dash.no_update
 
     @app.callback(
         dash.Output('store-idioma', 'data'),
@@ -658,7 +725,7 @@ def crear_dash_app(flask_app):
     @app.callback(
         dash.Output('tabla-datos', 'data'),
         dash.Input('url', 'pathname'),
-        dash.State('filtros-store', 'data')
+        dash.State('store-tipo-entidad', 'data')
     )
     def actualizar_tabla(path, filtros):
         if path != '/dash/datos' or not filtros:
@@ -679,7 +746,7 @@ def crear_dash_app(flask_app):
     @app.callback(
         dash.Output('grafico-general', 'figure'),
         dash.Output('grafico-porcentaje', 'figure'),
-        dash.Input('filtros-store', 'data')
+        dash.Input('tipo-entidad-dropdown', 'value')
     )
     def actualizar_graficos(filtros):
         if not filtros:

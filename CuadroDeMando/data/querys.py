@@ -19,6 +19,14 @@ def obtener_entidades():
     conn.close()
     return datos
 
+
+def obtener_numero_entidades(tipo_entidad):
+    conn = get_db_connection()
+    result = conn.execute(text(f"SELECT count(1) FROM entidades where id_tipo = (Select id from tipos_entidad where nombre = '{tipo_entidad}')"))
+    datos = result.fetchall()
+    conn.close()
+    return datos[0][0]
+
 def obtener_usuarios():
     conn = get_db_connection()
     result = conn.execute(text("SELECT id, usuario FROM usuarios"))
@@ -111,11 +119,11 @@ def obtener_suma_cumplimiento():
     conn = get_db_connection()
     result = conn.execute(text("""SELECT 
             p.nombre AS principio,
-            ROUND(SUM(CASE WHEN m.medicion = 1 THEN 1 ELSE 0 END), 2) AS num_no_conseguido,
-            ROUND(SUM(CASE WHEN m.medicion = 2 THEN 1 ELSE 0 END), 2) AS num_parcialmente_conseguido,
-            ROUND(SUM(CASE WHEN m.medicion = 3 THEN 1 ELSE 0 END), 2) AS num_no_aplicable,
-            ROUND(SUM(CASE WHEN m.medicion = 4 THEN 1 ELSE 0 END), 2) AS num_ampliamente_conseguido,
-            ROUND(SUM(CASE WHEN m.medicion = 5 THEN 1 ELSE 0 END), 2) AS num_totalmente_conseguido
+            SUM(CASE WHEN m.medicion = 1 THEN 1 ELSE 0 END) AS num_no_conseguido,
+            SUM(CASE WHEN m.medicion = 2 THEN 1 ELSE 0 END) AS num_parcialmente_conseguido,
+            SUM(CASE WHEN m.medicion = 3 THEN 1 ELSE 0 END) AS num_no_aplicable,
+            SUM(CASE WHEN m.medicion = 4 THEN 1 ELSE 0 END) AS num_ampliamente_conseguido,
+            SUM(CASE WHEN m.medicion = 5 THEN 1 ELSE 0 END) AS num_totalmente_conseguido
             FROM 
             mediciones_wcag m
             JOIN criterios_wcag c ON m.id_criterio = c.id

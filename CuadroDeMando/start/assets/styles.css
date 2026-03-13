@@ -42,7 +42,7 @@ body button:not(#tabla-datos button):not(:disabled):active {
     border-radius: 12px !important;
     padding: 5px 10px !important;
     box-shadow: 2px 2px 6px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.5) !important;
-    font-size: 1.5rem !important;
+    font-size: 1rem !important;
     font-weight: 500 !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
@@ -90,7 +90,7 @@ body button:not(#tabla-datos button):not(:disabled):active {
 /* Estilo general para H2 */
 h2 {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y legible */
-    font-size: 2rem;      /* Tamaño destacado */
+    font-size: 1rem;      /* Tamaño destacado */
     font-weight: 700;       /* Negrita */
     color: #2c3e50;         /* Azul oscuro elegante */
     margin-bottom: 20px;    /* Espaciado inferior */
@@ -180,7 +180,7 @@ textarea[disabled] {
     color: #ecf0f1;
     text-align: center;
     margin-bottom: 20px;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
 }
 
@@ -352,4 +352,41 @@ textarea[disabled] {
     background: #1abc9c !important;
     color: #ffffff !important;
     padding-left: 28px;
+}
+
+/* Arreglo opciones del dropdown de Dash */
+.Select-menu-outer {
+    max-height: 250px !important;
+}
+
+.VirtualizedSelectOption {
+    height: auto !important;
+    line-height: 20px !important;
+    padding: 8px 10px !important;
+    display: block !important;
+}
+
+.Select-option {
+    height: auto !important;
+    line-height: 20px !important;
+    padding: 8px 10px !important;
+}
+
+/* Hacer que el menú del dropdown tenga el mismo ancho que el input */
+.Select-menu-outer {
+    width: 100% !important;
+    min-width: 100% !important;
+}
+
+.VirtualizedSelectOption {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.VirtualizedSelectOption {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* Evita que el dropdown se abra al quitar una opción */
+.Select--multi .Select-value-icon {
+    pointer-events: auto;
 }
