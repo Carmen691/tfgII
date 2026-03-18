@@ -5,12 +5,10 @@ import dash_bootstrap_components as dbc
 def layout_filtros(idioma, tiposEntidad, entidades):    
     return html.Div([
         html.Label("Tipo entidad:"),
-        dcc.Store(id='entidad-store', storage_type='session'),
         dcc.Dropdown(
             id='tipo-entidad-dropdown',
             options=[{'label': cat, 'value': cat} for cat in tiposEntidad["nombre"].unique()],
             multi=False,
-            value=tiposEntidad["nombre"].unique()[0],
             style={'width': '100%'},
             persistence=True,
             persistence_type='session'

@@ -3,7 +3,7 @@ from dash import dash_table, dcc
 
 from dash import html, dash_table, dcc
 
-def layout_datos(df):
+def layout_datos(idioma_sel, df):
     return html.Div([
         dash_table.DataTable(
             id='tabla-datos',  # <--- usamos el id

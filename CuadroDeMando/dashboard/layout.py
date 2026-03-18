@@ -15,7 +15,8 @@ def crear_layout():
         # Estado del menú (colapsado o no)
         dcc.Store(id="menu-collapsed", data=False),
         dcc.Store(id='store-idioma', data='es'),  # Store global para idioma
-        dcc.Store(id='store-tipo-entidad', data='ayuntamientos'),
+        dcc.Store(id='store-tipo-entidad', storage_type='session'),
+        dcc.Store(id='entidad-store', storage_type='session'),
 
 
         # Barra superior (header)

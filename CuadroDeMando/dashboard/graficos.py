@@ -1,7 +1,7 @@
 from dash import html, dcc
 import data.querys as dq
 
-def layout_graficos(figPrincipios, figPorcentaje, figNiveles, tipoEntidad):
+def layout_graficos(idioma_sel, figPrincipios, figPorcentaje, figNiveles, tipoEntidad):
     return html.Div([
         html.Div([
             html.Div(

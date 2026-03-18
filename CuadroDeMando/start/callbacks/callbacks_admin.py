@@ -1,0 +1,305 @@
+import dash
+from dash import Output, Input, State
+import pandas as pd
+from flask import session
+import data.querys as qr
+
+
+def registrar_callbacks_admin(app, data):
+
+    usuarios = data["usuarios"]
+    auditorias = data["auditorias"]
+
+    # ----------------------------
+    # TOGGLE MENU
+    # ----------------------------
+    @app.callback(
+        Output("sidebar", "style"),
+        Output("main-content", "style"),
+        Output("menu-collapsed", "data"),
+        Input("toggle-menu", "n_clicks"),
+        State("menu-collapsed", "data"),
+    )
+    def toggle_menu(n_clicks, is_collapsed):
+
+        if n_clicks is None:
+            raise dash.exceptions.PreventUpdate
+
+        collapsed = not is_collapsed
+
+        if collapsed:
+            sidebar_style = {
+                "position": "fixed", "top": "0", "left": "0",
+                "width": "60px", "height": "100%",
+                "backgroundColor": "#2c3e50",
+                "paddingTop": "20px",
+                "zIndex": "1000",
+                "overflow": "hidden",
+                "transition": "width 0.3s ease"
+            }
+
+            content_style = {
+                "marginLeft": "70px",
+                "transition": "margin-left 0.3s ease",
+                "padding": "20px"
+            }
+
+        else:
+            sidebar_style = {
+                "position": "fixed", "top": "0", "left": "0",
+                "width": "250px", "height": "100%",
+                "backgroundColor": "#2c3e50",
+                "paddingTop": "20px",
+                "zIndex": "1000",
+                "overflow": "hidden",
+                "transition": "width 0.3s ease"
+            }
+
+            content_style = {
+                "marginLeft": "260px",
+                "transition": "margin-left 0.3s ease",
+                "padding": "20px"
+            }
+
+        return sidebar_style, content_style, collapsed
+
+
+    # ----------------------------
+    # FLECHA DEL MENU
+    # ----------------------------
+    @app.callback(
+        Output("toggle-menu", "children"),
+        Input("menu-collapsed", "data")
+    )
+    def update_arrow(collapsed):
+        return "⮞" if collapsed else "⮜"
+
+
+    # ----------------------------
+    # ADMIN COLLAPSE
+    # ----------------------------
+    @app.callback(
+        Output("admin-collapse", "is_open"),
+        Input("admin-toggle", "n_clicks"),
+        State("admin-collapse", "is_open"),
+    )
+    def toggle_admin(n, is_open):
+
+        if n:
+            return not is_open
+
+        return is_open
+
+
+    # ----------------------------
+    # MENU ACTIVO
+    # ----------------------------
+    @app.callback(
+        Output("link-filtros", "className"),
+        Output("link-cuadro", "className"),
+        Output("link-datos", "className"),
+        Output("link-importar", "className"),
+        Output("link-usuarios", "className"),
+        Output("link-auditorias", "className"),
+        Output("admin-toggle", "className"),
+        Input("url", "pathname"),
+    )
+    def actualizar_menu(pathname):
+
+        if not pathname:
+            pathname = ""
+
+        def normal(base):
+            return base
+
+        def active(base):
+            return base + " active"
+
+        admin_active = pathname.startswith("/administracion")
+
+        return (
+            active("sidebar-link") if pathname == "/filtros" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/cuadroMando" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/datos" else normal("sidebar-link"),
+            active("sidebar-link") if pathname == "/importar" else normal("sidebar-link"),
+
+            active("sidebar-sublink") if pathname == "/administracion/usuarios" else normal("sidebar-sublink"),
+            active("sidebar-sublink") if pathname == "/administracion/auditorias" else normal("sidebar-sublink"),
+
+            active("sidebar-link") if admin_active else normal("sidebar-link"),
+        )
+
+
+    # ----------------------------
+    # CARGAR AUTH
+    # ----------------------------
+    @app.callback(
+        Output("auth-status", "data"),
+        Input("url", "pathname"),
+    )
+    def cargar_auth(pathname):
+
+        if 'user' in session:
+            return {"usuario": session["user"], "es_admin": session["admin"]}
+
+        return {"usuario": None, "es_admin": False}
+
+
+    # ----------------------------
+    # MOSTRAR ADMIN
+    # ----------------------------
+    @app.callback(
+        Output("admin-toggle", "style"),
+        Input("auth-status", "data"),
+        prevent_initial_call=False
+    )
+    def mostrar_admin(data):
+
+        if data and data.get("es_admin"):
+            return {}
+
+        return {"display": "none"}
+
+
+    # ----------------------------
+    # GESTIONAR USUARIOS
+    # ----------------------------
+    @app.callback(
+        Output("usuarios-dropdown", "options"),
+        Output("modal-confirmacion", "is_open"),
+        Output("modal-confirmacion-anadir", "is_open"),
+        Output("mensaje-usuario", "children"),
+        Output("mensaje-usuario", "style"),
+        [
+            Input("borrar-usuario-button", "n_clicks"),
+            Input("cancelar-eliminar", "n_clicks"),
+            Input("confirmar-eliminar", "n_clicks"),
+            Input("add-usuario-button", "n_clicks"),
+            Input("cancelar-anadir", "n_clicks"),
+            Input("confirmar-anadir", "n_clicks"),
+        ],
+        [
+            State("modal-confirmacion", "is_open"),
+            State("modal-confirmacion-anadir", "is_open"),
+            State("usuarios-dropdown", "value"),
+            State("input-usuario", "value"),
+            State("input-passwd", "value"),
+            State("check-admin", "value"),
+        ]
+    )
+    def gestionar_usuarios(
+        n_borrar, n_cancelar_del, n_confirmar_del,
+        n_add, n_cancelar_add, n_confirmar_add,
+        is_open_del, is_open_add,
+        usuario_a_borrar, nuevo_usuario, nuevo_pass, es_admin
+    ):
+
+        ctx = dash.callback_context
+
+        if not ctx.triggered:
+            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}
+
+        trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        mensaje = ""
+        estilo = {"marginTop": "10px"}
+        opciones = dash.no_update
+
+        try:
+
+            if trigger_id == "borrar-usuario-button":
+                return dash.no_update, True, is_open_add, "", estilo
+
+            elif trigger_id == "cancelar-eliminar":
+                return dash.no_update, False, is_open_add, "", estilo
+
+            elif trigger_id == "confirmar-eliminar":
+
+                qr.eliminar_usuario(usuario_a_borrar)
+
+                usuarios_actualizados = pd.DataFrame(
+                    qr.obtener_usuarios(),
+                    columns=["id", "usuario"]
+                )
+
+                opciones = [
+                    {'label': usu, 'value': usu}
+                    for usu in usuarios_actualizados["usuario"].unique()
+                ]
+
+                mensaje = "✅ Usuario eliminado correctamente"
+                estilo = {"color": "green", "marginTop": "10px"}
+
+                return opciones, False, is_open_add, mensaje, estilo
+
+            elif trigger_id == "add-usuario-button":
+                return dash.no_update, is_open_del, True, "", estilo
+
+            elif trigger_id == "cancelar-anadir":
+                return dash.no_update, is_open_del, False, "", estilo
+
+            elif trigger_id == "confirmar-anadir":
+
+                qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
+
+                usuarios_actualizados = pd.DataFrame(
+                    qr.obtener_usuarios(),
+                    columns=["id", "usuario"]
+                )
+
+                opciones = [
+                    {'label': usu, 'value': usu}
+                    for usu in usuarios_actualizados["usuario"].unique()
+                ]
+
+                mensaje = "✅ Usuario añadido correctamente"
+                estilo = {"color": "green", "marginTop": "10px"}
+
+                return opciones, is_open_del, False, mensaje, estilo
+
+        except Exception as e:
+
+            mensaje = f"❌ Error: {e}"
+            estilo = {"color": "red", "marginTop": "10px"}
+
+            return dash.no_update, is_open_del, is_open_add, mensaje, estilo
+
+        return dash.no_update, is_open_del, is_open_add, "", estilo
+
+
+    # ----------------------------
+    # ELIMINAR AUDITORIA
+    # ----------------------------
+    @app.callback(
+        Output("auditorias-dropdown", "options"),
+        Output("mensaje-audtioria", "children"),
+        Output("mensaje-audtioria", "style"),
+        Input("borrar-auditoria-button", "n_clicks"),
+        State("auditorias-dropdown", "value"),
+        prevent_initial_call=True
+    )
+    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada):
+
+        if not auditoria_seleccionada:
+
+            return dash.no_update, "❌ Selecciona una auditoría para eliminar", {"color": "red"}
+
+        try:
+
+            qr.eliminar_auditoria(auditoria_seleccionada)
+
+            df_actualizado = pd.DataFrame(
+                qr.obtener_auditorias(),
+                columns=["id", "nombre"]
+            )
+
+            opciones_actualizadas = [
+                {"label": str(aud), "value": str(aud)}
+                for aud in df_actualizado["nombre"].unique()
+            ]
+
+            return opciones_actualizadas, "✅ Auditoría eliminada correctamente", {"color": "green"}
+
+        except Exception as e:
+
+            return dash.no_update, f"❌ Error al eliminar la auditoría: {e}", {"color": "red"}
