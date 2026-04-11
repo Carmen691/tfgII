@@ -190,3 +190,24 @@ body {
     background-color: #589689 !important;
 }
 
+.btn-actualizar {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-actualizar:hover {
+    background-color: #2563eb;
+}
+
+.btn-actualizar:active {
+    transform: scale(0.98);
+}

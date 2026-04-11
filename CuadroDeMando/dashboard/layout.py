@@ -2,6 +2,8 @@
 from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
 
+from start.callbacks.services.data_services import cargar_datos
+
 # external_stylesheets = [
 #     "https://codepen.io/chriddyp/pen/bWLwgP.css"
 # ]
@@ -15,9 +17,14 @@ def crear_layout():
         # Estado del menú (colapsado o no)
         dcc.Store(id="menu-collapsed", data=False),
         dcc.Store(id='store-idioma', data='es'),  # Store global para idioma
+        dcc.Store(id='store-data', storage_type='session'),
         dcc.Store(id='store-tipo-entidad', storage_type='session'),
+        dcc.Store(id='store-principios', storage_type='session'),
+        dcc.Store(id='store-versiones', storage_type='session'),
+        dcc.Store(id='store-niveles', storage_type='session'),
+        dcc.Store(id='init-done'),
         dcc.Store(id='entidad-store', storage_type='session'),
-
+        dcc.Interval(id='init-trigger', interval=1, n_intervals=0, max_intervals=1),
 
         # Barra superior (header)
         html.Div([

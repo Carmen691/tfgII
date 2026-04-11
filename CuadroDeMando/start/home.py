@@ -12,8 +12,6 @@ from start.callbacks.callbacks_routing import registrar_callbacks_routing
 
 def crear_dash_app(flask_app):
 
-    data = cargar_datos()
-
     app = Dash(
         __name__,
         server=flask_app,
@@ -24,12 +22,12 @@ def crear_dash_app(flask_app):
 
     app.layout = crear_layout()
 
-    registrar_callbacks_admin(app, data)
-    registrar_callbacks_filtros(app, data)
-    registrar_callbacks_graficos(app, data)
+    registrar_callbacks_datos(app)
+    registrar_callbacks_routing(app)
+    registrar_callbacks_admin(app)
+    registrar_callbacks_filtros(app)
+    registrar_callbacks_graficos(app)
     registrar_callbacks_upload(app)
-    registrar_callbacks_routing(app, data)
-    registrar_callbacks_datos(app, data)
 
     
     return app

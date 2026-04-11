@@ -22,10 +22,30 @@ def obtener_entidades():
 
 def obtener_numero_entidades(tipo_entidad):
     conn = get_db_connection()
-    result = conn.execute(text(f"SELECT count(1) FROM entidades where id_tipo = (Select id from tipos_entidad where nombre = '{tipo_entidad}')"))
+    result = conn.execute(text(f"SELECT count(1) FROM entidades where id_tipo = '{tipo_entidad}'"))
     datos = result.fetchall()
     conn.close()
     return datos[0][0]
+
+def obtener_numero_mediciones(tipo_entidad):
+    conn = get_db_connection()
+    result = conn.execute(text(f"SELECT count(1) FROM dashboard.mediciones_wcag where id_entidad in (Select id from entidades where id_tipo = '{tipo_entidad}')"))
+    datos = result.fetchall()
+    conn.close()
+    return datos[0][0]
+
+def obtener_numero_cumplimientos(tipo_entidad):
+    conn = get_db_connection()
+    result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in (Select id from entidades where id_tipo = '{tipo_entidad}') and medicion in (4,5);"))
+    datos = result.fetchall()
+    conn.close()
+    return datos[0][0]
+
+def obtener_porcentaje_cumplimiento(tipo_entidad):
+    num = obtener_numero_cumplimientos(tipo_entidad)
+    den = obtener_numero_mediciones(tipo_entidad)
+    return round(100*(num/den), 2)
+    
 
 def obtener_usuarios():
     conn = get_db_connection()
@@ -92,7 +112,7 @@ def existe_usuario(username):
     return datos
 
 
-def obtener_datos():
+def obtener_datos(tipo_entidad, entidades, principios, versiones, niveles):
     conn = get_db_connection()
     result = conn.execute(text("""SELECT p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
         e.id AS id_entidad, e.nombre AS entidad, c.id AS id_criterio,
@@ -188,6 +208,44 @@ def obtener_tipos_wcag():
     conn.close()
     return datos
 
+def obtener_principios():
+    conn = get_db_connection()
+    result = conn.execute(text("SELECT id, nombre FROM principios"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
+#TODO
+def obtener_cumplimiento_principios(tipoEntidad):
+    conn = get_db_connection()
+    result = conn.execute(text("""SELECT 
+        pri.nombre,
+        SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
+        / SUM(med.medicion) * 100 AS porcentaje
+        FROM mediciones_wcag med
+        INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
+        INNER JOIN pautas pau ON cri.id_pauta = pau.id
+        INNER JOIN principios pri ON pau.id_principio = pri.id
+        GROUP BY pri.nombre;"""))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
+#TODO
+def obtener_cumplimiento_niveles():
+    conn = get_db_connection()
+    result = conn.execute(text("SELECT id, nombre FROM principios"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
+def obtener_niveles():
+    conn = get_db_connection()
+    result = conn.execute(text("SELECT distinct nivel FROM criterios_wcag"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
 def guardar_nuevo_tipo_entidad(valor_input):
     conn = get_db_connection()
     result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
@@ -222,9 +280,9 @@ def obtener_entidades_por_id(id_entidad):
     conn.close()
     return datos
 
-def obtener_entidades_por_nombre(nombre_entidad):
+def obtener_entidades_por_nombre(id_entidad):
     conn = get_db_connection()
-    result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = (Select id from tipos_entidad where nombre = '{nombre_entidad}')"))
+    result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = '{id_entidad}'"))
     datos = result.fetchall()
     conn.close()
     return datos

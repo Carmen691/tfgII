@@ -1,5 +1,8 @@
 from dash import Output, Input, State, html, dcc
+from dash.exceptions import PreventUpdate
+import pandas as pd
 
+from start.callbacks.services.data_services import cargar_datos
 from dashboard.filtros import layout_filtros
 from dashboard.tablas import layout_datos
 from dashboard.graficos import layout_graficos
@@ -8,23 +11,26 @@ from dashboard.gestion import layout_gestion
 from dashboard.importar import layout_importar
 
 
-def registrar_callbacks_routing(app, data):
-
-    entidades = data["entidades"]
-    usuarios = data["usuarios"]
-    auditorias = data["auditorias"]
-    df_datos = data["df_datos"]
-
-    tiposEntidad = data["tiposEntidad"]
-    tiposWCAG = data["tiposWCAG"]
-
+def registrar_callbacks_routing(app):
     @app.callback(
         Output('page-content', 'children'),
         Input('store-idioma', 'data'),
         Input('url', 'pathname'),
-        State('store-tipo-entidad', 'data')
+        Input('store-data', 'data'),
+        State('store-tipo-entidad', 'data'),
     )
-    def mostrar_contenido(idioma_sel, pathname, tipoEntidad):
+    def mostrar_contenido(idioma_sel, pathname, data, tipoEntidad):
+        if not data:
+            raise PreventUpdate
+        entidades = pd.DataFrame(data["entidades"])
+        usuarios = pd.DataFrame(data["usuarios"])
+        auditorias = pd.DataFrame(data["auditorias"])
+        df_datos = pd.DataFrame(data["df_datos"])
+
+        tiposEntidad = pd.DataFrame(data["tiposEntidad"])
+        tiposWCAG = pd.DataFrame(data["tiposWCAG"])
+        principios = pd.DataFrame(data["principios"])
+        niveles = pd.DataFrame(data["niveles"])
 
         if pathname == '/dash/':
             return dcc.Location(href='/dash/filtros', id='redir')
@@ -36,7 +42,7 @@ def registrar_callbacks_routing(app, data):
             return layout_datos(idioma_sel, df_datos)
 
         elif pathname == '/dash/filtros':
-            return layout_filtros(idioma_sel, tiposEntidad, entidades)
+            return layout_filtros(idioma_sel, tiposEntidad, entidades, tiposWCAG, principios, niveles)
 
         elif pathname == '/dash/administracion/usuarios':
             return layout_usuarios(idioma_sel, usuarios)

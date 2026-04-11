@@ -5,14 +5,9 @@ from flask import session
 import data.querys as qr
 
 
-def registrar_callbacks_admin(app, data):
+def registrar_callbacks_admin(app):
 
-    usuarios = data["usuarios"]
-    auditorias = data["auditorias"]
 
-    # ----------------------------
-    # TOGGLE MENU
-    # ----------------------------
     @app.callback(
         Output("sidebar", "style"),
         Output("main-content", "style"),

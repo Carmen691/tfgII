@@ -1,100 +1,105 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import pandas as pd
 
 
-def layout_filtros(idioma, tiposEntidad, entidades):    
+def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, niveles):   
+    tiposEntidad = pd.DataFrame(tiposEntidad)
+    entidades = pd.DataFrame(entidades)
+    versionesWCAG = pd.DataFrame(versionesWCAG)
+    principios = pd.DataFrame(principios)
+    niveles = pd.DataFrame(niveles)
+
     return html.Div([
-        html.Label("Tipo entidad:"),
+
+        html.H5("Filtros", style={"margin-bottom": "20px", "font-weight": "600"}),
+
+        # 🔹 Tipo entidad
+        html.Label("Tipo entidad", style=label_style),
         dcc.Dropdown(
             id='tipo-entidad-dropdown',
-            options=[{'label': cat, 'value': cat} for cat in tiposEntidad["nombre"].unique()],
+            options=[{'label': row['nombre'], 'value': row['id']} 
+                     for _, row in tiposEntidad.drop_duplicates('id').iterrows()],
             multi=False,
-            style={'width': '100%'},
             persistence=True,
-            persistence_type='session'
+            persistence_type='session',
+            style=input_style
         ),
-        html.Br(),
-        html.Label("Entidad:"),
+
+        # 🔹 Entidad
+        html.Label("Entidad", style=label_style),
         dcc.Dropdown(
             id='entidad-dropdown',
-            options=[{'label': cat, 'value': cat} for cat in entidades["nombre"].unique()],
+            options=[{'label': row['nombre'], 'value': row['id']} 
+                     for _, row in entidades.drop_duplicates('id').iterrows()],
             multi=True,
-            style={'width': '100%'},
             persistence=True,
-            persistence_type='session'
+            persistence_type='session',
+            style=input_style
         ),
 
-    #     html.Br(),
-    #     html.H4("Principios WCAG:"),
-    #     dcc.Checklist(
-    #         id='principios-checklist',
-    #         options=[
-    #             {"label": "Perceptible", "value": "Perceptible"},
-    #             {"label": "Operable", "value": "Operable"},
-    #             {"label": "Comprensible", "value": "Comprensible"},
-    #             {"label": "Robusto", "value": "Robusto"},
-    #         ],
-    #         value=["Perceptible", "Operable", "Comprensible", "Robusto"],
-    #         labelStyle={'display': 'block'}
-    #     ),
+        # 🔹 Principios
+        html.Div("Principios WCAG", style=section_title),
+        dcc.Checklist(
+            id='principios-checklist',
+            options=[{'label': row['nombre'], 'value': row['id']} 
+                     for _, row in principios.drop_duplicates('id').iterrows()],
+            value=principios['id'].drop_duplicates().tolist(),
+            labelStyle=checklist_style
+        ),
 
-    #     html.Br(),
-    #     html.H4("Versión WCAG:"),
-    #     dcc.Checklist(
-    #         id='wcag-version-checklist',
-    #         options=[
-    #             {"label": "WCAG 2.0", "value": "2.0"},
-    #             {"label": "WCAG 2.1", "value": "2.1"},
-    #         ],
-    #         value=["2.0", "2.1"],
-    #         labelStyle={'display': 'block'}
-    #     ),
-    # ], style={'width': '48%', 'padding': '10px'})
+        # 🔹 Versión
+        html.Div("Versión WCAG", style=section_title),
+        dcc.Checklist(
+            id='wcag-version-checklist',
+            options=[{'label': ver, 'value': ver} for ver in versionesWCAG["version"].unique()],
+            value=versionesWCAG["version"].unique().tolist(),
+            labelStyle=checklist_style
+        ),
 
-    # columna2 = html.Div([
-    #     html.H4("Nivel de conformidad:"),
-    #     dcc.Checklist(
-    #         id='nivel-checklist',
-    #         options=[
-    #             {"label": "Nivel A", "value": "A"},
-    #             {"label": "Nivel AA", "value": "AA"},
-    #             {"label": "Nivel AAA", "value": "AAA"},
-    #         ],
-    #         value=["A", "AA", "AAA"],
-    #         labelStyle={'display': 'block'}
-    #     ),
+        # 🔹 Nivel
+        html.Div("Nivel de conformidad", style=section_title),
+        dcc.Checklist(
+            id='nivel-checklist',
+            options=[{'label': niv, 'value': niv} for niv in niveles["nivel"].unique()],
+            value=niveles['nivel'].drop_duplicates().tolist(),
+            labelStyle=checklist_style
+        ),
 
-    #     html.Br(),
-    #     html.H4("Agrupación de datos:"),
-    #     dcc.RadioItems(
-    #         id='agrupacion-radio',
-    #         options=[
-    #             {'label': 'Por versión WCAG', 'value': 'version'},
-    #             {'label': 'Por principio', 'value': 'principio'},
-    #             {'label': 'Por pauta principal', 'value': 'pauta'},
-    #         ],
-    #         value='version',
-    #         labelStyle={'display': 'block'}
-    #     ),
+        html.Button(
+            "Actualizar",
+            id="boton-actualizar",
+            n_clicks=0,
+            className="btn-actualizar"
+        )
 
-    #     html.Br(),
-    #     html.H4("Tipo de escala:"),
-    #     dcc.RadioItems(
-    #         id='escala-radio',
-    #         options=[
-    #             {'label': 'Escala 1-5 (Likert)', 'value': 'likert'},
-    #             {'label': 'Escala comprimida (NC / NA / TA)', 'value': 'comprimida'},
-    #         ],
-    #         value='likert',
-    #         labelStyle={'display': 'block'}
-    #     ),
-        html.Br(),
-        html.Button("Actualizar", id="boton-actualizar", n_clicks=0),
+], style={
+    "padding": "10px 5px"
+})
 
-    ], style={'width': '48%', 'padding': '10px'})
+label_style = {
+    "font-size": "13px",
+    "font-weight": "500",
+    "color": "#374151",
+    "margin-top": "10px",
+    "margin-bottom": "5px"
+}
 
-    # return html.Div([
-    #     html.H2("Filtros"),
-    #     html.Div([columna1], style={'display': 'flex', 'justify-content': 'space-between'}),
+section_title = {
+    "margin-top": "20px",
+    "margin-bottom": "10px",
+    "font-size": "14px",
+    "font-weight": "600",
+    "color": "#111827"
+}
 
-    #])
+input_style = {
+    "margin-bottom": "10px"
+}
+
+checklist_style = {
+    "display": "block",
+    "margin-bottom": "5px",
+    "font-size": "13px"
+}
+
