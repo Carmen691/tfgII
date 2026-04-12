@@ -10,14 +10,14 @@ def registrar_callbacks_filtros(app):
         Output('tipo-entidad-dropdown', 'value'),
         Output('entidad-dropdown', 'options'),
         Output('entidad-dropdown', 'value'),
-        Output('init-done', 'data'),
+        Input('init-done', 'data'),
         Input('url', 'pathname'),                
         Input('tipo-entidad-dropdown', 'value'),  
         State('store-tipo-entidad', 'data'),
         State('entidad-store', 'data')
     )
-    def inicializar_o_actualizar_dropdowns(pathname, tipo_cambiado, store_tipo, store_entidades):
-        if pathname != "/dash/filtros":
+    def inicializar_o_actualizar_dropdowns(cargar, pathname, tipo_cambiado, store_tipo, store_entidades):
+        if not cargar or  pathname != "/dash/filtros":
             raise dash.exceptions.PreventUpdate
         
         if store_tipo:
@@ -41,7 +41,7 @@ def registrar_callbacks_filtros(app):
         else:
             valor_entidades = nombres
 
-        return tipo_seleccionado, options, valor_entidades, True
+        return tipo_seleccionado, options, valor_entidades
 
 
     @app.callback(
@@ -55,7 +55,6 @@ def registrar_callbacks_filtros(app):
     )
     def init_filtros(tipo, entidades, entidades_store, tipo_store):
 
-        # 🔹 Solo la PRIMERA vez
         if entidades_store is None and tipo_store is None:
             return entidades, tipo
 

@@ -18,6 +18,7 @@ def registrar_callbacks_routing(app):
         Input('url', 'pathname'),
         Input('store-data', 'data'),
         State('store-tipo-entidad', 'data'),
+
     )
     def mostrar_contenido(idioma_sel, pathname, data, tipoEntidad):
         if not data:
@@ -27,7 +28,7 @@ def registrar_callbacks_routing(app):
         auditorias = pd.DataFrame(data["auditorias"])
         df_datos = pd.DataFrame(data["df_datos"])
 
-        tiposEntidad = pd.DataFrame(data["tiposEntidad"])
+        tiposEntidad = pd.DataFrame([data["tiposEntidad"]])
         tiposWCAG = pd.DataFrame(data["tiposWCAG"])
         principios = pd.DataFrame(data["principios"])
         niveles = pd.DataFrame(data["niveles"])

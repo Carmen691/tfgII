@@ -22,7 +22,7 @@ def crear_layout():
         dcc.Store(id='store-principios', storage_type='session'),
         dcc.Store(id='store-versiones', storage_type='session'),
         dcc.Store(id='store-niveles', storage_type='session'),
-        dcc.Store(id='init-done'),
+        dcc.Store(id='init-done', storage_type='session'),
         dcc.Store(id='entidad-store', storage_type='session'),
         dcc.Interval(id='init-trigger', interval=1, n_intervals=0, max_intervals=1),
 

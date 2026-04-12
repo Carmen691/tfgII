@@ -22,6 +22,8 @@ def crear_dash_app(flask_app):
 
     app.layout = crear_layout()
 
+    
+
     registrar_callbacks_datos(app)
     registrar_callbacks_routing(app)
     registrar_callbacks_admin(app)

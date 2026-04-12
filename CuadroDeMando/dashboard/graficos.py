@@ -50,13 +50,7 @@ def layout_graficos(idioma_sel, figPrincipios, figPorcentaje, figNiveles, tipoEn
                 style=card_style
             ),
 
-            html.Div(
-                children=[
-                    html.H4("% Por niveles"),
-                    html.P("A: %"),
-                    html.P("AA: %"),
-                    html.P("AAA: %"),
-                ],
+            html.Div(id="niveles-div",
                 style=card_style
             )
 

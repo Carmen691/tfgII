@@ -61,8 +61,8 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
         html.Div("Nivel de conformidad", style=section_title),
         dcc.Checklist(
             id='nivel-checklist',
-            options=[{'label': niv, 'value': niv} for niv in niveles["nivel"].unique()],
-            value=niveles['nivel'].drop_duplicates().tolist(),
+            options=[{'label': niv, 'value': niv} for niv in niveles["nombre"].unique()],
+            value=niveles['nombre'].drop_duplicates().tolist(),
             labelStyle=checklist_style
         ),
 

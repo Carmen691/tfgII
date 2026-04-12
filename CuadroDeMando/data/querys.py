@@ -112,17 +112,22 @@ def existe_usuario(username):
     return datos
 
 
-def obtener_datos(tipo_entidad, entidades, principios, versiones, niveles):
+def obtener_datos(entidades, principios, versiones, niveles):
     conn = get_db_connection()
-    result = conn.execute(text("""SELECT p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
+    result = conn.execute(text(f"""SELECT p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
         e.id AS id_entidad, e.nombre AS entidad, c.id AS id_criterio,
         COALESCE(ct.texto, c.nombre) AS criterio, ev.id_escala as id_descripcion, ev.descripcion,
         m.observaciones, v.version FROM mediciones_wcag m
         JOIN entidades e ON m.id_entidad = e.id
+        and e.id in {entidades}
         JOIN criterios_wcag c ON m.id_criterio = c.id
+        JOIN niveles n ON c.nivel = n.id
+        and n.id in {niveles}
         JOIN pautas pa ON c.id_pauta = pa.id
         JOIN principios p ON pa.id_principio = p.id
+        and p.id in {principios}
         JOIN versiones_wcag v ON m.id_version = v.id
+        and v.id in {versiones}
         JOIN escala_valores ev ON ev.id_escala = m.medicion
         LEFT JOIN traducciones pt ON p.id = pt.id_elemento 
         AND pt.tabla = 'principios' AND pt.campo = 'nombre' 
@@ -215,14 +220,16 @@ def obtener_principios():
     conn.close()
     return datos
 
-#TODO
 def obtener_cumplimiento_principios(tipoEntidad):
     conn = get_db_connection()
-    result = conn.execute(text("""SELECT 
+    result = conn.execute(text(f"""SELECT 
         pri.nombre,
         SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
         / SUM(med.medicion) * 100 AS porcentaje
         FROM mediciones_wcag med
+        INNER JOIN entidades ent ON med.id_entidad = ent.id
+        INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
+        and ten.id = {tipoEntidad}
         INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
         INNER JOIN pautas pau ON cri.id_pauta = pau.id
         INNER JOIN principios pri ON pau.id_principio = pri.id
@@ -231,17 +238,36 @@ def obtener_cumplimiento_principios(tipoEntidad):
     conn.close()
     return datos
 
-#TODO
-def obtener_cumplimiento_niveles():
+
+def obtener_cumplimiento_niveles(tipoEntidad):
     conn = get_db_connection()
-    result = conn.execute(text("SELECT id, nombre FROM principios"))
+    result = conn.execute(text(f"""SELECT 
+        niv.nombre,
+        SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
+        / SUM(med.medicion) * 100 AS porcentaje
+        FROM mediciones_wcag med
+        INNER JOIN entidades ent ON med.id_entidad = ent.id
+        INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
+        and ent.id = {tipoEntidad}
+        INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
+        INNER JOIN niveles niv ON cri.nivel = niv.id
+        INNER JOIN pautas pau ON cri.id_pauta = pau.id
+        INNER JOIN principios pri ON pau.id_principio = pri.id
+        GROUP BY niv.nombre;"""))
     datos = result.fetchall()
     conn.close()
     return datos
 
 def obtener_niveles():
     conn = get_db_connection()
-    result = conn.execute(text("SELECT distinct nivel FROM criterios_wcag"))
+    result = conn.execute(text("SELECT * FROM niveles"))
+    datos = result.fetchall()
+    conn.close()
+    return datos
+
+def obtener_versiones():
+    conn = get_db_connection()
+    result = conn.execute(text("SELECT * from versiones_wcag"))
     datos = result.fetchall()
     conn.close()
     return datos

@@ -1,8 +1,8 @@
 import dash
-from dash import Input, Output, State
+from dash import Input, Output, State, no_update
 import plotly.express as px
 import pandas as pd
-from start.callbacks.services.data_services import cargar_datos
+from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio
 import data.querys as qr
 
 
@@ -10,20 +10,20 @@ from dash import ctx
 from dash.exceptions import PreventUpdate
 
 def registrar_callbacks_datos(app):
+    from dash import no_update
+
     @app.callback(
         Output('store-data', 'data', allow_duplicate=True),
-        Input('init-done', 'data'),
-        State('entidad-store', 'data'),
-        State('store-tipo-entidad', 'data'),
-        State('store-principios', 'data'),
-        State('store-versiones', 'data'),
-        State('store-niveles', 'data'),
+        Output('init-done', 'data'),
+        Output('init-trigger', 'disabled'),
+        Input('init-trigger', 'n_intervals'),
         prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos(cargar, entidad, tipo_entidad, principios, versiones, niveles):
-        if cargar:
-            return cargar_datos(tipo_entidad, entidad, principios, versiones, niveles)
-    
+    def actualizar_datos(cargar):
+        if cargar < 2:
+            return cargar_datos_inicio(), True, False  
+        return no_update, no_update, True
+        
 
     @app.callback(
         Output('store-data', 'data'),
@@ -38,6 +38,7 @@ def registrar_callbacks_datos(app):
     def actualizar_datos_filtros(n, tipo_entidad, entidades, principios, versiones, niveles):
         if n > 0:
             return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles)
+        return no_update
 
 
     @app.callback(
@@ -62,21 +63,11 @@ def registrar_callbacks_datos(app):
     @app.callback(
         dash.Output('tabla-datos', 'data'),
         dash.Input('url', 'pathname'),
-        dash.State('entidad-store', 'data'),
-        dash.State('store-tipo-entidad', 'data'),
         dash.State('store-data', 'data'),
-        dash.State('store-principios', 'data'),
-        dash.State('store-versiones', 'data'),
-        dash.State('store-niveles', 'data'),
     )
-    def actualizar_tabla(path, entidades, tipo_entidad, data, principios, versiones, niveles):
+    def actualizar_tabla(path, data):
 
         if path != '/dash/datos':
             raise dash.exceptions.PreventUpdate
 
-        df = data.copy()
-
-        #if entidades:
-        #    df = df[df['Entidades'].isin(entidades)]
-
-        return df.to_dict('records')
+        return data
