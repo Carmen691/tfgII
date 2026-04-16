@@ -1,6 +1,8 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
+import data.querys as bd
+
 
 
 def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, niveles):   
@@ -12,10 +14,10 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
 
     return html.Div([
 
-        html.H5("Filtros", style={"margin-bottom": "20px", "font-weight": "600"}),
+        html.H5(bd.obtener_textos_interfaz(idioma, "filtros", "filtros"), style={"margin-bottom": "20px", "font-weight": "600"}),
 
-        # 🔹 Tipo entidad
-        html.Label("Tipo entidad", style=label_style),
+        # Tipo entidad
+        html.Label(bd.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"), style=label_style),
         dcc.Dropdown(
             id='tipo-entidad-dropdown',
             options=[{'label': row['nombre'], 'value': row['id']} 
@@ -26,8 +28,8 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
             style=input_style
         ),
 
-        # 🔹 Entidad
-        html.Label("Entidad", style=label_style),
+        # Entidad
+        html.Label(bd.obtener_textos_interfaz(idioma, "filtros", "entidades"), style=label_style),
         dcc.Dropdown(
             id='entidad-dropdown',
             options=[{'label': row['nombre'], 'value': row['id']} 
@@ -38,8 +40,8 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
             style=input_style
         ),
 
-        # 🔹 Principios
-        html.Div("Principios WCAG", style=section_title),
+        # Principios
+        html.Div(bd.obtener_textos_interfaz(idioma, "filtros", "principios"), style=section_title),
         dcc.Checklist(
             id='principios-checklist',
             options=[{'label': row['nombre'], 'value': row['id']} 
@@ -49,7 +51,7 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
         ),
 
         # 🔹 Versión
-        html.Div("Versión WCAG", style=section_title),
+        html.Div(bd.obtener_textos_interfaz(idioma, "filtros", "version"), style=section_title),
         dcc.Checklist(
             id='wcag-version-checklist',
             options=[{'label': ver, 'value': ver} for ver in versionesWCAG["version"].unique()],
@@ -57,8 +59,8 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
             labelStyle=checklist_style
         ),
 
-        # 🔹 Nivel
-        html.Div("Nivel de conformidad", style=section_title),
+        # Nivel
+        html.Div(bd.obtener_textos_interfaz(idioma, "filtros", "nivel"), style=section_title),
         dcc.Checklist(
             id='nivel-checklist',
             options=[{'label': niv, 'value': niv} for niv in niveles["nombre"].unique()],
@@ -67,7 +69,7 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
         ),
 
         html.Button(
-            "Actualizar",
+            bd.obtener_textos_interfaz(idioma, "filtros", "actualizar"),
             id="boton-actualizar",
             n_clicks=0,
             className="btn-actualizar"

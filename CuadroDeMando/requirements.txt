@@ -1,0 +1,12 @@
+sqlalchemy            # Para la conexi�n a la base de datos
+dash                  # Para el dashboard
+flask                 # Flask como backend
+pandas                # Manipular datos
+numpy                 # C�lculos num�ricos
+plotly                # Para gr�ficos interactivos en Dash
+sqlalchemy
+PyMySql
+dash-bootstrap-components
+bcrypt
+cryptography
+openpyxl

@@ -10,7 +10,7 @@
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/CuadroDeMando/main.py",
+            "program": "${workspaceFolder}/CuadroDeMando/application.py",
             "console": "integratedTerminal"
         }
     ]

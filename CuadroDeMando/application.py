@@ -4,17 +4,17 @@ import bcrypt
 from start.home import crear_dash_app  # Importamos la función del dashboard  
 import data.querys as dq
 
-app = Flask(__name__)
-app.secret_key = 'clave_secreta_segura'
-crear_dash_app(app)
-@app.before_request
+application = Flask(__name__)
+application.secret_key = 'clave_secreta_segura'
+crear_dash_app(application)
+@application.before_request
 def proteger_dash():
     # Si la ruta empieza con /dash y el usuario no está logueado, redirige a login
     if request.path.startswith('/dash') and 'user' not in session:
         return redirect(url_for('login'))
 
 
-@app.route('/', methods=['GET', 'POST'])
+@application.route('/', methods=['GET', 'POST'])
 def login():
     error = None
     if request.method == 'POST':
@@ -32,7 +32,7 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route('/dashboard')
+@application.route('/dashboard')
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
@@ -40,11 +40,11 @@ def dashboard():
     #return render_template('dashboard.html', username=session['user'])
 
 
-@app.route('/logout')
+@application.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    application.run(debug=True)
