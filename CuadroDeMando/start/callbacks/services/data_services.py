@@ -50,11 +50,16 @@ def cargar_datos(tipo_entidad, entidades, principios, versiones, niveles):
         "auditorias": auditorias.to_dict('records'),
         "datos": datos.to_dict('records'),
         "df_datos": df_datos.to_dict('records'),
-        "tiposEntidad": dict(tipos_entidad.iloc[0]),
+        "tiposEntidad": tipos_entidad.to_dict('records'),
         "tiposWCAG": tipos_wcag.to_dict('records'),
         "principios": principios.to_dict('records'),
         "niveles": niveles.to_dict('records')
     }
+
+
+def cargar_tipo_entidades():
+    tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
+    return tipos_entidad.to_dict(orient="records"),
 
 
 def cargar_datos_inicio():
@@ -104,7 +109,7 @@ def cargar_datos_inicio():
         "auditorias": auditorias.to_dict('records'),
         "datos": datos.to_dict('records'),
         "df_datos": df_datos.to_dict('records'),
-        "tiposEntidad": dict(tipos_entidad.iloc[0]),
+        "tiposEntidad": tipos_entidad.to_dict('records'),
         "tiposWCAG": tipos_wcag.to_dict('records'),
         "principios": principios.to_dict('records'),
         "niveles": niveles.to_dict('records')

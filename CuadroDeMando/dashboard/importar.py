@@ -1,4 +1,5 @@
 from dash import html, dcc
+import pandas as pd
 
 def layout_importar(idioma, datosEntidades, datosWCAG):
     return html.Div([
@@ -8,7 +9,7 @@ def layout_importar(idioma, datosEntidades, datosWCAG):
         dcc.Store(id='refresh-trigger'),
         dcc.Dropdown(
             id='dropdown-sugerencias',
-            options=[{'label': row['nombre'], 'value': row['id']} for _, row in datosEntidades.iterrows()],
+            options=[{'label': e['nombre'], 'value': e['id']} for e in datosEntidades],
             placeholder='Selecciona...',
             style={'width': '300px'}
         ),

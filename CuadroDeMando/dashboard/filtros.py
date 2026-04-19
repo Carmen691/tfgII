@@ -6,7 +6,6 @@ import data.querys as bd
 
 
 def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, niveles):   
-    tiposEntidad = pd.DataFrame(tiposEntidad)
     entidades = pd.DataFrame(entidades)
     versionesWCAG = pd.DataFrame(versionesWCAG)
     principios = pd.DataFrame(principios)
@@ -20,8 +19,8 @@ def layout_filtros(idioma, tiposEntidad, entidades, versionesWCAG, principios, n
         html.Label(bd.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"), style=label_style),
         dcc.Dropdown(
             id='tipo-entidad-dropdown',
-            options=[{'label': row['nombre'], 'value': row['id']} 
-                     for _, row in tiposEntidad.drop_duplicates('id').iterrows()],
+            options = [
+                {'label': e['nombre'], 'value': e['id']} for e in tiposEntidad],
             multi=False,
             persistence=True,
             persistence_type='session',

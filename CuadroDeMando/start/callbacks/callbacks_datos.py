@@ -2,7 +2,7 @@ import dash
 from dash import Input, Output, State, no_update
 import plotly.express as px
 import pandas as pd
-from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio
+from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_tipo_entidades
 import data.querys as qr
 
 
@@ -26,20 +26,50 @@ def registrar_callbacks_datos(app):
         
 
     @app.callback(
-        Output('store-data', 'data'),
+        Output('store-data', 'data', allow_duplicate=True),
         Input('boton-actualizar', 'n_clicks'),
         State('tipo-entidad-dropdown', 'value'),
         State('entidad-dropdown', 'value'),
         State('principios-checklist', 'value'),
         State('wcag-version-checklist', 'value'),
         State('nivel-checklist', 'value'),
-        prevent_initial_call=True
+        prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos_filtros(n, tipo_entidad, entidades, principios, versiones, niveles):
-        if n > 0:
+    def actualizar_datos_filtros(nact, tipo_entidad, entidades, principios, versiones, niveles):
+        if nact > 0:
             return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles)
         return no_update
 
+
+    @app.callback(
+        Output('store-data', 'data'),
+        Input('add-option-button', 'n_clicks'),
+        State('store-data', 'data'),
+        prevent_initial_call=True
+    )
+    def actualizar_datos_filtros(nent, store_data):
+        if nent > 0:
+            store_data["tiposEntidad"] = cargar_tipo_entidades()
+            return store_data
+        return no_update
+    
+    @app.callback(
+        Output('dropdown-sugerencias', 'options'),
+        Input('store-data', 'data')
+    )
+    def actualizar_dropdown(data):
+        if not data or "tiposEntidad" not in data:
+            return []
+
+        entidades = data["tiposEntidad"]
+
+        if len(entidades) == 1 and isinstance(entidades[0], list):
+            entidades = entidades[0]
+
+        return [
+            {"label": e["nombre"], "value": e["id"]}
+            for e in entidades
+        ]
 
     @app.callback(
         dash.Output('mensaje-confirmacion', 'children'),
