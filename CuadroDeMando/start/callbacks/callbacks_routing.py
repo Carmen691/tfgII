@@ -1,4 +1,4 @@
-from dash import Output, Input, State, html, dcc
+from dash import Output, Input, State, callback_context, html, dcc
 from dash.exceptions import PreventUpdate
 import pandas as pd
 
@@ -16,7 +16,7 @@ def registrar_callbacks_routing(app):
         Output('page-content', 'children'),
         Input('store-idioma', 'data'),
         Input('url', 'pathname'),
-        Input('store-data', 'data'),
+        State('store-data', 'data'),
         State('store-tipo-entidad', 'data'),
 
     )
@@ -36,8 +36,11 @@ def registrar_callbacks_routing(app):
         if len(tiposEntidad) == 1 and isinstance(tiposEntidad[0], list):
             tiposEntidad = tiposEntidad[0]
 
+        print("PATH:", pathname)
+        print("TRIGGER:", callback_context.triggered)
+
         if pathname == '/dash/':
-            return dcc.Location(href='/dash/filtros', id='redir')
+            return layout_filtros(idioma_sel, tiposEntidad, entidades, tiposWCAG, principios, niveles)
 
         elif pathname == '/dash/cuadroMando':
             return layout_graficos(idioma_sel, None, None, None, tipoEntidad)

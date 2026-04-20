@@ -57,10 +57,10 @@ def registrar_callbacks_graficos(app):
 
     @app.callback(
         Output("cumplimiento-div", "children"),
-        Input("store-data", "data")
+        Input("store-data", "data"),
+        Input("store-tipo-entidad", "data")
     )
-    def actualizar_cumplimiento(data):
-        tipoEntidad = data['tiposEntidad']['id']
+    def actualizar_cumplimiento(data, tipoEntidad):
         datos_lista_principios = qr.obtener_cumplimiento_principios(tipoEntidad)
 
         datos_principios = {fila[0]: fila[1] for fila in datos_lista_principios}
@@ -76,10 +76,10 @@ def registrar_callbacks_graficos(app):
 
     @app.callback(
         Output("niveles-div", "children"),
-        Input("store-data", "data")
+        Input("store-data", "data"),
+        Input("store-tipo-entidad", "data")
     )
-    def actualizar_cumplimiento(data):
-        tipoEntidad = data['tiposEntidad']['id']
+    def actualizar_cumplimiento(data, tipoEntidad):
         datos_lista_niveles = qr.obtener_cumplimiento_niveles(tipoEntidad)
 
         datos_niveles =  {fila[0]: fila[1] for fila in datos_lista_niveles}
