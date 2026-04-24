@@ -21,8 +21,21 @@ def registrar_callbacks_datos(app):
     )
     def actualizar_datos(cargar):
         if cargar < 2:
-            return cargar_datos_inicio(), True, False  
-        return no_update, no_update, True
+            datos = cargar_datos_inicio()
+            return datos, True, False
+        return no_update, no_update, True,
+
+    
+    @app.callback(
+        Output('store-tipo-entidad', 'data', allow_duplicate=True),
+        Input('store-data', 'data'),
+        State('store-tipo-entidad', 'data'),
+        prevent_initial_call='initial_duplicate'
+    )
+    def actualizar_datos(datos, tipoEntidad):
+        if tipoEntidad is None and datos is not None:
+            return datos["tiposEntidad"][0]['id']
+        return no_update
         
 
     @app.callback(
@@ -90,14 +103,14 @@ def registrar_callbacks_datos(app):
             return '✅ Tipo guardado correctamente', {'refresh': True}
 
 
-    @app.callback(
-        dash.Output('tabla-datos', 'data'),
-        dash.Input('url', 'pathname'),
-        dash.State('store-data', 'data'),
-    )
-    def actualizar_tabla(path, data):
+    # @app.callback(
+    #     dash.Output('tabla-datos', 'data'),
+    #     dash.Input('url', 'pathname'),
+    #     dash.State('store-data', 'data'),
+    # )
+    # def actualizar_tabla(path, data):
 
-        if path != '/dash/datos':
-            raise dash.exceptions.PreventUpdate
+    #     if path != '/dash/datos':
+    #         raise dash.exceptions.PreventUpdate
 
-        return data
+    #     return data

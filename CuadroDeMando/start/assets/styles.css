@@ -390,3 +390,38 @@ textarea[disabled] {
 .Select--multi .Select-value-icon {
     pointer-events: auto;
 }
+
+
+ /* =========================
+   FIX DEFINITIVO DASH DATATABLE DROPDOWN
+========================= */
+
+/* 1. romper clipping de tabla */
+.dash-table-container {
+    overflow: visible !important;
+}
+
+/* 2. MUY IMPORTANTE: la celda no debe cortar nada */
+#tabla-datos td,
+#tabla-datos th,
+#tabla-datos .dash-cell {
+    overflow: visible !important;
+    position: relative !important;
+}
+
+/* 3. sacar el menú del flujo de la tabla */
+.Select-menu-outer {
+    position: fixed !important;
+    z-index: 9999999 !important;
+}
+
+/* 4. evitar que Select cree contenedores recortados */
+.Select, 
+.Select-control {
+    overflow: visible !important;
+}
+
+/* 5. seguridad extra para Dash virtualized selects */
+.VirtualizedSelectMenu {
+    z-index: 9999999 !important;
+}

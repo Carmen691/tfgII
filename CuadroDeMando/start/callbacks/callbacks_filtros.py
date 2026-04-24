@@ -1,4 +1,4 @@
-from dash import Output, Input, State, ctx
+from dash import Output, Input, State, ctx, no_update
 import dash
 from dash.exceptions import PreventUpdate
 import pandas as pd
@@ -7,7 +7,6 @@ import data.querys as qr
 def registrar_callbacks_filtros(app):
 
     @app.callback(
-        Output('tipo-entidad-dropdown', 'value'),
         Output('entidad-dropdown', 'options'),
         Output('entidad-dropdown', 'value'),
         Input('init-done', 'data'),
@@ -41,8 +40,20 @@ def registrar_callbacks_filtros(app):
         else:
             valor_entidades = nombres
 
-        return tipo_seleccionado, options, valor_entidades
+        return options, valor_entidades
 
+
+    @app.callback(
+        Output('tipo-entidad-dropdown', 'value'),
+        Input('store-tipo-entidad', 'data'),
+        State('tipo-entidad-dropdown', 'value'),
+        prevent_initial_call=True
+    )
+    def cargar_dropdown(tipoEntidad, valor_actual):
+        if valor_actual is not None:
+            return no_update
+
+        return tipoEntidad
 
     @app.callback(
         Output('entidad-store', 'data', allow_duplicate=True),
