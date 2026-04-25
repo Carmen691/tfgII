@@ -4,36 +4,12 @@ from dash import dash_table, dcc
 from dash import html, dash_table, dcc
 import pandas as pd
 
-def layout_datos(idioma_sel, data):
-    df = pd.DataFrame(data["df_datos"])
+def layout_datos():
     return html.Div([
-        dash_table.DataTable(
-            id='tabla-datos', 
-            editable=True,
-            page_action='native',
-            page_current=0,
-            page_size=10,
-            data=df.to_dict('records'),
-            columns=[
-                {"name": "Criterios", "id": "Criterios"},
-                {"name": "Entidades", "id": "Entidades"},
-                {"name": "Valores", "id": "Valores", "presentation": "dropdown", "editable": True},
-            ],
-            dropdown_conditional=[
-                {
-                    "if": {"column_id": "Valores"},
-                    "options": [
-                        {"label": "No conseguido", "value": "No conseguido"},
-                        {"label": "Parcialmente conseguido", "value": "Parcialmente conseguido"},
-                        {"label": "No aplicable", "value": "No aplicable"},
-                        {"label": "Ampliadamente conseguido", "value": "Ampliadamente conseguido"},
-                        {"label": "Totalmente conseguido", "value": "Totalmente conseguido"},
-                    ],
-                }
-            ],
-            css=[{
-                "selector": "#tabla-datos .dash-dropdown",
-                "rule": "position: relative !important; z-index: 9999 !important; min-width: 180px !important;"
-            }]
-        )
+        html.Div(id="tabla-datos-container"),
+        html.Button(
+                id="btn-guardar-tabla",
+                n_clicks=0
+            ),
+        html.Div(id="mensaje-guardar", style={"marginTop": "10px"})
     ])

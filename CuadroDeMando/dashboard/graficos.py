@@ -1,7 +1,7 @@
 from dash import html, dcc
 import data.querys as dq
 
-def layout_graficos(idioma_sel, figPrincipios, figPorcentaje, figNiveles, tipoEntidad):
+def layout_graficos():
     return html.Div([
 
         html.Div(
@@ -21,8 +21,8 @@ def layout_graficos(idioma_sel, figPrincipios, figPorcentaje, figNiveles, tipoEn
             ],
             style={
                 "display": "flex",
-                "justify-content": "center",   # 🔥 cambio importante
-                "gap": "15px",                 # separación bonita
+                "justify-content": "center",
+                "gap": "15px",
                 "align-items": "center",
                 "border": "1px solid #e5e7eb",
                 "border-radius": "12px",
@@ -34,35 +34,30 @@ def layout_graficos(idioma_sel, figPrincipios, figPorcentaje, figNiveles, tipoEn
         ),
 
         html.Div([
+            html.Div(
+                id="datos-wcag-div",
+                style=card_style
+            ),
 
             html.Div(
-                children=[
-                    html.H4("DATOS WCAG"),
-                    html.P("Total Entidades: " + str(dq.obtener_numero_entidades(tipoEntidad))),
-                    html.P("Total Mediciones: " + str(dq.obtener_numero_mediciones(tipoEntidad))),
-                    html.P("Cumplimientos: " + str(dq.obtener_numero_cumplimientos(tipoEntidad))),
-                    html.P("Porcentaje Cumplimiento: " + str(dq.obtener_porcentaje_cumplimiento(tipoEntidad)))
-                ],
+                id="cumplimiento-div",
                 style=card_style
             ),
 
-            html.Div(id="cumplimiento-div",
-                style=card_style
-            ),
-
-            html.Div(id="niveles-div",
+            html.Div(
+                id="niveles-div",
                 style=card_style
             )
 
         ], style={
             "display": "flex",
             "gap": "15px",
-            "flex-wrap": "wrap"  
+            "flex-wrap": "wrap"
         }),
 
-        dcc.Graph(id='grafico-porcentaje', figure=figPorcentaje),
-        dcc.Graph(id='grafico-principios', figure=figPrincipios),
-        dcc.Graph(id='grafico-niveles', figure=figNiveles),
+        dcc.Graph(id='grafico-porcentaje'),
+        dcc.Graph(id='grafico-principios'),
+        dcc.Graph(id='grafico-niveles'),
     ])
 
 

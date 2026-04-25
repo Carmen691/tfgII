@@ -54,12 +54,6 @@ body button:not(#tabla-datos button):not(:disabled):active {
     box-shadow: 4px 4px 10px rgba(0,0,0,0.1), -4px -4px 10px rgba(255,255,255,0.2) !important;
 }
 
-/* Elementos desplegados */
-.Select-menu-outer {
-    border-radius: 12px !important;
-    background: #ffffff !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
-}
 
 /* Opciones */
 .Select-option {
@@ -79,12 +73,7 @@ body button:not(#tabla-datos button):not(:disabled):active {
     max-width: 100% !important;    /* Que no se salga del contenedor */
 }
 
-/* Menú desplegable */
-.Select-menu-outer {
-    width: auto !important;        /* Se ajusta al contenido */
-    min-width: 160px !important;   /* Ancho mínimo */
-    max-width: 100% !important;    /* No sobrepasa contenedor padre */
-}
+
 
 
 /* Estilo general para H2 */
@@ -253,13 +242,6 @@ textarea[disabled] {
 }
 
 
-/* Fondo de la tabla */
-#tabla-datos {
-    background-color: #ececec; /* gris claro, más oscuro que el fondo general */
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* sombra suave */
-}
-
 /* Cabecera */
 #tabla-datos .dash-header {
     background-color: #3b4a5a; /* azul grisáceo */
@@ -354,10 +336,6 @@ textarea[disabled] {
     padding-left: 28px;
 }
 
-/* Arreglo opciones del dropdown de Dash */
-.Select-menu-outer {
-    max-height: 250px !important;
-}
 
 .VirtualizedSelectOption {
     height: auto !important;
@@ -372,11 +350,6 @@ textarea[disabled] {
     padding: 8px 10px !important;
 }
 
-/* Hacer que el menú del dropdown tenga el mismo ancho que el input */
-.Select-menu-outer {
-    width: 100% !important;
-    min-width: 100% !important;
-}
 
 .VirtualizedSelectOption {
     border-bottom: 1px solid #e5e5e5;
@@ -391,37 +364,32 @@ textarea[disabled] {
     pointer-events: auto;
 }
 
+/* Dropdown dentro de DataTable por encima de todo */
+#tabla-datos .dash-dropdown {
+    position: relative !important;
+    z-index: 9999 !important;
+    overflow: visible !important;
+}
 
- /* =========================
-   FIX DEFINITIVO DASH DATATABLE DROPDOWN
-========================= */
+/* Control interno */
+#tabla-datos .dash-dropdown .Select-control {
+    position: relative !important;
+    z-index: 9999 !important;
+    overflow: visible !important;
+}
 
-/* 1. romper clipping de tabla */
+
+
+/* La celda no debe cortar el menú */
+#tabla-datos .dash-cell {
+    overflow: visible !important;
+}
+
+/* El contenedor general tampoco */
 .dash-table-container {
     overflow: visible !important;
 }
 
-/* 2. MUY IMPORTANTE: la celda no debe cortar nada */
-#tabla-datos td,
-#tabla-datos th,
-#tabla-datos .dash-cell {
+#tabla-datos {
     overflow: visible !important;
-    position: relative !important;
-}
-
-/* 3. sacar el menú del flujo de la tabla */
-.Select-menu-outer {
-    position: fixed !important;
-    z-index: 9999999 !important;
-}
-
-/* 4. evitar que Select cree contenedores recortados */
-.Select, 
-.Select-control {
-    overflow: visible !important;
-}
-
-/* 5. seguridad extra para Dash virtualized selects */
-.VirtualizedSelectMenu {
-    z-index: 9999999 !important;
 }

@@ -23,7 +23,8 @@ def crear_layout():
         dcc.Store(id='store-versiones', storage_type='session'),
         dcc.Store(id='store-niveles', storage_type='session'),
         dcc.Store(id='init-done', storage_type='session'),
-        dcc.Store(id='entidad-store', storage_type='session'),
+        dcc.Store(id='store-entidad', storage_type='session'),
+        dcc.Store(id="tabla-actual-store", storage_type='session'),
         dcc.Interval(id='init-trigger', interval=1, n_intervals=0, max_intervals=1),
 
         # Barra superior (header)
@@ -81,7 +82,8 @@ def crear_layout():
                 dcc.Link("Usuarios", href="/dash/administracion/usuarios", className="sidebar-sublink", id="link-usuarios"),
                 dcc.Link("Gestión de auditorías", href="/dash/administracion/auditorias", className="sidebar-sublink", id="link-auditorias"),
             ], id="admin-collapse", is_open=False),
-            html.A("Cerrar sesión", href="/logout", target="_self", className="nav-link")
+            #html.A("Cerrar sesión", href="/logout", target="_self", className="nav-link")
+            html.Button("Cerrar sesión", id="logout-button", className="nav-link", n_clicks=0)
         ], id="sidebar"),
 
         # Contenido principal

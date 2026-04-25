@@ -1,5 +1,6 @@
 import dash
-from dash import Output, Input, State, html, dash_table
+from dash import Output, Input, State, html, dash_table, no_update
+from flask import app
 import pandas as pd
 import base64
 import io
@@ -34,17 +35,16 @@ def registrar_callbacks_upload(app):
         Input('upload-data', 'filename'),
         Input('upload-data', 'contents'),
         Input('btn-importar', 'n_clicks'),
-        Input('btn-cancelar', 'n_clicks'),
         State('dropdown-sugerencias', 'value'),
         State('dropdown-wcag', 'value'),
         prevent_initial_call=True
     )
-    def update_upload_area(filename, content, btn_importar, btn_cancelar, valor_dropdown, valor_wcag):
+    def update_upload_area(filename, content, btn_importar, valor_dropdown, valor_wcag):
 
         if btn_importar > 0:
             procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag)
 
-        if btn_importar > 0 or btn_cancelar > 0:
+        if btn_importar > 0:
 
             return "", html.Div('Arrastra o selecciona un archivo Excel'), {
                 'width': '100%',
@@ -92,50 +92,95 @@ def registrar_callbacks_upload(app):
             'padding': '10px'
         }
 
+    
+    @app.callback(
+        Output("importar-titulo", "children"),
+        Output("entidad-datos", "children"),
+        Output("dropdown-sugerencias", "placeholder"),
+        Output("input-texto", "placeholder"),
+        Output("add-option-button", "children"),
+        Output("version-wcag", "children"),
+        Output("dropdown-wcag", "placeholder"),
+        Output("arrastra-ficheros", "children"),
+        Output("btn-importar", "children"),
+        Input("store-idioma", "data")
+    )
+    def textos_gestion(idioma):
 
-def parse_contents(contents, filename, date):
-
-    content_type, content_string = contents.split(',')
-    decoded = base64.b64decode(content_string)
-
-    try:
-
-        if 'csv' in filename:
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-
-        elif 'xls' in filename:
-            df = pd.read_excel(io.BytesIO(decoded))
-
-    except Exception as e:
-
-        print(e)
-
-        return html.Div([
-            'There was an error processing this file.'
-        ])
-
-    return html.Div([
-
-        html.H5(filename),
-        html.H6(datetime.datetime.fromtimestamp(date)),
-
-        dash_table.DataTable(
-            df.to_dict('records'),
-            [{'name': i, 'id': i} for i in df.columns]
-        ),
-
-        html.Hr(),
-
-        html.Div('Raw Content'),
-
-        html.Pre(
-            contents[0:200] + '...',
-            style={
-                'whiteSpace': 'pre-wrap',
-                'wordBreak': 'break-all'
-            }
+        return (
+            qr.obtener_textos_interfaz(idioma, "auditorias", "importar"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "datos"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "escribir"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "anadir"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "fichero"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
         )
-    ])
+    
+
+    @app.callback(
+        Output("dropdown-wcag", "options"),
+        Input("store-data", "data"),
+    )
+    def cargar_importar(data):
+
+        if not data:
+            return no_update
+
+        wcag = pd.DataFrame(data["tiposWCAG"])
+
+        opciones_wcag = [
+            {"label": row["version"], "value": row["id"]}
+            for _, row in wcag.iterrows()
+        ]
+
+        return opciones_wcag
+
+# def parse_contents(contents, filename, date):
+
+#     content_type, content_string = contents.split(',')
+#     decoded = base64.b64decode(content_string)
+
+#     try:
+
+#         if 'csv' in filename:
+#             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+
+#         elif 'xls' in filename:
+#             df = pd.read_excel(io.BytesIO(decoded))
+
+#     except Exception as e:
+
+#         print(e)
+
+#         return html.Div([
+#             'There was an error processing this file.'
+#         ])
+
+#     return html.Div([
+
+#         html.H5(filename),
+#         html.H6(datetime.datetime.fromtimestamp(date)),
+
+#         dash_table.DataTable(
+#             df.to_dict('records'),
+#             [{'name': i, 'id': i} for i in df.columns]
+#         ),
+
+#         html.Hr(),
+
+#         html.Div('Raw Content'),
+
+#         html.Pre(
+#             contents[0:200] + '...',
+#             style={
+#                 'whiteSpace': 'pre-wrap',
+#                 'wordBreak': 'break-all'
+#             }
+#         )
+#     ])
 
 
 def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):

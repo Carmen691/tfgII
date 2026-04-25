@@ -1,5 +1,7 @@
 import dash
 from dash import Input, Output, State, no_update
+from dash import html
+from dash import dash_table
 import plotly.express as px
 import pandas as pd
 from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_tipo_entidades
@@ -27,9 +29,9 @@ def registrar_callbacks_datos(app):
 
     
     @app.callback(
-        Output('store-tipo-entidad', 'data', allow_duplicate=True),
+        Output('tipo-entidad-dropdown', 'value', allow_duplicate=True),
         Input('store-data', 'data'),
-        State('store-tipo-entidad', 'data'),
+        State('tipo-entidad-dropdown', 'value'),
         prevent_initial_call='initial_duplicate'
     )
     def actualizar_datos(datos, tipoEntidad):
@@ -103,14 +105,123 @@ def registrar_callbacks_datos(app):
             return '✅ Tipo guardado correctamente', {'refresh': True}
 
 
-    # @app.callback(
-    #     dash.Output('tabla-datos', 'data'),
-    #     dash.Input('url', 'pathname'),
-    #     dash.State('store-data', 'data'),
-    # )
-    # def actualizar_tabla(path, data):
+    @app.callback(
+        Output("tabla-datos-container", "children"),
+        Input("store-data", "data"),
+        Input("store-idioma", "data"),
+    )
+    def cargar_tabla_datos(data, idioma):
 
-    #     if path != '/dash/datos':
-    #         raise dash.exceptions.PreventUpdate
+        if not data:
+            return html.Div("Cargando datos...")
 
-    #     return data
+        df = pd.DataFrame(data["df_datos"])
+
+        return dash_table.DataTable(
+            id='tabla-datos',
+            editable=True,
+            page_action='native',
+            page_current=0,
+            page_size=10,
+            data=df.to_dict('records'),
+            columns=[
+                {"name": "Criterios", "id": "Criterios"},
+                {"name": "Entidades", "id": "Entidades"},
+                {
+                    "name": "Valores",
+                    "id": "Valores",
+                    "presentation": "dropdown",
+                    "editable": True
+                },
+            ],
+            hidden_columns=["ID"],
+            dropdown_conditional=[
+                {
+                    "if": {"column_id": "Valores"},
+                    "options": [
+                        {
+                            "label": row["descripcion"],
+                            "value": row["id_escala"]
+                        }
+                        for _, row in pd.DataFrame(
+                            qr.obtener_opciones_cumplimiento()
+                        ).iterrows()
+                    ],
+                }
+            ],
+             css=[
+                {
+                    "selector": ".dash-dropdown",
+                    "rule": "position: relative !important; z-index: 9999 !important;"
+                },
+                {
+                    "selector": ".Select-menu-outer",
+                    "rule": "display: block !important; z-index: 10000 !important;"
+                },
+                {
+                    "selector": ".show-hide",
+                    "rule": "display: none"
+                }
+            ],
+        )
+    
+
+    @app.callback(
+        Output("btn-guardar-tabla", "children"),
+        Input("store-idioma", "data")
+    )
+    def textos_gestion(idioma):
+
+        return (
+            qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
+        )
+    
+
+    @app.callback(
+        Output("tabla-actual-store", "data"),
+        Input("tabla-datos", "data"),
+        prevent_initial_call=True
+    )
+    def sincronizar_tabla_actual(data):
+        return data
+
+    
+    @app.callback(
+        Output("store-data", "data", allow_duplicate=True),
+        Output("mensaje-guardar", "children"),
+        Input("btn-guardar-tabla", "n_clicks"),
+        State("store-data", "data"),
+        State("tabla-actual-store", "data"),
+        prevent_initial_call=True
+    )
+    def guardar_datos_tabla(n_clicks, data, datosn):
+        if n_clicks > 0:
+
+            datos_antiguos = pd.DataFrame(data["df_datos"])
+            datos_nuevos = pd.DataFrame(datosn)
+
+            df = datos_nuevos.merge(
+                datos_antiguos,
+                on="Id",
+                suffixes=("_new", "_old")
+            )
+
+            cambios = df[df["Valores_new"] != df["Valores_old"]]
+
+            if cambios.empty:
+                return no_update, "No hay cambios que guardar"
+            
+            tuplas_update = [
+                (row["Valores_new"], row["Id"])
+                for _, row in cambios.iterrows()
+            ]
+
+            result = qr.actualizar_datos_mediciones(tuplas_update)
+
+            if result > 0:
+                data["df_datos"]=datosn
+                return data, "Se ha guardado correctamente"
+            else:
+                return no_update, "No se ha realizado el guardado"
+            return data
+        return no_update

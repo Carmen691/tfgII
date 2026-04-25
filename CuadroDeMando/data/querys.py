@@ -110,7 +110,7 @@ def existe_usuario(username):
 
 def obtener_datos(entidades, principios, versiones, niveles):
     with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
+        result = conn.execute(text(f"""SELECT m.id as id_medicion, p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
             e.id AS id_entidad, e.nombre AS entidad, c.id AS id_criterio,
             COALESCE(ct.texto, c.nombre) AS criterio, ev.id_escala as id_descripcion, ev.descripcion,
             m.observaciones, v.version FROM mediciones_wcag m
@@ -373,3 +373,20 @@ def obtener_textos_interfaz(idioma_codigo, seccion, clave):
         return dato[0]
 
         
+def actualizar_datos_mediciones(tuplas_update):
+    """
+    Actualiza los datos de mediciones
+    """
+    result = -1
+    query = text("""
+        UPDATE mediciones_wcag
+        SET medicion = :medicion
+        WHERE id = :id""")
+
+    with engine.begin() as conn:
+        result = conn.execute(query, [
+            {"medicion": v, "id": i}
+            for v, i in tuplas_update
+        ])
+        result = result.rowcount
+    return result

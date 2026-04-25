@@ -44,13 +44,16 @@ def registrar_callbacks_graficos(app):
             value_name="Valores"
         )
 
-        fig2 = px.pie(
+        fig2 = px.bar(
             df_melt,
-            names="Estado",
-            values="Valores",
-            title="Cumplimiento de Principios"
+            x="Valores",
+            y="Principio",
+            color="Estado",
+            orientation="h",
+            text="Valores"
         )
 
+        fig2.update_traces(textposition='inside')
 
         return fig, fig2
     
@@ -90,3 +93,28 @@ def registrar_callbacks_graficos(app):
             html.P(f"AA: {round(datos_niveles.get('AA', 0), 2)}%"),
             html.P(f"AAA: {round(datos_niveles.get('AAA', 0), 2)}%"),
         ]
+    
+
+    @app.callback(
+        Output("datos-wcag-div", "children"),
+        Input("store-data", "data"),
+        State("store-tipo-entidad", "data"),
+    )
+    def cargar_graficos(data, tipoEntidad):
+
+        if not data:
+            return "Cargando...",
+                
+        datos_wcag = html.Div([
+            html.H4("DATOS WCAG"),
+            html.P(f"Total Entidades: {qr.obtener_numero_entidades(tipoEntidad)}"),
+            html.P(f"Total Mediciones: {qr.obtener_numero_mediciones(tipoEntidad)}"),
+            html.P(f"Cumplimientos: {qr.obtener_numero_cumplimientos(tipoEntidad)}"),
+            html.P(
+                f"Porcentaje Cumplimiento: "
+                f"{qr.obtener_porcentaje_cumplimiento(tipoEntidad)}"
+            )
+        ])
+
+        return datos_wcag
+            

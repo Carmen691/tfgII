@@ -2,7 +2,7 @@ import pandas as pd
 import data.querys as qr
 
 
-def cargar_datos(tipo_entidad, entidades, principios, versiones, niveles):
+def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles):
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
     usuarios = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
     auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre"])
@@ -11,7 +11,7 @@ def cargar_datos(tipo_entidad, entidades, principios, versiones, niveles):
     niveles = pd.DataFrame(qr.obtener_niveles())
     versiones = pd.DataFrame(qr.obtener_versiones())
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
-    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipos_entidad.iloc[0,0]), columns=["id", "nombre", "id_tipo"])
+    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipo_entidad_sel), columns=["id", "nombre", "id_tipo"])
 
 
     entidades_ids = list(entidades['id'])
@@ -26,18 +26,21 @@ def cargar_datos(tipo_entidad, entidades, principios, versiones, niveles):
     niveles_ids = list(niveles['id'])
     niveles_sql = f"({','.join(map(str, niveles_ids))})"
 
+    ids = tuple(entidades_sel)
+    ids_sql = str(ids).replace(",)", ")")
     datos = pd.DataFrame(
-        qr.obtener_datos(entidades_sql, principios_sql, versiones_sql, niveles_sql),
+        qr.obtener_datos(ids_sql, principios_sql, versiones_sql, niveles_sql),
         columns=[
-            "id_principio","principio","id_entidad","entidad",
+            "id_medicion","id_principio","principio","id_entidad","entidad",
             "id_criterio","criterio","id_descripcion","descripcion",
             "observaciones","version"
         ]
     )
 
     df_datos = pd.DataFrame({
+        "Id":datos["id_medicion"],
         "Criterios": datos["criterio"],
-        "Valores": datos["descripcion"],
+        "Valores": datos["id_descripcion"],
         "Entidades": datos["entidad"],
     })
 
@@ -88,15 +91,16 @@ def cargar_datos_inicio():
     datos = pd.DataFrame(
         qr.obtener_datos(entidades_sql, principios_sql, versiones_sql, niveles_sql),
         columns=[
-            "id_principio","principio","id_entidad","entidad",
+            "id_medicion","id_principio","principio","id_entidad","entidad",
             "id_criterio","criterio","id_descripcion","descripcion",
             "observaciones","version"
         ]
     )
 
     df_datos = pd.DataFrame({
+        "Id":datos["id_medicion"],
         "Criterios": datos["criterio"],
-        "Valores": datos["descripcion"],
+        "Valores": datos["id_descripcion"],
         "Entidades": datos["entidad"],
     })
 
