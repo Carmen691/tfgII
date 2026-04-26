@@ -28,27 +28,27 @@ def obtener_entidades():
         return datos
 
 
-def obtener_numero_entidades(tipo_entidad):
+def obtener_numero_entidades(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(1) FROM entidades where id_tipo = '{tipo_entidad}'"))
+        result = conn.execute(text(f"SELECT count(1) FROM entidades where id in ({entidades})"))
         datos = result.fetchall()
         return datos[0][0]
 
-def obtener_numero_mediciones(tipo_entidad):
+def obtener_numero_mediciones(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(1) FROM dashboard.mediciones_wcag where id_entidad in (Select id from entidades where id_tipo = '{tipo_entidad}')"))
+        result = conn.execute(text(f"SELECT count(1) FROM dashboard.mediciones_wcag where id_entidad in ({entidades})"))
         datos = result.fetchall()
         return datos[0][0]
 
-def obtener_numero_cumplimientos(tipo_entidad):
+def obtener_numero_cumplimientos(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in (Select id from entidades where id_tipo = '{tipo_entidad}') and medicion in (4,5);"))
+        result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in ({entidades}) and medicion in (4,5);"))
         datos = result.fetchall()
         return datos[0][0]
 
-def obtener_porcentaje_cumplimiento(tipo_entidad):
-    num = obtener_numero_cumplimientos(tipo_entidad)
-    den = obtener_numero_mediciones(tipo_entidad)
+def obtener_porcentaje_cumplimiento(entidades):
+    num = obtener_numero_cumplimientos(entidades)
+    den = obtener_numero_mediciones(entidades)
     return round(100*(num/den), 2)
     
 
@@ -135,9 +135,9 @@ def obtener_datos(entidades, principios, versiones, niveles):
         datos = result.fetchall()
         return datos
 
-def obtener_suma_cumplimiento():
+def obtener_suma_cumplimiento(entidades, principios, versiones, niveles):
     with engine.begin() as conn:
-        result = conn.execute(text("""SELECT 
+        result = conn.execute(text(f"""SELECT 
                 p.nombre AS principio,
                 SUM(CASE WHEN m.medicion = 1 THEN 1 ELSE 0 END) AS num_no_conseguido,
                 SUM(CASE WHEN m.medicion = 2 THEN 1 ELSE 0 END) AS num_parcialmente_conseguido,
@@ -146,9 +146,16 @@ def obtener_suma_cumplimiento():
                 SUM(CASE WHEN m.medicion = 5 THEN 1 ELSE 0 END) AS num_totalmente_conseguido
                 FROM 
                 mediciones_wcag m
+                JOIN entidades ent on ent.id = m.id_entidad
+                and ent.id in ({entidades})
+                JOIN versiones_wcag v on v.id = m.id_version
+                and v.id in ({versiones})
                 JOIN criterios_wcag c ON m.id_criterio = c.id
+				JOIN niveles n on n.id = c.nivel
+                and n.id in ({niveles})
                 JOIN pautas pa ON c.id_pauta = pa.id
                 JOIN principios p ON pa.id_principio = p.id
+                and p.id in ({principios})
                 GROUP BY 
                 p.id, p.nombre
                 ORDER BY 
@@ -209,25 +216,30 @@ def obtener_principios():
         datos = result.fetchall()
         return datos
 
-def obtener_cumplimiento_principios(tipoEntidad):
+def obtener_cumplimiento_principios(entidades, principios, versiones, niveles):
     with engine.begin() as conn:
         result = conn.execute(text(f"""SELECT 
             pri.nombre,
             SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
             / SUM(med.medicion) * 100 AS porcentaje
             FROM mediciones_wcag med
+            JOIN versiones_wcag v on v.id = med.id_version
+            and v.id in ({versiones})
             INNER JOIN entidades ent ON med.id_entidad = ent.id
             INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
-            and ten.id = {tipoEntidad}
+            and ent.id in ({entidades})
             INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
+            INNER JOIN niveles niv ON cri.nivel = niv.id
+            and niv.id in ({niveles})
             INNER JOIN pautas pau ON cri.id_pauta = pau.id
             INNER JOIN principios pri ON pau.id_principio = pri.id
+            and pri.id in ({principios})
             GROUP BY pri.nombre;"""))
         datos = result.fetchall()
         return datos
 
 
-def obtener_cumplimiento_niveles(tipoEntidad):
+def obtener_cumplimiento_niveles(entidades, principios, versiones, niveles):
     with engine.begin() as conn:
         result = conn.execute(text(f"""SELECT 
             niv.nombre,
@@ -236,11 +248,15 @@ def obtener_cumplimiento_niveles(tipoEntidad):
             FROM mediciones_wcag med
             INNER JOIN entidades ent ON med.id_entidad = ent.id
             INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
-            and ent.id = {tipoEntidad}
+            and ent.id = {entidades}
+            JOIN versiones_wcag v on v.id = med.id_version
+            and v.id in ({versiones})
             INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
             INNER JOIN niveles niv ON cri.nivel = niv.id
+            and niv.id in ({niveles})
             INNER JOIN pautas pau ON cri.id_pauta = pau.id
             INNER JOIN principios pri ON pau.id_principio = pri.id
+            and pri.id in ({principios})
             GROUP BY niv.nombre;"""))
         datos = result.fetchall()
         return datos

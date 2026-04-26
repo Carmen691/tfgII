@@ -12,21 +12,27 @@ def registrar_callbacks_graficos(app):
     @app.callback(
         Output('grafico-porcentaje', 'figure'),
         Output('grafico-principios', 'figure'),
+        Output('grafico-niveles', 'figure'),
+        Output("niveles-div", "children"),
+        Output("datos-wcag-div", "children"),
+        Output("cumplimiento-div", "children"),
         Input("store-data", "data"),
+        State("store-entidad", "data"),
+        State("store-principios", "data"),
+        State("store-versiones", "data"),
+        State("store-niveles", "data"),
         prevent_initial_call=False
     )
-    def actualizar_graficos(data):
+    def actualizar_graficos(data, entidades, principios, versiones, niveles):
+        entidades_sql = ", ".join(map(str, entidades))
+        principios_sql = ", ".join(map(str, principios))
+        versiones_sql = ", ".join(map(str, versiones))
+        niveles_sql = ", ".join(map(str, niveles))
+
         df = pd.DataFrame(data["df_datos"])
 
-        fig = px.bar(
-            df,
-            x="Entidades",
-            y="Valores",
-            color="Criterios",
-            barmode="stack"
-        )
-
-        porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(), columns = ["principio", "num_no_conseguido",
+        porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql), 
+                                            columns = ["principio", "num_no_conseguido",
                                             "num_parcialmente_conseguido", "num_no_aplicable",
                                             "num_ampliamente_conseguido", "num_totalmente_conseguido"])
         df_porcentajes = pd.DataFrame({
@@ -44,77 +50,167 @@ def registrar_callbacks_graficos(app):
             value_name="Valores"
         )
 
-        fig2 = px.bar(
-            df_melt,
-            x="Valores",
+        df_pct = df_melt.copy()
+        df_pct["Total"] = df_pct.groupby("Principio")["Valores"].transform("sum")
+        df_pct["Porcentaje"] = (df_pct["Valores"] / df_pct["Total"] * 100)
+
+        orden_estados = [
+            "No Conseguido",
+            "Parcialmente Conseguido",
+            "No Aplicable",
+            "Ampliamente Conseguido",
+            "Totalmente Conseguido"
+        ]
+
+        df_pct["Estado"] = pd.Categorical(
+            df_pct["Estado"],
+            categories=orden_estados,
+            ordered=True
+        )
+
+        fig1 = px.bar(
+            df_pct,
+            x="Porcentaje",
             y="Principio",
             color="Estado",
             orientation="h",
-            text="Valores"
+            text="Porcentaje",
+            title="Porcentaje por principios"
         )
 
-        fig2.update_traces(textposition='inside')
+        fig1.update_traces(
+            texttemplate='%{text:.1f}%',
+            textposition='inside')
 
-        return fig, fig2
-    
+        fig1.update_layout(
+            barmode="stack",
+            xaxis_title="% de cumplimiento",
+            yaxis_title="",
+            legend_title="Estado",
+            xaxis_range=[0, 100],
+            height=450)
+        
 
-    @app.callback(
-        Output("cumplimiento-div", "children"),
-        Input("store-data", "data"),
-        Input("store-tipo-entidad", "data")
-    )
-    def actualizar_cumplimiento(data, tipoEntidad):
-        datos_lista_principios = qr.obtener_cumplimiento_principios(tipoEntidad)
+        datos_por_niveles = qr.obtener_cumplimiento_niveles(entidades_sql, principios_sql, versiones_sql, niveles_sql)
+        df_niveles = pd.DataFrame(datos_por_niveles)
+
+        orden_niveles = ["A", "AA", "AAA"]
+
+        df_niveles["nombre"] = pd.Categorical(
+            df_niveles["nombre"],
+            categories=orden_niveles,
+            ordered=True
+        )
+
+        df_niveles = df_niveles.sort_values("nombre")
+
+        fig2 = px.bar(
+            df_niveles,
+            x="nombre",
+            y="porcentaje",
+            text="porcentaje",
+            title="Porcentaje de cumplimiento por niveles WCAG"
+        )
+
+        # Mejoras visuales
+        fig2.update_traces(
+            texttemplate='%{text:.2f}%',
+            textposition='outside'
+        )
+
+        fig2.update_layout(
+            yaxis_title="% Cumplimiento",
+            xaxis_title="Nivel WCAG",
+            yaxis_range=[0, 100],
+            height=400,
+            margin=dict(l=20, r=20, t=50, b=20)
+        )
+
+        df_total = (
+            df[df["Valores"] != 3]
+            .groupby("Entidades")
+            .size()
+            .reset_index(name="Total")
+        )
+
+        df_ok = (
+            df[df["Valores"].isin([4, 5])]
+            .groupby("Entidades")
+            .size()
+            .reset_index(name="Cumplen")
+        )
+
+        df_entidades = df_total.merge(
+            df_ok,
+            on="Entidades",
+            how="left"
+        )
+
+        df_entidades["Cumplen"] = df_entidades["Cumplen"].fillna(0)
+
+        df_entidades["Porcentaje"] = (
+            df_entidades["Cumplen"]
+            / df_entidades["Total"]
+            * 100
+        )
+
+        df_entidades = df_entidades.sort_values(
+            "Porcentaje",
+            ascending=True
+        )
+
+        fig3 = px.bar(
+            df_entidades,
+            x="Porcentaje",
+            y="Entidades",
+            orientation="h",
+            text="Porcentaje",
+            title="Porcentaje de cumplimiento por entidad"
+        )
+
+        fig3.update_traces(
+            texttemplate='%{text:.1f}%',
+            textposition='outside'
+        )
+
+        fig3.update_layout(
+            xaxis_title="% Cumplimiento",
+            yaxis_title="",
+            xaxis_range=[0, 100],
+            height=450
+        )
+
+        datos_niveles =  {fila[0]: fila[1] for fila in datos_por_niveles}
+
+        est = [
+            html.H4("% Por niveles"),
+            html.P(f"A: {round(datos_niveles.get('A', 0), 2)}%"),
+            html.P(f"AA: {round(datos_niveles.get('AA', 0), 2)}%"),
+            html.P(f"AAA: {round(datos_niveles.get('AAA', 0), 2)}%"),
+        ]
+
+        datos_wcag = html.Div([
+            html.H4("DATOS WCAG"),
+            html.P(f"Total Entidades: {qr.obtener_numero_entidades(entidades_sql)}"),
+            html.P(f"Total Mediciones: {qr.obtener_numero_mediciones(entidades_sql)}"),
+            html.P(f"Cumplimientos: {qr.obtener_numero_cumplimientos(entidades_sql)}"),
+            html.P(
+                f"Porcentaje Cumplimiento: "
+                f"{qr.obtener_porcentaje_cumplimiento(entidades_sql)} %"
+            )
+        ])
+
+        datos_lista_principios = qr.obtener_cumplimiento_principios(entidades_sql, principios_sql, versiones_sql, niveles_sql)
 
         datos_principios = {fila[0]: fila[1] for fila in datos_lista_principios}
 
-        return [
+        cumplimiento = [
             html.H4("% Cumplimiento"),
             html.P(f"Operable: {round(datos_principios.get('Operable', 0), 2)}%"),
             html.P(f"Comprensible: {round(datos_principios.get('Understandable', 0), 2)}%"),
             html.P(f"Robusto: {round(datos_principios.get('Robust', 0), 2)}%"),
             html.P(f"Perceptible: {round(datos_principios.get('Perceivable', 0), 2)}%"),
         ]
+
+        return fig1, fig2, fig3, est, datos_wcag, cumplimiento
     
-
-    @app.callback(
-        Output("niveles-div", "children"),
-        Input("store-data", "data"),
-        Input("store-tipo-entidad", "data")
-    )
-    def actualizar_cumplimiento(data, tipoEntidad):
-        datos_lista_niveles = qr.obtener_cumplimiento_niveles(tipoEntidad)
-
-        datos_niveles =  {fila[0]: fila[1] for fila in datos_lista_niveles}
-
-        return [
-            html.H4("% Por niveles"),
-            html.P(f"A: {round(datos_niveles.get('A', 0), 2)}%"),
-            html.P(f"AA: {round(datos_niveles.get('AA', 0), 2)}%"),
-            html.P(f"AAA: {round(datos_niveles.get('AAA', 0), 2)}%"),
-        ]
-    
-
-    @app.callback(
-        Output("datos-wcag-div", "children"),
-        Input("store-data", "data"),
-        State("store-tipo-entidad", "data"),
-    )
-    def cargar_graficos(data, tipoEntidad):
-
-        if not data:
-            return "Cargando...",
-                
-        datos_wcag = html.Div([
-            html.H4("DATOS WCAG"),
-            html.P(f"Total Entidades: {qr.obtener_numero_entidades(tipoEntidad)}"),
-            html.P(f"Total Mediciones: {qr.obtener_numero_mediciones(tipoEntidad)}"),
-            html.P(f"Cumplimientos: {qr.obtener_numero_cumplimientos(tipoEntidad)}"),
-            html.P(
-                f"Porcentaje Cumplimiento: "
-                f"{qr.obtener_porcentaje_cumplimiento(tipoEntidad)}"
-            )
-        ])
-
-        return datos_wcag
-            

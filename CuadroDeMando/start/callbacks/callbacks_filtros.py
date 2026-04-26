@@ -205,10 +205,10 @@ def registrar_callbacks_filtros(app):
             dcc.Checklist(
                 id='wcag-version-checklist',
                 options=[
-                    {'label': ver, 'value': ver}
-                    for ver in versionesWCAG["version"].unique()
+                    {'label': row['version'], 'value': row['id']}
+                    for _, row in versionesWCAG.drop_duplicates('id').iterrows()
                 ],
-                value=versionesWCAG["version"].unique().tolist(),
+                value=versionesWCAG["id"].unique().tolist(),
                 className="input-style",
             ),
 
@@ -221,10 +221,10 @@ def registrar_callbacks_filtros(app):
             dcc.Checklist(
                 id='nivel-checklist',
                 options=[
-                    {'label': niv, 'value': niv}
-                    for niv in niveles["nombre"].unique()
+                    {'label': row['nombre'], 'value': row['id']}
+                    for _, row in niveles.iterrows()
                 ],
-                value=niveles['nombre'].drop_duplicates().tolist(),
+                value=niveles['id'].drop_duplicates().tolist(),
                 className="input-style",
             ),
 
