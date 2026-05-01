@@ -2,26 +2,31 @@ from dash import html, dcc
 import data.querys as bd
 
 def layout_gestion():
-    return html.Div([
+    return dcc.Loading(
+        id="loading-gestion",
+        type="circle",  # puedes cambiarlo a "dot", "cube", etc.
+        fullscreen=False,
+        children=html.Div([
 
-        html.H2(id="titulo-gestion"),
+            html.H2(id="titulo-gestion"),
 
-        html.Label(id="label-auditorias"),
+            html.Label(id="label-auditorias"),
 
-        dcc.Dropdown(
-            id='auditorias-dropdown',
-            style={'width': '50%'}
-        ),
+            dcc.Dropdown(
+                id='auditorias-dropdown',
+                style={'width': '50%'}
+            ),
 
-        html.Br(),
+            html.Br(),
 
-        html.Button(
-            id='borrar-auditoria-button',
-            n_clicks=0,
-        ),
+            html.Button(
+                id='borrar-auditoria-button',
+                n_clicks=0,
+            ),
 
-        html.Div(
-            id="mensaje-auditoria",
-            style={"marginTop": "10px"}
-        )
-    ])
+            html.Div(
+                id="mensaje-auditoria",
+                style={"marginTop": "10px"}
+            )
+        ])
+    )

@@ -2,6 +2,8 @@ from dash import Output, Input, State, callback_context, html, dcc
 from dash.exceptions import PreventUpdate
 from flask import session
 import pandas as pd
+import data.querys as qr
+
 
 from start.callbacks.services.data_services import cargar_datos
 from dashboard.filtros import layout_filtros
@@ -51,35 +53,38 @@ def registrar_callbacks_routing(app):
     def cambiar_idioma(idioma):
         return idioma
 
-    # @app.callback(
-    #     Output("store-data", "data"),
-    #     Output("store-tipo-entidad", "data"),
-    #     Output("store-principios", "data"),
-    #     Output("store-versiones", "data"),
-    #     Output("store-niveles", "data"),
-    #     Output("store-entidad", "data"),
-    #     Output("init-done", "data"),
-    #     Output("url", "pathname"),
-    #     Input("logout-button", "n_clicks"),
-    #     prevent_initial_call=True
-    # )
-    # def logout(n):
 
-    #     if not n:
-    #         raise PreventUpdate
+    @app.callback(
+        Output("link-filtros", "children"),
+        Output("link-cuadro", "children"),
+        Output("link-datos", "children"),
+        Output("link-importar", "children"),
+        Output("admin-toggle", "children"),
+        Output("link-usuarios", "children"),
+        Output("link-auditorias", "children"),
+        Output("logout-button", "children"),
+        Input("store-idioma", "data")
+    )
+    def actualizar_textos_menu(idioma):
+        return (
+            qr.obtener_textos_interfaz(idioma, "menu", "filtros"),
+            qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando"),
+            qr.obtener_textos_interfaz(idioma, "menu", "tabla_datos"),
+            qr.obtener_textos_interfaz(idioma, "menu", "importar_datos"),
 
-    #     # aquí si además quieres limpiar sesión Flask:
-    #     session.clear()
+            # admin-toggle tiene estructura HTML, no solo texto
+            html.Div([
+                html.Span(
+                    qr.obtener_textos_interfaz(idioma, "menu", "panel_administracion"),
+                    className="sidebar-admin-text"
+                ),
+                html.I(
+                    className="bi bi-chevron-down sidebar-admin-icon",
+                    style={"float": "right"}
+                )
+            ]),
 
-    #     return (
-    #         None,
-    #         None,
-    #         None,
-    #         None,
-    #         None,
-    #         None,
-    #         None,
-    #         "/login"
-    #     )
-
-
+            qr.obtener_textos_interfaz(idioma, "menu", "usuarios"),
+            qr.obtener_textos_interfaz(idioma, "menu", "gestion_auditorias"),
+            qr.obtener_textos_interfaz(idioma, "menu", "cerrar_sesion"),
+        )

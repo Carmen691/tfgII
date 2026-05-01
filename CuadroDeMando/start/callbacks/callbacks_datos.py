@@ -161,6 +161,59 @@ def registrar_callbacks_datos(app):
                 {
                     "selector": ".show-hide",
                     "rule": "display: none"
+                },
+                {
+                    "selector": ".previous-next-container input",
+                    "rule": """
+                        width: 30px !important;
+                        height: 30px !important;
+                        min-width: 30px !important;
+                        max-width: 30px !important;
+
+                        padding: 0 !important;
+                        margin: 0 4px !important;
+                        line-height: 30px !important;
+                        text-align: center !important;
+
+                        border: 1px solid #d1d5db !important;
+                        border-radius: 8px !important;
+
+                        font-size: 14px !important;
+                        font-weight: 500 !important;
+
+                        background: white !important;
+                        box-sizing: border-box !important;
+                    """
+                },
+                {
+                    "selector": ".previous-next-container input[type=number]",
+                    "rule": """
+                        appearance: textfield !important;
+                        -moz-appearance: textfield !important;
+                        -webkit-appearance: none !important;
+                    """
+                },
+                {
+                    "selector": ".previous-next-container button",
+                    "rule": """
+                        width: 36px !important;
+                        height: 36px !important;
+                        min-width: 36px !important;
+                            min-height: 36px !important;
+
+                            padding: 0 !important;
+                            margin: 0 2px !important;
+
+                            border-radius: 8px !important;
+                            font-weight: 600 !important;
+                        """
+                    },
+                {
+                    "selector": ".previous-next-container button",
+                    "rule": """
+                        border-radius: 8px !important;
+                        font-weight: 600 !important;
+                    """
                 }
             ],
         )

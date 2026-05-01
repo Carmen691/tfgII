@@ -48,17 +48,17 @@ def registrar_callbacks_filtros(app):
         return options, valor_entidades
 
 
-    @app.callback(
-        Output('tipo-entidad-dropdown', 'value'),
-        Input('store-tipo-entidad', 'data'),
-        State('tipo-entidad-dropdown', 'value'),
-        prevent_initial_call=True
-    )
-    def cargar_dropdown(tipoEntidad, valor_actual):
-        if valor_actual is not None:
-            return no_update
+    # @app.callback(
+    #     Output('tipo-entidad-dropdown', 'value'),
+    #     Input('store-tipo-entidad', 'data'),
+    #     State('tipo-entidad-dropdown', 'value'),
+    #     prevent_initial_call=True
+    # )
+    # def cargar_dropdown(tipoEntidad, valor_actual):
+    #     if valor_actual is not None:
+    #         return no_update
 
-        return tipoEntidad
+    #     return tipoEntidad
 
     @app.callback(
         Output('store-entidad', 'data', allow_duplicate=True),
@@ -121,7 +121,7 @@ def registrar_callbacks_filtros(app):
     @app.callback(
         Output("filtros-container", "children"),
         Input("store-data", "data"),
-        State("store-idioma", "data"),
+        Input("store-idioma", "data"),
     )
     def cargar_filtros(data, idioma):
 

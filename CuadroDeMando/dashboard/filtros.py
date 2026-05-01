@@ -5,6 +5,14 @@ import data.querys as bd
 
 
 def layout_filtros():
-    return html.Div([
-        html.Div(id="filtros-container")
-    ])
+    return dcc.Loading(
+        id="loading-filtros",
+        type="circle",  # "default", "circle", "dot", "cube"
+        fullscreen=False,
+        children=html.Div([
+            html.Div(
+                id="filtros-container",
+                className="dashboard-card"
+            )
+        ])
+    )

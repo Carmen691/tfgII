@@ -248,7 +248,7 @@ def obtener_cumplimiento_niveles(entidades, principios, versiones, niveles):
             FROM mediciones_wcag med
             INNER JOIN entidades ent ON med.id_entidad = ent.id
             INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
-            and ent.id = {entidades}
+            and ent.id in ({entidades})
             JOIN versiones_wcag v on v.id = med.id_version
             and v.id in ({versiones})
             INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
