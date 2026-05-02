@@ -1,4 +1,5 @@
 # dashboard/layout.py
+
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
@@ -13,11 +14,11 @@ def crear_layout():
         dcc.Location(id='url', refresh=False),
 
         # =========================
-        # 🔵 STORES DE ESTADO
+        # STORES DE ESTADO
         # =========================
         dcc.Store(id="menu-collapsed", data=False),
         dcc.Store(id='store-idioma', data='es'),
-        dcc.Store(id='init-done', data=False),  # 👈 IMPORTANTE
+        dcc.Store(id='init-done', data=False),
 
         dcc.Store(id='store-data', storage_type='session'),
         dcc.Store(id='store-tipo-entidad', storage_type='session'),
@@ -38,27 +39,14 @@ def crear_layout():
         ),
 
         # =========================
-        # BAR TOP
+        # BARRA SUPERIOR
         # =========================
         html.Div([
 
             html.Button(
-                "⮜",
+                "☰",
                 id="toggle-menu",
-                style={
-                    "position": "absolute",
-                    "top": "10px",
-                    "left": "10px",
-                    "zIndex": "1100",
-                    "backgroundColor": "#ffffff",
-                    "color": "#2c3e50",
-                    "border": "none",
-                    "borderRadius": "8px",
-                    "boxShadow": "0 2px 6px rgba(0, 0, 0, 0.3)",
-                    "padding": "10px 14px",
-                    "cursor": "pointer",
-                    "fontSize": "20px"
-                }
+                className="toggle-button"
             ),
 
             dcc.Dropdown(
@@ -83,16 +71,43 @@ def crear_layout():
         }),
 
         # =========================
-        # SIDEBAR (CONTROLADO)
+        # SIDEBAR
         # =========================
         html.Div([
 
-            html.H2("Menú", className="sidebar-title", id="titulo-menu"),
+            html.H2(
+                "Menú",
+                className="sidebar-title",
+                id="titulo-menu"
+            ),
 
-            dcc.Link("Filtros", id="link-filtros", href="/dash/filtros", className="sidebar-link"),
-            dcc.Link("Cuadro", id="link-cuadro", href="/dash/cuadroMando", className="sidebar-link"),
-            dcc.Link("Datos", id="link-datos", href="/dash/datos", className="sidebar-link"),
-            dcc.Link("Importar", id="link-importar", href="/dash/importar", className="sidebar-link"),
+            dcc.Link(
+                html.Span("Filtros", className="menu-text"),
+                id="link-filtros",
+                href="/dash/filtros",
+                className="sidebar-link"
+            ),
+
+            dcc.Link(
+                html.Span("Cuadro de mando", className="menu-text"),
+                id="link-cuadro",
+                href="/dash/cuadroMando",
+                className="sidebar-link"
+            ),
+
+            dcc.Link(
+                html.Span("Tabla de datos", className="menu-text"),
+                id="link-datos",
+                href="/dash/datos",
+                className="sidebar-link"
+            ),
+
+            dcc.Link(
+                html.Span("Importar", className="menu-text"),
+                id="link-importar",
+                href="/dash/importar",
+                className="sidebar-link"
+            ),
 
             html.Div(
                 id="admin-toggle",
@@ -102,24 +117,27 @@ def crear_layout():
             ),
 
             dbc.Collapse([
+
                 dcc.Link(
-                    "Usuarios",
+                    html.Span("Usuarios", className="menu-text"),
                     id="link-usuarios",
                     href="/dash/administracion/usuarios",
                     className="sidebar-sublink"
                 ),
 
                 dcc.Link(
-                    "Auditorías",
+                    html.Span("Auditorías", className="menu-text"),
                     id="link-auditorias",
                     href="/dash/administracion/auditorias",
                     className="sidebar-sublink"
                 ),
+
             ],
             id="admin-collapse",
             is_open=False),
 
             html.Button(
+                html.Span("Cerrar sesión", className="menu-text"),
                 id="logout-button",
                 className="nav-link",
                 n_clicks=0
@@ -127,7 +145,7 @@ def crear_layout():
 
         ],
         id="sidebar",
-        style={"display": "none"}  # 👈 OCULTO AL INICIO
+        className=""
         ),
 
         # =========================

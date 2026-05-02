@@ -7,78 +7,88 @@ import data.querys as qr
 
 def registrar_callbacks_admin(app):
 
-
     @app.callback(
         Output("sidebar", "style"),
         Output("main-content", "style"),
         Output("menu-collapsed", "data"),
         Input("toggle-menu", "n_clicks"),
-        Input("store-idioma", "data"),  # 👈 nuevo
+        Input("init-done", "data"),
         State("menu-collapsed", "data"),
+        prevent_initial_call=False
     )
-    def toggle_menu(n_clicks, idioma, is_collapsed):
+    def toggle_menu(n_clicks, init_done, is_collapsed):
 
-        # Si aún no hay idioma, oculto
-        if not idioma:
-            return {"display": "none"}, {"padding": "20px"}, False
+        from dash import callback_context
 
-        # Primera carga: visible y expandido
-        if n_clicks is None:
-            n_clicks = 0
-            is_collapsed = False
+        ctx = callback_context
 
-        collapsed = not is_collapsed if n_clicks > 0 else False
-
-        sidebar_style_base = {
+        # Estilo base bonito y limpio
+        base = {
             "position": "fixed",
             "top": "0",
             "left": "0",
-            "height": "100%",
-            "backgroundColor": "#2c3e50",
-            "paddingTop": "20px",
-            "zIndex": "1000",
+            "height": "100vh",
+            "background": "linear-gradient(180deg, #1e293b, #334155)",
+            "paddingTop": "70px",
             "overflow": "hidden",
-            "transition": "width 0.3s ease"
+            "whiteSpace": "nowrap",
+            "transition": "width 0.3s ease",
+            "zIndex": "1000",
+            "boxShadow": "4px 0 20px rgba(0,0,0,0.12)"
         }
 
-        if collapsed:
-            sidebar_style = {
-                **sidebar_style_base,
-                "width": "60px",
-                "display": "block"
-            }
+        # =========================
+        # PRIMERA CARGA
+        # =========================
+        if not ctx.triggered or ctx.triggered[0]["prop_id"].startswith("init-done"):
+            if not init_done:
+                raise dash.exceptions.PreventUpdate
 
-            content_style = {
-                "marginLeft": "70px",
-                "transition": "margin-left 0.3s ease",
-                "padding": "20px"
-            }
-
-        else:
             sidebar_style = {
-                **sidebar_style_base,
-                "width": "250px",
-                "display": "block"
+                **base,
+                "width": "260px"
             }
 
             content_style = {
                 "marginLeft": "260px",
-                "transition": "margin-left 0.3s ease",
-                "padding": "20px"
+                "padding": "20px",
+                "transition": "margin-left 0.3s ease"
+            }
+
+            return sidebar_style, content_style, False
+
+        # =========================
+        # CLICK EN BOTÓN ☰
+        # =========================
+        collapsed = not is_collapsed
+
+        if collapsed:
+            # SOLO botón visible
+            sidebar_style = {
+                **base,
+                "width": "70px"
+            }
+
+            content_style = {
+                "marginLeft": "70px",
+                "padding": "20px",
+                "transition": "margin-left 0.3s ease"
+            }
+
+        else:
+            # menú abierto completo
+            sidebar_style = {
+                **base,
+                "width": "260px"
+            }
+
+            content_style = {
+                "marginLeft": "260px",
+                "padding": "20px",
+                "transition": "margin-left 0.3s ease"
             }
 
         return sidebar_style, content_style, collapsed
-
-    # ----------------------------
-    # FLECHA DEL MENU
-    # ----------------------------
-    @app.callback(
-        Output("toggle-menu", "children"),
-        Input("menu-collapsed", "data")
-    )
-    def update_arrow(collapsed):
-        return "⮞" if collapsed else "⮜"
-
 
     # ----------------------------
     # ADMIN COLLAPSE

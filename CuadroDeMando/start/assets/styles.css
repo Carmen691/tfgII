@@ -173,6 +173,26 @@ textarea[disabled] {
     font-weight: 600;
 }
 
+#sidebar.collapsed {
+    width: 70px !important;
+}
+
+#sidebar.collapsed a span,
+#sidebar.collapsed h2,
+#sidebar.collapsed .sidebar-link-text {
+    display: none;
+}
+
+#sidebar.collapsed a,
+#sidebar.collapsed .dash-link {
+    text-align: center;
+    padding: 12px 0;
+}
+
+#sidebar {
+    overflow: hidden;
+}
+
 /* Panel de administración */
 #admin-toggle {
     background-color: #3d566e !important;
