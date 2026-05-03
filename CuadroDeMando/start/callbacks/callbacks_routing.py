@@ -67,24 +67,42 @@ def registrar_callbacks_routing(app):
     )
     def actualizar_textos_menu(idioma):
         return (
-            qr.obtener_textos_interfaz(idioma, "menu", "filtros"),
-            qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando"),
-            qr.obtener_textos_interfaz(idioma, "menu", "tabla_datos"),
-            qr.obtener_textos_interfaz(idioma, "menu", "importar_datos"),
+            [
+                html.Span("📊", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "filtros"), className="menu-text")
+            ],
+            [
+                html.Span("📈", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando"), className="menu-text")
+            ],
+            [
+                html.Span("📋", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "tabla_datos"), className="menu-text")
+            ],
+            [
+                html.Span("📥", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "importar_datos"), className="menu-text")
+            ],
 
-            # admin-toggle tiene estructura HTML, no solo texto
+            # admin-toggle
             html.Div([
+                html.Span("⚙️", className="icon"),
                 html.Span(
                     qr.obtener_textos_interfaz(idioma, "menu", "panel_administracion"),
-                    className="sidebar-admin-text"
-                ),
-                html.I(
-                    className="bi bi-chevron-down sidebar-admin-icon",
-                    style={"float": "right"}
+                    className="menu-text"
                 )
             ]),
 
-            qr.obtener_textos_interfaz(idioma, "menu", "usuarios"),
-            qr.obtener_textos_interfaz(idioma, "menu", "gestion_auditorias"),
-            qr.obtener_textos_interfaz(idioma, "menu", "cerrar_sesion"),
+            [
+                html.Span("👤", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "usuarios"), className="menu-text")
+            ],
+            [
+                html.Span("📑", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "gestion_auditorias"), className="menu-text")
+            ],
+            [
+                html.Span("🚪", className="icon"),
+                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "cerrar_sesion"), className="menu-text")
+            ],
         )

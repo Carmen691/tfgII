@@ -1,85 +1,145 @@
-
 /* =========================================================
-   INICIO SESIÓN
+   INICIO SESION
 ========================================================= */
 
-body.login-page {
+:root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+
+    --accent: #22c55e;
+    --accent-dark: #16a34a;
+
+    --text: #0f172a;
+    --muted: #64748b;
+}
+
+.login-page {
     margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
     height: 100vh;
+
     display: flex;
     justify-content: center;
     align-items: center;
+
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+
+    background:
+        radial-gradient(circle at 20% 20%, rgba(59,130,246,0.18), transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(34,197,94,0.12), transparent 40%),
+        linear-gradient(135deg, #eef2f7, #f8fafc);
 }
 
 .login-box {
-    background: #fff;
-    padding: 40px 30px;
-    border-radius: 18px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-    width: 350px;
+    width: 360px;
+    padding: 10px; /* muy ligero */
+
     text-align: center;
-    animation: fadeIn 0.8s ease-in-out;
+
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .login-box h3 {
-    margin-bottom: 25px;
-    font-size: 1.6rem;
-    color: #1e293b;
-    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+
+    font-size: 2.2rem;
+    font-weight: 800;
+
+    color: #5977a7;
+}
+
+.login-subtitle {
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+    color: var(--muted);
 }
 
 .login-box input {
     width: 100%;
-    padding: 12px;
+    height: 50px;
+
+    padding: 0 16px;
     margin: 12px 0;
-    border: 1px solid #dbe2ea;
-    border-radius: 10px;
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(255,255,255,0.4);
+
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(10px);
+
+    color: var(--text);
+
     outline: none;
-    font-size: 1rem;
-    transition: all 0.3s ease;
     box-sizing: border-box;
+
+    transition: all 0.25s ease;
+}
+
+.login-box input::placeholder {
+    color: #64748b;
+}
+
+.login-box input:hover {
+    border-color: rgba(59,130,246,0.5);
 }
 
 .login-box input:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 8px rgba(102, 126, 234, 0.25);
+    border-color: var(--accent);
+
+    background: rgba(255,255,255,0.55);
+
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
 }
 
 #login-button {
     width: 100%;
-    padding: 12px;
-    margin-top: 15px;
+    height: 52px;
+
+    margin-top: 18px;
+
     border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 14px;
+
+    background: linear-gradient(135deg, var(--accent), var(--primary));
     color: white;
-    font-size: 1.05rem;
+
+    font-size: 1rem;
     font-weight: 600;
+
     cursor: pointer;
     transition: all 0.25s ease;
+
+    box-shadow: 0 12px 30px rgba(34,197,94,0.3);
 }
 
 #login-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(102, 126, 234, 0.25);
+    background: linear-gradient(135deg, var(--accent-dark), var(--primary-dark));
+}
+
+#login-button:active {
+    transform: scale(0.98);
 }
 
 .error {
-    margin-top: 15px;
+    margin-top: 14px;
     padding: 10px;
-    background: #ffe5e5;
-    color: #d9534f;
-    border-radius: 8px;
+
+    border-radius: 10px;
+
+    background: rgba(248,113,113,0.12);
+    color: #b91c1c;
+
+    border: 1px solid rgba(248,113,113,0.25);
     font-size: 0.9rem;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(-12px);
+        transform: translateY(10px);
     }
     to {
         opacity: 1;
@@ -87,251 +147,12 @@ body.login-page {
     }
 }
 
+.login-box {
+    animation: fadeInUp 0.6s ease;
+}
 
 /* =========================================================
-   DASHBOARD GENERAL
+   FIN INICIO SESION
 ========================================================= */
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f8fafc;
-    color: #1e293b;
-}
 
-
-/* =========================================================
-   BOTÓN TOGGLE MENÚ (BONITO)
-========================================================= */
-
-.toggle-button {
-    position: fixed;
-    top: 18px;
-    left: 20px;
-    z-index: 1200;
-
-    width: 48px;
-    height: 48px;
-
-    border: none;
-    border-radius: 14px;
-
-    background: white;
-    color: #0f172a;
-
-    font-size: 22px;
-    font-weight: bold;
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.toggle-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 34px rgba(0,0,0,0.12);
-}
-
-
-/* =========================================================
-   SIDEBAR PREMIUM
-========================================================= */
-
-#sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 270px;
-    height: 100vh;
-
-    background: linear-gradient(
-        180deg,
-        #0f172a 0%,
-        #1e293b 100%
-    );
-
-    color: white;
-    padding: 24px 16px;
-    box-sizing: border-box;
-
-    box-shadow: 8px 0 30px rgba(0,0,0,0.08);
-
-    transition: all 0.35s ease;
-    z-index: 1000;
-    overflow: hidden;
-}
-
-.sidebar-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 30px;
-    padding-left: 12px;
-    letter-spacing: 0.5px;
-}
-
-.sidebar-link,
-.sidebar-sublink,
-#admin-toggle {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 8px;
-
-    border-radius: 14px;
-
-    color: rgba(255,255,255,0.88);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 15px;
-
-    transition: all 0.25s ease;
-    cursor: pointer;
-    box-sizing: border-box;
-}
-
-.sidebar-link:hover,
-.sidebar-sublink:hover,
-#admin-toggle:hover {
-    background: rgba(255,255,255,0.08);
-    transform: translateX(4px);
-    color: white;
-}
-
-.sidebar-link.active,
-.sidebar-sublink.active,
-#admin-toggle.sidebar-link.active {
-    background: linear-gradient(
-        135deg,
-        #3b82f6,
-        #6366f1
-    );
-    color: white !important;
-    box-shadow: 0 10px 20px rgba(59,130,246,0.2);
-}
-
-.sidebar-sublink {
-    padding-left: 34px;
-    font-size: 14px;
-    opacity: 0.95;
-}
-
-#logout-button {
-    margin-top: 20px;
-    width: 100%;
-    padding: 14px;
-
-    border: none;
-    border-radius: 14px;
-
-    background: rgba(255,255,255,0.08);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-
-    transition: all 0.25s ease;
-}
-
-#logout-button:hover {
-    background: rgba(255,255,255,0.16);
-}
-
-
-/* =========================================================
-   ADMIN COLLAPSE
-========================================================= */
-
-#admin-collapse {
-    display: block !important;
-    width: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-#admin-collapse.collapse:not(.show) {
-    display: none !important;
-}
-
-#admin-collapse.collapse.show {
-    display: block !important;
-}
-
-#admin-collapse a {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-
-/* =========================================================
-   MAIN CONTENT
-========================================================= */
-
-#main-content {
-    margin-left: 290px;
-    padding: 32px;
-    transition: all 0.35s ease;
-}
-
-.main-collapsed {
-    margin-left: 110px !important;
-}
-
-
-/* =========================================================
-   BOTONES
-========================================================= */
-
-#cancelar-eliminar {
-    background: linear-gradient(135deg, #4a90e2, #357abd);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-}
-
-#cancelar-eliminar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
-}
-
-.btn-actualizar {
-    margin-top: 20px;
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-}
-
-.btn-actualizar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(59,130,246,0.2);
-}
-
-
-/* =========================================================
-   CARDS
-========================================================= */
-
-.dashboard-card {
-    background: white;
-    border-radius: 18px;
-    padding: 28px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
-    max-width: 700px;
-    border: 1px solid #eef2f7;
-}

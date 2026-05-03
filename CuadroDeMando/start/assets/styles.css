@@ -1,415 +1,1146 @@
-body {
-    background: #f0f2f5; /* gris muy claro */
+
+:root {
+    /* fondo más elegante (menos “negro puro”) */
+    --bg: #0b1220;
+    --bg-dark: #070b14;
+
+    /* texto más suave */
+    --text: #e6edf7;
+    --muted: #9aa4b2;
+
+    /* azul moderno (más “tech”) */
+    --primary: #5b8cff;
+    --primary-dark: #3b6ff5;
+
+    /* hover más sutil */
+    --hover: rgba(91, 140, 255, 0.12);
+
+    --danger: #ff6b6b;
 }
 
-body button:not(#tabla-datos button):not(#admin-toggle) {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    background: linear-gradient(145deg, #4a90e2, #357abd) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 12px !important;
-    padding: 12px 25px !important;
-    font-weight: 600 !important;
-    font-size: 1rem !important;
-    cursor: pointer !important;
-    box-shadow: 4px 4px 10px rgba(0,0,0,0.15),
-                -4px -4px 10px rgba(255,255,255,0.1) !important;
-    transition: all 0.3s ease !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
+/* =========================================================
+    MENU IZQUIERDA
+========================================================= */
 
-/* Hover solo para los globales habilitados */
-body button:not(#tabla-datos button):not(:disabled):hover {
-    background: linear-gradient(145deg, #5aa0f2, #468cd1) !important;
-    box-shadow: 6px 6px 14px rgba(0,0,0,0.2),
-                -6px -6px 14px rgba(255,255,255,0.1) !important;
-    transform: translateY(-2px) !important;
-}
-
-/* Active solo para los globales */
-body button:not(#tabla-datos button):not(:disabled):active {
-    transform: scale(0.97) !important;
-    box-shadow: inset 2px 2px 6px rgba(0,0,0,0.2),
-                inset -2px -2px 6px rgba(255,255,255,0.1) !important;
-}
-
-/* Contenedor del dropdown */
-.Select-control {
-    background: linear-gradient(145deg, #ffffff, #f0f2f5) !important;
-    border: 1px solid #ccc !important;
-    border-radius: 12px !important;
-    padding: 5px 10px !important;
-    box-shadow: 2px 2px 6px rgba(0,0,0,0.05), -2px -2px 6px rgba(255,255,255,0.5) !important;
-    font-size: 1rem !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-/* Al pasar el cursor */
-.Select-control:hover {
-    border-color: #4a90e2 !important;
-    box-shadow: 4px 4px 10px rgba(0,0,0,0.1), -4px -4px 10px rgba(255,255,255,0.2) !important;
-}
-
-
-/* Opciones */
-.Select-option {
-    padding: 10px 15px !important;
-    transition: all 0.2s ease !important;
-}
-
-.Select-option:hover {
-    background: #4a90e2 !important;
-    color: white !important;
-}
-
-/* Contenedor del dropdown: ancho mínimo y auto según contenido */
-.Select-control {
-    width: auto !important;        /* Ajusta al contenido */
-    min-width: 160px !important;   /* Ancho mínimo para que no quede muy pequeño */
-    max-width: 100% !important;    /* Que no se salga del contenedor */
-}
-
-
-
-
-/* Estilo general para H2 */
-h2 {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna y legible */
-    font-size: 1rem;      /* Tamaño destacado */
-    font-weight: 700;       /* Negrita */
-    color: #2c3e50;         /* Azul oscuro elegante */
-    margin-bottom: 20px;    /* Espaciado inferior */
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sutil sombra para profundidad */
-}
-
-/* H2 centrados opcionalmente */
-h2.center {
-    text-align: center;
-}
-
-/* Estilo general para inputs */
-input[type="text"],
-input[type="password"],
-textarea {
-    width: 100% !important;              /* Ocupa todo el contenedor */
-    min-height: 45px !important;         /* Altura consistente con los botones */
-    padding: 10px 15px !important;       /* Espacio interno */
-    font-size: 1rem !important;          /* Texto legible */
-    font-weight: 500 !important;
-    border: 1px solid #ccc !important;   /* Borde suave */
-    border-radius: 12px !important;      /* Bordes redondeados */
-    background: linear-gradient(145deg, #ffffff, #f0f2f5) !important;
-    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05), 
-                inset -2px -2px 5px rgba(255,255,255,0.5) !important;
-    transition: all 0.3s ease !important;
-}
-
-/* Focus */
-input[type="text"]:focus,
-input[type="password"]:focus,
-textarea:focus {
-    border-color: #4a90e2 !important;
-    box-shadow: 0 0 5px rgba(74,144,226,0.5) !important;
-    outline: none !important; /* Quita el outline por defecto */
-}
-
-/* Placeholder */
-input[type="text"]::placeholder,
-input[type="password"]::placeholder,
-textarea::placeholder {
-    color: #999 !important;
-    font-weight: 400 !important;
-}
-
-/* Inputs deshabilitados */
-input[disabled],
-textarea[disabled] {
-    background: #e6e6e6 !important;
-    color: #666 !important;
-    cursor: not-allowed !important;
-}
-
-/* ====== SIDEBAR ====== */
-#sidebar {
+/* =========================
+   SIDEBAR
+========================= */
+.sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 250px;
-    height: 100%;
-    background: linear-gradient(180deg, #2c3e50, #34495e);
-    padding-top: 20px;
-    z-index: 1000;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.25);
-    transition: width 0.3s ease;
+
+    width: 260px;
+    height: 100vh;
+
+    background: linear-gradient(180deg, var(--bg), var(--bg-dark));
+    color: var(--text);
+
+    padding: 70px 12px 12px;
+
+    display: flex;
+    flex-direction: column;
+
+    transition: width 0.25s ease;
+
+    overflow-y: auto;
 }
 
-/* Links principales */
-#sidebar a, 
-#sidebar .dash-link {
-    display: block;
-    padding: 12px 20px;
-    color: #ecf0f1;
-    text-decoration: none;
-    font-size: 16px;
+/* COLAPSADO */
+.sidebar.collapsed {
+    width: 70px;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+.main {
+    margin-left: 260px;
+    padding: 20px;
+
+    min-height: 100vh;
+
+    transition: margin-left 0.25s ease;
+}
+
+.main.collapsed {
+    margin-left: 70px;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+.topbar {
+    display: flex;
+    align-items: center;
+
+    height: 50px;
+    margin-bottom: 10px;
+
+    background: white;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 10;
+}
+
+/* dropdown idioma */
+.lang-dropdown {
+    width: 120px;
+    margin-left: auto;
+}
+
+/* =========================
+   MENU CONTAINER
+========================= */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* =========================
+   LINKS SIDEBAR
+========================= */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 14px;
+    margin: 4px 0;
+
+    border-radius: 10px;
+
+    color: var(--muted) !important;
+    text-decoration: none !important;
+
     transition: all 0.2s ease;
 }
 
-#sidebar a:hover {
-    background: rgba(255, 255, 255, 0.1);
-    padding-left: 28px;
-    color: #1abc9c;
+/* HOVER */
+.sidebar-link:hover {
+    background: var(--hover);
+    color: white !important;
+    transform: translateX(3px);
 }
 
-/* Título del sidebar */
-#sidebar h2 {
-    color: #ecf0f1;
+/* ICONOS */
+.icon {
+    font-size: 18px;
+    min-width: 24px;
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 20px;
+}
+
+/* =========================
+   SUBMENU
+========================= */
+.sidebar-sublink {
+    display: block;
+
+    padding: 10px 14px;
+    margin-left: 14px;
+
+    color: var(--muted) !important;
+    text-decoration: none !important;
+
+    border-left: 2px solid transparent;
+}
+
+.sidebar-sublink:hover {
+    color: white !important;
+    border-left: 2px solid var(--primary);
+}
+
+/* =========================
+   SECCIÓN ADMIN
+========================= */
+.sidebar-section {
+    margin-top: 10px;
     font-weight: 600;
+    cursor: pointer;
 }
 
-#sidebar.collapsed {
-    width: 70px !important;
+/* =========================
+   LOGOUT
+========================= */
+.logout {
+    margin-top: auto;
+    color: var(--danger) !important;
 }
 
-#sidebar.collapsed a span,
-#sidebar.collapsed h2,
-#sidebar.collapsed .sidebar-link-text {
+.logout:hover {
+    background: rgba(248, 113, 113, 0.1);
+}
+
+/* =========================
+   COLAPSADO (SOLO ICONOS)
+========================= */
+.sidebar.collapsed .menu-text {
     display: none;
 }
 
-#sidebar.collapsed a,
-#sidebar.collapsed .dash-link {
-    text-align: center;
-    padding: 12px 0;
+/* centrar iconos */
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    gap: 0;
 }
 
-#sidebar {
-    overflow: hidden;
+/* =========================
+   SCROLL
+========================= */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* Panel de administración */
-#admin-toggle {
-    background-color: #3d566e !important;
-    color: #ecf0f1 !important;
-    border-radius: 6px;
-    margin: 10px 15px;
+.sidebar::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 10px;
+}
+
+/* =========================================================
+   FIN MENU IZQUIERDA
+========================================================= */
+
+/* =========================================================
+   BOTON IDIOMA
+========================================================= */
+
+.topbar {
+    display: flex;
+    align-items: center;
+
+    height: 50px;
     padding: 10px;
-    cursor: pointer;
-    transition: background 0.2s ease;
+
+    background: transparent;
 }
 
-#admin-toggle:hover {
-    background-color: #4a6a89 !important;
+/* esto empuja todo a la derecha */
+.topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
 }
 
-/* Submenús */
-#admin-collapse a {
-    font-size: 15px;
-    padding-left: 40px;
+/* dropdown un poco más bonito */
+.lang-dropdown {
+    width: 130px;
 }
 
-/* Botón cerrar sesión */
-#sidebar .nav-link {
-    margin-top: 20px;
-    font-weight: bold;
-    color: #e74c3c !important;
-    transition: color 0.2s ease;
-}
+/* =========================================================
+   FIN BOTON IDIOMA
+========================================================= */
 
-#sidebar .nav-link:hover {
-    color: #ff6b6b !important;
-}
 
-/* ====== BOTÓN DE MENÚ SUPERIOR ====== */
-#toggle-menu {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1100;
+/* =========================
+   BOTÓN TOGGLE
+========================= */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 260px;
+    height: 100vh;
+
     background: #ffffff;
-    color: #2c3e50;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    padding: 10px 14px;
-    cursor: pointer;
-    font-size: 20px;
+
+    border-right: 1px solid #e5e7eb;
+
+    padding: 70px 12px 12px;
+
+    display: flex;
+    flex-direction: column;
+
+    transition: width 0.25s ease;
+
+    color: #111827;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 12px 14px;
+    margin: 4px 0;
+
+    border-radius: 10px;
+
+    color: #374151 !important;
+    text-decoration: none !important;
+
     transition: all 0.2s ease;
 }
 
-#toggle-menu:hover {
-    background: #f5f5f5;
+.sidebar-link:hover {
+    background: #f3f4f6;
+    color: #111827 !important;
+
+    transform: translateX(3px);
+}
+
+.icon {
+    font-size: 18px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.sidebar-sublink {
+    display: block;
+
+    padding: 10px 14px;
+    margin-left: 14px;
+
+    color: #6b7280 !important;
+    text-decoration: none !important;
+}
+
+.sidebar-sublink:hover {
+    color: #111827 !important;
+}
+
+.logout {
+    margin-top: auto;
+    color: #ef4444 !important;
+}
+
+.logout:hover {
+    background: #fef2f2;
+}
+
+.sidebar.collapsed .menu-text {
+    display: none;
+}
+
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+}
+
+/* =========================
+   FIN BOTÓN TOGGLE
+========================= */
+
+/* =========================
+   ESTILOS FILTROS
+========================= */
+
+body {
+    background-color: #f8fafc;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* =========================
+   CARD
+========================= */
+.filtros-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    border: 1px solid #eef2f7;
+}
+
+/* Wrapper interno */
+.filtros-wrapper {
+    padding: 20px 24px;
+}
+
+/* =========================
+   TITULOS
+========================= */
+.filtros-titulo {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+}
+
+/* Labels */
+.filtros-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* =========================
+   GRID (NUEVO)
+========================= */
+.filtros-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.filtros-col {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Responsive (muy importante) */
+@media (max-width: 900px) {
+    .filtros-row {
+        flex-direction: column;
+    }
+}
+
+/* =========================
+   DROPDOWN
+========================= */
+.Select-control {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+}
+
+.Select-control:hover {
+    border-color: #1d4ed8 !important;
+}
+
+/* Chips (multi-select) */
+.Select--multi .Select-value {
+    background-color: #e9efff !important;
+    color: #1e3a8a !important;
+    border-radius: 999px !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+}
+
+/* Hover chips */
+.Select--multi .Select-value:hover {
+    background-color: #c7dbff !important;
     transform: scale(1.05);
 }
 
-/* Contenedor de la tabla */
-.tabla-container {
-    overflow: visible !important;
-    position: relative;
-    z-index: 1000;
+/* =========================
+   CHECKLIST PRO (NUEVO)
+========================= */
+/* Oculta checkbox */
+.checklist-pro input {
+    display: none;
 }
 
-/* Estilos generales de la DataTable */
-.custom-table {
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.checklist-pro label {
+    background: #f1f5f9;
+    color: #334155;
 }
 
-
-/* Cabecera */
-#tabla-datos .dash-header {
-    background-color: #3b4a5a; /* azul grisáceo */
-    color: #ffffff !important;
-    font-weight: bold;
-    text-align: center;
-    font-size: 14px;
-    padding: 8px;
-    border: none !important;
-}
-
-/* Celdas */
-#tabla-datos .dash-cell {
-    overflow: visible;
-    text-overflow: ellipsis;
-    white-space: normal;
-    text-align: left;
-    padding: 10px;
-    font-family: Arial, sans-serif;
-    font-size: 13px;
-    border: none !important;
-    color: #2c3e50; /* texto oscuro legible */
-}
-
-/* Filas alternadas */
-#tabla-datos .dash-cell.row-odd {
-    background-color: #e0e0e0; /* un gris ligeramente distinto para alternar filas */
-}
-
-/* Hover / selección */
-#tabla-datos .dash-cell:active {
-    background-color: #d6eaf8 !important; /* azul clarito al seleccionar */
-    border: 1px solid #3399ff !important;
-}
-
-/* Dropdown de la columna Valores sin bordes */
-#tabla-datos .dash-dropdown {
-    border: none !important;       /* quita el borde */
-    box-shadow: none !important;   /* quita sombra */
-    background-color: transparent !important; /* fondo transparente */
-    color: #2c3e50 !important;     /* texto oscuro */
-    padding: 0 4px !important;     /* un poco de padding para que no toque los bordes */
-}
-
-/* Ajuste para que el dropdown se superponga correctamente */
-#tabla-datos .dash-dropdown .Select-control {
-    border: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
-}
-
-/* Estilos solo para botones dentro de la tabla */
-#tabla-datos button {
-    background-color: #4d34db;   /* azul elegante */
+.checklist-pro label:has(input:checked) {
+    background: #1d4ed8;
     color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 4px 10px;           /* más pequeños */
-    font-size: 13px;             /* texto compacto */
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin: 2px;                 /* separación entre botones */
 }
 
 /* Hover */
-#tabla-datos button:hover {
-    background-color: #2980b9;   /* azul más oscuro */
+.checklist-pro label:hover {
+    background: #e2e8f0;
 }
 
-/* Disabled */
-#tabla-datos button:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
+/* =========================
+   ESPACIADO
+========================= */
+.filtros-seccion {
+    margin-bottom: 18px;
 }
 
-#tabla-datos .dash-page-number {
-    width: 50px !important;      /* ancho compacto */
-    min-height: 28px !important; /* más bajo que los inputs normales */
-    padding: 2px 5px !important; /* menos padding */
-    font-size: 13px !important;  /* texto más pequeño */
-    text-align: center !important; /* número centrado */
-    border-radius: 6px !important;
-    border: 1px solid #ccc !important;
-    background: #ffffff !important;
-    box-shadow: none !important;
+/* =========================
+   BOTÓN
+========================= */
+.filtros-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
 }
 
-/* Link activo */
-#sidebar a.active {
-    background: #1abc9c !important;
-    color: #ffffff !important;
-    padding-left: 28px;
+.btn-pro {
+    background: #1d4ed8;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(29,78,216,0.2);
 }
 
-
-.VirtualizedSelectOption {
-    height: auto !important;
-    line-height: 20px !important;
-    padding: 8px 10px !important;
-    display: block !important;
+.btn-pro:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(29,78,216,0.25);
 }
 
-.Select-option {
-    height: auto !important;
-    line-height: 20px !important;
-    padding: 8px 10px !important;
+/* =========================
+   SCROLL FINO (BONUS)
+========================= */
+::-webkit-scrollbar {
+    width: 6px;
 }
 
-
-.VirtualizedSelectOption {
-    border-bottom: 1px solid #e5e5e5;
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
-.VirtualizedSelectOption {
-    border-bottom: 1px solid #e5e5e5;
+/* =========================
+   ANIMACIÓN SUAVE (BONUS)
+========================= */
+.filtros-card {
+    animation: fadeIn 0.3s ease;
 }
 
-/* Evita que el dropdown se abra al quitar una opción */
-.Select--multi .Select-value-icon {
-    pointer-events: auto;
-}
-
-/* Dropdown dentro de DataTable por encima de todo */
-#tabla-datos .dash-dropdown {
-    position: relative !important;
-    z-index: 9999 !important;
-    overflow: visible !important;
-}
-
-/* Control interno */
-#tabla-datos .dash-dropdown .Select-control {
-    position: relative !important;
-    z-index: 9999 !important;
-    overflow: visible !important;
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(5px);}
+    to {opacity: 1;}
 }
 
 
-
-/* La celda no debe cortar el menú */
-#tabla-datos .dash-cell {
-    overflow: visible !important;
+/* Más aire general dentro de la card */
+.filtros-wrapper {
+    padding: 28px 32px;
 }
 
-/* El contenedor general tampoco */
+/* Separación entre bloques (CLAVE) */
+.filtros-bloque {
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Más espacio entre label y componente */
+.filtros-label {
+    margin-bottom: 10px;
+}
+
+/* Dropdown con más respiración */
+.dropdown-pro {
+    margin-top: 6px;
+}
+
+/* Checklist más separado */
+.checklist-pro {
+    margin-top: 6px;
+}
+
+/* Separación entre chips */
+.checklist-pro label {
+    margin: 6px 6px 6px 0;
+    padding: 7px 14px;
+}
+
+/* Botón más separado */
+.filtros-actions {
+    margin-top: 30px;
+}
+
+/* =========================
+   FIN ESTILOS FILTROS
+========================= */
+
+/* =========================
+   ESTILOS USUARIOS
+========================= */
+
+/* sin efecto tarjeta flotante */
+.main-card {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* títulos más elegantes */
+.main-card h2 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 18px;
+    margin-top: 28px;
+    letter-spacing: -0.3px;
+}
+
+.main-card h2:first-child {
+    margin-top: 0;
+}
+
+/* bloques más limpios */
+.fila-usuarios {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 18px;
+    padding: 28px;
+    margin-bottom: 28px;
+    background: #f8fafc;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+}
+
+/* label */
+.label-filtro {
+    font-size: 15px;
+    font-weight: 500;
+    color: #64748b;
+    min-width: 150px;
+}
+
+/* inputs */
+.input-style {
+    width: 230px;
+    padding: 12px 14px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    color: #334155;
+    transition: 0.2s ease;
+}
+
+.input-style::placeholder {
+    color: #94a3b8;
+}
+
+.input-style:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* dropdown */
+#usuarios-dropdown {
+    min-width: 300px;
+}
+
+/* botón eliminar */
+#borrar-usuario-button {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#borrar-usuario-button:hover {
+    background: #dc2626;
+}
+
+/* botón añadir */
+#add-usuario-button {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+#add-usuario-button:hover {
+    background: #15803d;
+}
+
+/* botón modal */
+.boton-azul {
+    background: #2563eb !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* checkbox */
+.check-style {
+    font-size: 15px;
+    font-weight: 500;
+    color: #475569;
+}
+
+/* mensajes */
+.mensaje {
+    width: 100%;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #0f766e;
+    font-weight: 500;
+}
+
+.mensaje-error {
+    margin-top: 10px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    color: #c2410c;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    .fila-usuarios {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-style,
+    #usuarios-dropdown,
+    button {
+        width: 100% !important;
+    }
+
+    .label-filtro {
+        min-width: auto;
+    }
+}
+
+/* =========================
+   FIN ESTILOS USUARIOS
+========================= */
+
+/* =========================
+   ESTILOS GESTIÓN
+========================= */
+
+#auditorias-dropdown {
+    min-width: 320px;
+    max-width: 500px;
+}
+
+#titulo-gestion {
+    font-size: 26px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    letter-spacing: -0.3px;
+}
+
+#label-auditorias {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+#borrar-auditoria-button {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#borrar-auditoria-button:hover {
+    background: #dc2626;
+}
+
+/* bloque visual suave */
+#loading-gestion > div {
+    background: #f8fafc;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 900px;
+}
+
+/* mensaje */
+#mensaje-auditoria {
+    margin-top: 18px !important;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ocultar si está vacío */
+#mensaje-auditoria:empty {
+    display: none;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    #auditorias-dropdown {
+        width: 100% !important;
+        min-width: unset;
+    }
+
+    #borrar-auditoria-button {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    #loading-gestion > div {
+        padding: 20px;
+    }
+}
+
+/* =========================
+   FIN ESTILOS GESTIÓN
+========================= */
+
+/* =========================
+   ESTILOS IMPORTAR
+========================= */
+
+#importar-titulo {
+    font-size: 26px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    letter-spacing: -0.3px;
+}
+
+/* labels */
+#entidad-datos,
+#version-wcag {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+/* dropdowns */
+#dropdown-sugerencias,
+#dropdown-wcag {
+    min-width: 320px;
+    max-width: 420px;
+}
+
+/* input texto */
+#input-texto {
+    width: 320px !important;
+    padding: 12px 14px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    background: white;
+    font-size: 14px;
+    color: #334155;
+    transition: 0.2s ease;
+}
+
+#input-texto:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* botón añadir */
+#add-option-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+#add-option-button:hover {
+    background: #1d4ed8;
+}
+
+/* zona upload */
+#upload-data {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1 !important;
+    border-radius: 14px !important;
+    padding: 10px;
+    margin-top: 10px;
+    transition: 0.2s ease;
+}
+
+#upload-data:hover {
+    border-color: #2563eb !important;
+    background: #f8fbff;
+}
+
+/* texto upload */
+#arrastra-ficheros {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+}
+
+/* info fichero */
+#file-upload-info {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #475569;
+    font-weight: 500;
+}
+
+#file-upload-info:empty {
+    display: none;
+}
+
+/* mensaje confirmación */
+#mensaje-confirmacion {
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f766e;
+}
+
+#mensaje-confirmacion:empty {
+    display: none;
+}
+
+/* botón importar */
+#btn-importar {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+#btn-importar:hover {
+    background: #15803d;
+}
+
+/* contenedor botón */
+.fila-botones {
+    margin-top: 28px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* contenedor general suave */
+#loading-importar > div {
+    background: #f8fafc;
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 950px;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+    #dropdown-sugerencias,
+    #dropdown-wcag,
+    #input-texto {
+        width: 100% !important;
+        min-width: unset;
+    }
+
+    #add-option-button,
+    #btn-importar {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .fila-botones {
+        justify-content: stretch;
+    }
+
+    #loading-importar > div {
+        padding: 20px;
+    }
+}
+
+/* =========================
+   FIN ESTILOS IMPORTAR
+========================= */
+
+/* =========================
+   ESTILOS DATOS
+========================= */
+
+
+/* contenedor principal */
+#loading-datos > div {
+    background: linear-gradient(180deg, #ffffff, #f8fafc);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 1100px;
+
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+
+/* tabla container */
+#tabla-datos-container {
+    margin-bottom: 24px;
+    overflow-x: auto;
+
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #e2e8f0;
+
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+
+/* =========================
+   TABLA MEJORADA (NUEVO LOOK)
+========================= */
+
 .dash-table-container {
-    overflow: visible !important;
+    border-radius: 14px;
+    overflow: hidden;
+
+    border: 1px solid #e2e8f0;
+    background: white;
+
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
 }
 
-#tabla-datos {
-    overflow: visible !important;
+/* tabla */
+table {
+    border-collapse: separate !important;
+    border-spacing: 0;
+    width: 100%;
+    font-size: 14px;
+    color: #0f172a;
 }
+
+/* header */
+th {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+
+    font-weight: 600 !important;
+    font-size: 13px;
+
+    padding: 14px 12px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* celdas */
+td {
+    padding: 12px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle;
+}
+
+/* hover filas */
+tr:hover td {
+    background: #f8fafc;
+    transition: 0.2s ease;
+}
+
+/* primera columna más clara */
+td:first-child {
+    font-weight: 500;
+    color: #0f172a;
+}
+
+
+/* selects (Valores) */
+select {
+    padding: 8px 10px;
+    border-radius: 10px;
+
+    border: 1px solid #e2e8f0;
+    background: white;
+
+    font-size: 13px;
+    color: #0f172a;
+
+    outline: none;
+    transition: 0.2s ease;
+}
+
+select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+
+/* botón guardar */
+#btn-guardar-tabla {
+    background: linear-gradient(135deg, #22c55e, #3b82f6);
+    color: white;
+
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: 0.25s ease;
+
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.18);
+}
+
+#btn-guardar-tabla:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(34, 197, 94, 0.20);
+}
+
+#btn-guardar-tabla:active {
+    transform: scale(0.98);
+}
+
+
+/* mensaje */
+#mensaje-guardar {
+    margin-top: 16px !important;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #0f766e;
+
+    background: rgba(20, 184, 166, 0.08);
+    border: 1px solid rgba(20, 184, 166, 0.2);
+
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+#mensaje-guardar:empty {
+    display: none;
+}
+
+
+/* dash table extra */
+.dash-header {
+    font-weight: 600 !important;
+}
+
+
+/* responsive */
+@media (max-width: 768px) {
+    #btn-guardar-tabla {
+        width: 100%;
+    }
+
+    #loading-datos > div {
+        padding: 18px;
+    }
+}
+
+/* =========================
+   FIN ESTILOS DATOS
+========================= */

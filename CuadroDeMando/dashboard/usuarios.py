@@ -44,6 +44,8 @@ def layout_usuarios():
                     ])
                 ], id="modal-confirmacion", is_open=False),
 
+                html.Div(id="mensaje-usuario-eliminar", className="mensaje"),
+
             ], className="fila-usuarios"),
 
             html.H2(id="titulo-usuarios-anadir"),
@@ -83,11 +85,8 @@ def layout_usuarios():
                     ]),
                 ], id="modal-confirmacion-anadir", is_open=False),
 
-                html.Div(id="mensaje-usuario", className="mensaje"),
+                html.Div(id="mensaje-usuario-anadir", className="mensaje"),
 
             ], className="fila-usuarios"),
 
-            html.Div(id="mensaje-anadir", className="mensaje-error"),
-
-        ])
-    )
+        ], className="main-card"))

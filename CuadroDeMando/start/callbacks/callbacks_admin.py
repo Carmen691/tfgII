@@ -6,89 +6,22 @@ import data.querys as qr
 
 
 def registrar_callbacks_admin(app):
-
     @app.callback(
-        Output("sidebar", "style"),
-        Output("main-content", "style"),
+        Output("sidebar", "className"),
+        Output("main-content", "className"),
         Output("menu-collapsed", "data"),
         Input("toggle-menu", "n_clicks"),
-        Input("init-done", "data"),
         State("menu-collapsed", "data"),
-        prevent_initial_call=False
+        prevent_initial_call=True
     )
-    def toggle_menu(n_clicks, init_done, is_collapsed):
+    def toggle_menu(n_clicks, is_collapsed):
 
-        from dash import callback_context
-
-        ctx = callback_context
-
-        # Estilo base bonito y limpio
-        base = {
-            "position": "fixed",
-            "top": "0",
-            "left": "0",
-            "height": "100vh",
-            "background": "linear-gradient(180deg, #1e293b, #334155)",
-            "paddingTop": "70px",
-            "overflow": "hidden",
-            "whiteSpace": "nowrap",
-            "transition": "width 0.3s ease",
-            "zIndex": "1000",
-            "boxShadow": "4px 0 20px rgba(0,0,0,0.12)"
-        }
-
-        # =========================
-        # PRIMERA CARGA
-        # =========================
-        if not ctx.triggered or ctx.triggered[0]["prop_id"].startswith("init-done"):
-            if not init_done:
-                raise dash.exceptions.PreventUpdate
-
-            sidebar_style = {
-                **base,
-                "width": "260px"
-            }
-
-            content_style = {
-                "marginLeft": "260px",
-                "padding": "20px",
-                "transition": "margin-left 0.3s ease"
-            }
-
-            return sidebar_style, content_style, False
-
-        # =========================
-        # CLICK EN BOTÓN ☰
-        # =========================
         collapsed = not is_collapsed
 
         if collapsed:
-            # SOLO botón visible
-            sidebar_style = {
-                **base,
-                "width": "70px"
-            }
-
-            content_style = {
-                "marginLeft": "70px",
-                "padding": "20px",
-                "transition": "margin-left 0.3s ease"
-            }
-
+            return "sidebar collapsed", "main collapsed", True
         else:
-            # menú abierto completo
-            sidebar_style = {
-                **base,
-                "width": "260px"
-            }
-
-            content_style = {
-                "marginLeft": "260px",
-                "padding": "20px",
-                "transition": "margin-left 0.3s ease"
-            }
-
-        return sidebar_style, content_style, collapsed
+            return "sidebar", "main", False
 
     # ----------------------------
     # ADMIN COLLAPSE
@@ -106,43 +39,6 @@ def registrar_callbacks_admin(app):
         return is_open
 
 
-    # ----------------------------
-    # MENU ACTIVO
-    # ----------------------------
-    @app.callback(
-        Output("link-filtros", "className"),
-        Output("link-cuadro", "className"),
-        Output("link-datos", "className"),
-        Output("link-importar", "className"),
-        Output("link-usuarios", "className"),
-        Output("link-auditorias", "className"),
-        Output("admin-toggle", "className"),
-        Input("url", "pathname"),
-    )
-    def actualizar_menu(pathname):
-
-        if not pathname:
-            pathname = ""
-
-        def normal(base):
-            return base
-
-        def active(base):
-            return base + " active"
-
-        admin_active = pathname.startswith("/administracion")
-
-        return (
-            active("sidebar-link") if pathname == "/filtros" else normal("sidebar-link"),
-            active("sidebar-link") if pathname == "/cuadroMando" else normal("sidebar-link"),
-            active("sidebar-link") if pathname == "/datos" else normal("sidebar-link"),
-            active("sidebar-link") if pathname == "/importar" else normal("sidebar-link"),
-
-            active("sidebar-sublink") if pathname == "/administracion/usuarios" else normal("sidebar-sublink"),
-            active("sidebar-sublink") if pathname == "/administracion/auditorias" else normal("sidebar-sublink"),
-
-            active("sidebar-link") if admin_active else normal("sidebar-link"),
-        )
 
 
     # ----------------------------
@@ -183,8 +79,10 @@ def registrar_callbacks_admin(app):
         Output("usuarios-dropdown", "options"),
         Output("modal-confirmacion", "is_open"),
         Output("modal-confirmacion-anadir", "is_open"),
-        Output("mensaje-usuario", "children"),
-        Output("mensaje-usuario", "style"),
+        Output("mensaje-usuario-eliminar", "children"),
+        Output("mensaje-usuario-eliminar", "style"),
+        Output("mensaje-usuario-anadir", "children"),
+        Output("mensaje-usuario-anadir", "style"),
         Input("borrar-usuario-button", "n_clicks"),
         Input("cancelar-eliminar", "n_clicks"),
         Input("confirmar-eliminar", "n_clicks"),
@@ -208,7 +106,7 @@ def registrar_callbacks_admin(app):
         ctx = dash.callback_context
 
         if not ctx.triggered:
-            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}
+            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}, "", {"marginTop": "10px"}
 
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
@@ -219,10 +117,10 @@ def registrar_callbacks_admin(app):
         try:
 
             if trigger_id == "borrar-usuario-button":
-                return dash.no_update, True, is_open_add, "", estilo
+                return dash.no_update, True, is_open_add, "", estilo, "", estilo
 
             elif trigger_id == "cancelar-eliminar":
-                return dash.no_update, False, is_open_add, "", estilo
+                return dash.no_update, False, is_open_add, "", estilo, "", estilo
 
             elif trigger_id == "confirmar-eliminar":
 
@@ -241,13 +139,13 @@ def registrar_callbacks_admin(app):
                 mensaje = "✅ Usuario eliminado correctamente"
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, False, is_open_add, mensaje, estilo
+                return opciones, False, is_open_add, mensaje, estilo, "", estilo
 
             elif trigger_id == "add-usuario-button":
-                return dash.no_update, is_open_del, True, "", estilo
+                return dash.no_update, is_open_del, True, "", estilo, "", estilo
 
             elif trigger_id == "cancelar-anadir":
-                return dash.no_update, is_open_del, False, "", estilo
+                return dash.no_update, is_open_del, False, "", estilo, "", estilo
 
             elif trigger_id == "confirmar-anadir":
 
@@ -266,16 +164,16 @@ def registrar_callbacks_admin(app):
                 mensaje = "✅ Usuario añadido correctamente"
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, is_open_del, False, mensaje, estilo
+                return opciones, is_open_del, False, "", estilo, mensaje, estilo
 
         except Exception as e:
 
             mensaje = f"❌ Error: {e}"
             estilo = {"color": "red", "marginTop": "10px"}
 
-            return dash.no_update, is_open_del, is_open_add, mensaje, estilo
+            return dash.no_update, is_open_del, is_open_add, mensaje, estilo, "", estilo
 
-        return dash.no_update, is_open_del, is_open_add, "", estilo
+        return dash.no_update, is_open_del, is_open_add, "", estilo, "", estilo
 
 
     # ----------------------------
@@ -361,6 +259,10 @@ def registrar_callbacks_admin(app):
         Output("modal-titulo-eliminar", "children"),
         Output("titulo-usuarios-anadir", "children"),
         Output("add-usuario-button", "children"),
+        Output("modal-titulo-anadir", "children"),
+        Output("modal-texto-anadir", "children"),
+        Output("cancelar-anadir", "children"),
+        Output("confirmar-anadir", "children"),
         Output("check-admin", "label"),
         Output("input-usuario", "placeholder"),
         Output("input-passwd", "placeholder"),
@@ -377,6 +279,10 @@ def registrar_callbacks_admin(app):
             qr.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "confirmacion"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "anadir_usuarios"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "anadir"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "confirmacion"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion_usu"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "cancelar"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "anadir"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "admin"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "usuario"),

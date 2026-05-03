@@ -2,20 +2,54 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar sesión</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Inicio de sesión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=999">
 </head>
+
 <body class="login-page">
+
     <div class="login-box">
-        <h3>Iniciar sesión </h3>
+
+        <h3>Acceso al dashboard</h3>
+
+        <div class="login-subtitle">
+            Iniciar sesión
+        </div>
+
         <form method="POST">
-            <input id="username-input" type="text" name="username" placeholder="Usuario" required>
-            <input id="password-input" type="password" name="password" placeholder="Contraseña" required>
-            <button id="login-button" type="submit">Entrar</button>
+
+            <input
+                id="username-input"
+                type="text"
+                name="username"
+                placeholder="Usuario"
+                required
+            >
+
+            <input
+                id="password-input"
+                type="password"
+                name="password"
+                placeholder="Contraseña"
+                required
+            >
+
+            <button
+                id="login-button"
+                type="submit"
+            >
+                Iniciar sesión
+            </button>
+
             {% if error %}
-            <div class="error">{{ error }}</div>
+                <div class="error">
+                    {{ error }}
+                </div>
             {% endif %}
+
         </form>
+
     </div>
+
 </body>
 </html>

@@ -139,99 +139,123 @@ def registrar_callbacks_filtros(app):
 
         return html.Div([
 
-            html.H5(
+            # 🔹 TÍTULO
+            html.Div(
                 qr.obtener_textos_interfaz(idioma, "filtros", "filtros"),
-                style={"margin-bottom": "20px", "font-weight": "600"}
+                className="filtros-titulo"
             ),
 
-            # Tipo entidad
-            html.Label(
-                qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
-                className="label-filtro"
-            ),
+            # 🔹 BLOQUE 1
+            html.Div([
 
-            dcc.Dropdown(
-                id='tipo-entidad-dropdown',
-                options=[
-                    {'label': e['nombre'], 'value': e['id']}
-                    for e in tiposEntidad
-                ],
-                multi=False,
-                persistence=True,
-                persistence_type='session',
-                className="input-style",
-            ),
+                html.Label(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
+                    className="filtros-label"
+                ),
 
-            # Entidad
-            html.Label(
-                qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
-                className="label-filtro"
-            ),
+                dcc.Dropdown(
+                    id='tipo-entidad-dropdown',
+                    options=[{'label': e['nombre'], 'value': e['id']} for e in tiposEntidad],
+                    multi=False,
+                    persistence=True,
+                    persistence_type='session',
+                    className="dropdown-pro",
+                )
 
-            dcc.Dropdown(
-                id='entidad-dropdown',
-                options=[
-                    {'label': row['nombre'], 'value': row['id']}
-                    for _, row in entidades.drop_duplicates('id').iterrows()
-                ],
-                multi=True,
-                persistence=True,
-                persistence_type='session',
-                className="input-style",
-            ),
+            ], className="filtros-bloque"),
 
-            # Principios
-            html.Div(
-                qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
-                className="section-title"
-            ),
+            # 🔹 BLOQUE 2
+            html.Div([
 
-            dcc.Checklist(
-                id='principios-checklist',
-                options=[
-                    {'label': row['nombre'], 'value': row['id']}
-                    for _, row in principios.drop_duplicates('id').iterrows()
-                ],
-                value=principios['id'].drop_duplicates().tolist(),
-                className="input-style",
-            ),
+                html.Label(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
+                    className="filtros-label"
+                ),
 
-            # Versión WCAG
-            html.Div(
-                qr.obtener_textos_interfaz(idioma, "filtros", "version"),
-                className="section-title"
-            ),
+                dcc.Dropdown(
+                    id='entidad-dropdown',
+                    options=[
+                        {'label': row['nombre'], 'value': row['id']}
+                        for _, row in entidades.drop_duplicates('id').iterrows()
+                    ],
+                    multi=True,
+                    searchable=True,
+                    persistence=True,
+                    persistence_type='session',
+                    className="dropdown-pro",
+                    style={"maxHeight": "140px", "overflowY": "auto"}
+                )
 
-            dcc.Checklist(
-                id='wcag-version-checklist',
-                options=[
-                    {'label': row['version'], 'value': row['id']}
-                    for _, row in versionesWCAG.drop_duplicates('id').iterrows()
-                ],
-                value=versionesWCAG["id"].unique().tolist(),
-                className="input-style",
-            ),
+            ], className="filtros-bloque"),
 
-            # Nivel
-            html.Div(
-                qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
-                className="section-title"
-            ),
+            # 🔹 BLOQUE 3
+            html.Div([
 
-            dcc.Checklist(
-                id='nivel-checklist',
-                options=[
-                    {'label': row['nombre'], 'value': row['id']}
-                    for _, row in niveles.iterrows()
-                ],
-                value=niveles['id'].drop_duplicates().tolist(),
-                className="input-style",
-            ),
+                html.Label(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
+                    className="filtros-label"
+                ),
 
-            html.Button(
-                qr.obtener_textos_interfaz(idioma, "filtros", "actualizar"),
-                id="boton-actualizar",
-                n_clicks=0,
-                className="btn-actualizar"
-            )
+                dcc.Checklist(
+                    id='principios-checklist',
+                    options=[
+                        {'label': row['nombre'], 'value': row['id']}
+                        for _, row in principios.drop_duplicates('id').iterrows()
+                    ],
+                    value=principios['id'].drop_duplicates().tolist(),
+                    className="checklist-pro",
+                )
+
+            ], className="filtros-bloque"),
+
+            # 🔹 BLOQUE 4
+            html.Div([
+
+                html.Label(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "version"),
+                    className="filtros-label"
+                ),
+
+                dcc.Checklist(
+                    id='wcag-version-checklist',
+                    options=[
+                        {'label': row['version'], 'value': row['id']}
+                        for _, row in versionesWCAG.drop_duplicates('id').iterrows()
+                    ],
+                    value=versionesWCAG["id"].unique().tolist(),
+                    className="checklist-pro",
+                )
+
+            ], className="filtros-bloque"),
+
+            # 🔹 BLOQUE 5
+            html.Div([
+
+                html.Label(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
+                    className="filtros-label"
+                ),
+
+                dcc.Checklist(
+                    id='nivel-checklist',
+                    options=[
+                        {'label': row['nombre'], 'value': row['id']}
+                        for _, row in niveles.iterrows()
+                    ],
+                    value=niveles['id'].drop_duplicates().tolist(),
+                    className="checklist-pro",
+                )
+
+            ], className="filtros-bloque"),
+
+            # 🔹 BOTÓN
+            html.Div([
+                html.Button(
+                    qr.obtener_textos_interfaz(idioma, "filtros", "actualizar"),
+                    id="boton-actualizar",
+                    n_clicks=0,
+                    className="btn-pro"
+                )
+            ], className="filtros-actions")
+
         ])
