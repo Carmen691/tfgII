@@ -1,5 +1,9 @@
+import re
+
+import bcrypt
 import dash
-from dash import Output, Input, State
+from dash import Output, Input, State, callback_context
+from dash.exceptions import PreventUpdate
 import pandas as pd
 from flask import session
 import data.querys as qr
@@ -39,38 +43,58 @@ def registrar_callbacks_admin(app):
         return is_open
 
 
-
-
-    # ----------------------------
-    # CARGAR AUTH
-    # ----------------------------
     @app.callback(
-        Output("auth-status", "data"),
-        Input("url", "pathname"),
+        Output("link-auditorias","style"),
+        Input("auth-status","data"),
     )
-    def cargar_auth(pathname):
+    def mostrar_menu_admin(auth):
 
-        if 'user' in session:
-            return {"usuario": session["user"], "es_admin": session["admin"]}
+        # todavía no cargó la sesión
+        if auth is None:
+            return {}
 
-        return {"usuario": None, "es_admin": False}
-
-
-    # ----------------------------
-    # MOSTRAR ADMIN
-    # ----------------------------
-    @app.callback(
-        Output("admin-toggle", "style"),
-        Input("auth-status", "data"),
-        prevent_initial_call=False
-    )
-    def mostrar_admin(data):
-
-        if data and data.get("es_admin"):
+        if auth.get("es_admin"):
             return {}
 
         return {"display": "none"}
 
+    @app.callback(
+        Output("admin-eliminar-wrapper","style"),
+        Output("admin-anadir-wrapper","style"),
+        Input("auth-status","data"),
+    )
+    def mostrar_zonas_usuarios(auth):
+
+        # todavía no se ha cargado la sesión
+        if auth is None:
+            return {}, {}
+
+        if auth.get("es_admin"):
+            return {}, {}
+
+        oculto = {"display": "none"}
+
+        return oculto, oculto
+
+
+    @app.callback(
+        Output("auth-status", "data"),
+        Output("app-initialized", "data"),
+        Input("app-initialized", "data"),
+        prevent_initial_call=False
+    )
+    def cargar_auth(init):
+
+        if init:
+            raise PreventUpdate
+
+        return (
+            {
+                "usuario": session.get("user"),
+                "es_admin": bool(session.get("admin", False))
+            },
+            True
+        )
 
     # ----------------------------
     # GESTIONAR USUARIOS
@@ -266,6 +290,15 @@ def registrar_callbacks_admin(app):
         Output("check-admin", "label"),
         Output("input-usuario", "placeholder"),
         Output("input-passwd", "placeholder"),
+        Output("titulo-cambiar-password", "children"),
+        Output("input-password-actual", "placeholder"),
+        Output("input-password-nueva", "placeholder"),
+        Output("input-password-confirmar", "placeholder"),
+        Output("cambiar-password-button", "children"),
+        Output("btn-confirmar-cambio", "children"),
+        Output("body-confirmar-cambio", "children"),
+        Output("cancelar-password", "children"),
+        Output("confirmar-password", "children"),
         Input("store-idioma", "data")
     )
     def textos_gestion(idioma):
@@ -287,6 +320,15 @@ def registrar_callbacks_admin(app):
             qr.obtener_textos_interfaz(idioma, "usuarios", "admin"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "usuario"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "passwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "cambiar_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_actual"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "nueva_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "confirmar_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_cambiar_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_confirmar_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_body_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_cancelar_pwd"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_aceptar_pwd"),
         )
     
     @app.callback(
@@ -307,3 +349,128 @@ def registrar_callbacks_admin(app):
             {"label": row["nombre"], "value": row["id"]}
             for _, row in df.iterrows()
         ]
+    
+
+    @app.callback(
+        Output("modal-confirmacion-password", "is_open"),
+
+        Input("cambiar-password-button", "n_clicks"),
+        Input("cancelar-password", "n_clicks"),
+        Input("confirmar-password", "n_clicks"),
+
+        State("modal-confirmacion-password", "is_open"),
+
+        prevent_initial_call=True
+    )
+    def toggle_modal_password(
+        btn_abrir,
+        btn_cancelar,
+        btn_confirmar,
+        is_open
+    ):
+
+        return not is_open
+
+    @app.callback(
+        Output("mensaje-password","children"),
+        Output("input-password-actual","value"),
+        Output("input-password-nueva","value"),
+        Output("input-password-confirmar","value"),
+
+        Input("confirmar-password","n_clicks"),
+
+        State("input-password-actual","value"),
+        State("input-password-nueva","value"),
+        State("input-password-confirmar","value"),
+
+        prevent_initial_call=True
+    )
+    def cambiar_password(
+        n,
+        actual,
+        nueva,
+        confirmar
+    ):
+
+        usuario = session.get("user")
+
+        if not usuario:
+            return "Sesión expirada", actual, nueva, confirmar
+
+        if nueva != confirmar:
+            return "Las contraseñas no coinciden", actual, nueva, confirmar
+
+        if len(nueva) < 7:
+            return "La contraseña debe tener al menos 7 caracteres", actual, nueva, confirmar
+
+        if not re.search(r"[a-z]", nueva):
+            return "La contraseña debe contener una minúscula", actual, nueva, confirmar
+
+        if not re.search(r"[A-Z]", nueva):
+            return "La contraseña debe contener una mayúscula", actual, nueva, confirmar
+
+        if not re.search(r"\d", nueva):
+            return "La contraseña debe contener un número", actual, nueva, confirmar
+
+        passwd_guardada = qr.obtener_pwd(usuario)
+
+        if not bcrypt.checkpw(
+            actual.encode(),
+            passwd_guardada.encode()
+        ):
+            return "Contraseña actual incorrecta", actual, nueva, confirmar
+
+        nueva_hash = bcrypt.hashpw(
+            nueva.encode(),
+            bcrypt.gensalt()
+        ).decode()
+
+        qr.actualizar_password(
+            usuario,
+            nueva_hash
+        )
+
+        return (
+            "Contraseña actualizada",
+            "",
+            "",
+            ""
+        )
+        
+
+
+    @app.callback(
+        Output("input-password-actual", "type"),
+        Output("input-password-nueva", "type"),
+        Output("input-password-confirmar", "type"),
+
+        Input("ver-password-actual", "n_clicks"),
+        Input("ver-password-nueva", "n_clicks"),
+        Input("ver-password-confirmar", "n_clicks"),
+
+        prevent_initial_call=True
+    )
+    def ver_password(actual, nueva, confirmar):
+
+        boton = callback_context.triggered[0]["prop_id"].split(".")[0]
+
+        if boton == "ver-password-actual":
+            return (
+                "text" if actual % 2 else "password",
+                "password",
+                "password"
+            )
+
+        if boton == "ver-password-nueva":
+            return (
+                "password",
+                "text" if nueva % 2 else "password",
+                "password"
+            )
+
+        if boton == "ver-password-confirmar":
+            return (
+                "password",
+                "password",
+                "text" if confirmar % 2 else "password"
+            )

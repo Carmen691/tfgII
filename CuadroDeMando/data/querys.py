@@ -94,7 +94,29 @@ def obtener_pwd(username):
         result = conn.execute(text(f"Select pwd from usuarios where usuario = '{username}'"))
         datos = result.fetchall()
         return datos[0][0]
+    
+def actualizar_password(username, passwd):
 
+    query = text("""
+        UPDATE usuarios
+        SET pwd = :password
+        WHERE usuario = :username
+    """)
+
+    passwd_bytes = passwd.encode("utf-8")
+    pwd_converted = bcrypt.hashpw(passwd_bytes, bcrypt.gensalt())
+    with engine.begin() as conn:
+
+        result = conn.execute(
+            query,
+            {
+                "password": pwd_converted,
+                "username": username
+            }
+        )
+
+    return result.rowcount
+    
 def obtener_admin(username):
     with engine.begin() as conn:
         result = conn.execute(text(f"Select es_admin from usuarios where usuario = '{username}'"))
@@ -305,37 +327,72 @@ def obtener_entidades_por_nombre(id_entidad):
         datos = result.fetchall()
         return datos
 
+
 def guardar_valores(id_tipo, id_wcag, df):
+
     entidades = obtener_entidades_por_id(id_tipo)
 
+    # Cargar todos los criterios una sola vez
+    with engine.connect() as conn:
+
+        result = conn.execute(text("""
+            SELECT id, codigo
+            FROM dashboard.criterios_wcag
+        """))
+
+        criterios = {
+            row.codigo: row.id
+            for row in result
+        }
+
     datos = []
-    for idx, row in df.iterrows():
-        fila_valida = row[0]
-        if not pd.isna(fila_valida):
-            i = 0
-            for dato in row:
-                if isinstance(dato, (int,float)):
-                    id_criterio = obtener_criterio(re.split(r'[ :]', row[1])[0])
-                    id_version = id_wcag
-                    id_entidad = entidades[i][0]
-                    valor = dato
-                    datos.append({
-                        'id_entidad': id_entidad,
-                        'id_criterio': id_criterio,
-                        'id_version' : id_version,
-                        'medicion': dato
-                    })
-                    i = i+1
 
+    for row in df.itertuples(index=False):
 
-    # Inserción masiva
+        # Primera columna
+        if pd.isna(row[0]):
+            continue
+
+        codigo = re.split(r'[ :]', str(row[1]))[0]
+
+        id_criterio = criterios.get(codigo)
+
+        if id_criterio is None:
+            continue
+
+        for i, dato in enumerate(row):
+
+            if isinstance(dato, (int, float)):
+
+                datos.append({
+                    "id_entidad": entidades[i][0],
+                    "id_criterio": id_criterio,
+                    "id_version": id_wcag,
+                    "medicion": dato
+                })
+
+    if not datos:
+        return
+
     with engine.begin() as conn:
-        sql = text("""
-            INSERT INTO mediciones_wcag (id_entidad, id_criterio, id_version, medicion)
-            VALUES (:id_entidad, :id_criterio, :id_version, :medicion)
-        """)
-        conn.execute(sql, datos)
 
+        sql = text("""
+            INSERT INTO mediciones_wcag (
+                id_entidad,
+                id_criterio,
+                id_version,
+                medicion
+            )
+            VALUES (
+                :id_entidad,
+                :id_criterio,
+                :id_version,
+                :medicion
+            )
+        """)
+
+        result = conn.execute(sql, datos)
+        return result.rowcount
 
 def obtener_criterio(codigo):
     with engine.begin() as conn:
@@ -373,7 +430,7 @@ def eliminar_usuario(usuario):
         datos = [{'usuario': usuario}]
         sql = text("delete from usuarios where usuario = :usuario")
         conn.execute(sql, datos)
-
+        result = conn.execute(sql, datos)
 
 
 def obtener_textos_interfaz(idioma_codigo, seccion, clave):

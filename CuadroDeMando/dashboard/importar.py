@@ -69,7 +69,13 @@ def layout_importar():
 
             html.Div([
                 html.Button(id="btn-importar", n_clicks=0, className="btn-success")
-            ], className="fila-botones")
+            ], className="fila-botones"),
+
+
+            html.Div(
+                id="mensaje-importacion",
+                className="mensaje"
+            )
 
         ])
     )

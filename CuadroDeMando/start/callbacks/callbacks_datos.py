@@ -25,7 +25,7 @@ def registrar_callbacks_datos(app):
         if cargar < 2:
             datos = cargar_datos_inicio()
             return datos, True, False
-        return no_update, no_update, True,
+        return no_update, no_update, True
 
     
     @app.callback(
@@ -69,10 +69,11 @@ def registrar_callbacks_datos(app):
         return no_update
     
     @app.callback(
-        Output('dropdown-sugerencias', 'options'),
-        Input('store-data', 'data')
+        Output("dropdown-sugerencias", "options"),
+        Input("refresh-trigger", "data"),
+        State('store-data', 'data')
     )
-    def actualizar_dropdown(data):
+    def actualizar_dropdown(_, data):
         if not data or "tiposEntidad" not in data:
             return []
 
@@ -80,11 +81,6 @@ def registrar_callbacks_datos(app):
 
         if len(entidades) == 1 and isinstance(entidades[0], list):
             entidades = entidades[0]
-
-        return [
-            {"label": e["nombre"], "value": e["id"]}
-            for e in entidades
-        ]
 
     @app.callback(
         dash.Output('mensaje-confirmacion', 'children'),

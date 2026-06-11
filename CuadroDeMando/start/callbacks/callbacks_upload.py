@@ -34,19 +34,43 @@ def registrar_callbacks_upload(app):
         Output('upload-data', 'style'),
         Input('upload-data', 'filename'),
         Input('upload-data', 'contents'),
-        Input('btn-importar', 'n_clicks'),
-        State('dropdown-sugerencias', 'value'),
-        State('dropdown-wcag', 'value'),
-        prevent_initial_call=True
     )
-    def update_upload_area(filename, content, btn_importar, valor_dropdown, valor_wcag):
+    def update_upload_area(filename, content):
 
-        if btn_importar > 0:
-            procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag)
+        if filename is not None and content is not None:
 
-        if btn_importar > 0:
+            return (
+                html.Div([
+                    html.Img(
+                        src='https://img.icons8.com/color/48/microsoft-excel-2019--v1.png',
+                        style={
+                            'height': '40px',
+                            'marginBottom': '10px'
+                        }
+                    ),
+                    html.Div(
+                        filename,
+                        style={'wordWrap': 'break-word'}
+                    )
+                ]),
+                "",
+                {
+                    'width': '100%',
+                    'height': 'auto',
+                    'lineHeight': '60px',
+                    'borderWidth': '0px',
+                    'borderRadius': '10px',
+                    'textAlign': 'center',
+                    'margin': '10px',
+                    'cursor': 'pointer',
+                    'padding': '10px'
+                }
+            )
 
-            return "", html.Div('Arrastra o selecciona un archivo Excel'), {
+        return (
+            "",
+            html.Div('Arrastra o selecciona un archivo Excel'),
+            {
                 'width': '100%',
                 'height': '60px',
                 'lineHeight': '60px',
@@ -58,39 +82,42 @@ def registrar_callbacks_upload(app):
                 'cursor': 'pointer',
                 'padding': '10px'
             }
+        )
 
-        if filename is not None and content is not None:
+    @app.callback(
+        Output("mensaje-importacion", "children"),
+        Input("btn-importar", "n_clicks"),
+        State("upload-data", "contents"),
+        State("upload-data", "filename"),
+        State("dropdown-sugerencias", "value"),
+        State("dropdown-wcag", "value"),
+        prevent_initial_call=True
+    )
+    def importar_archivo(
+        n_clicks,
+        content,
+        filename,
+        valor_dropdown,
+        valor_wcag
+    ):
 
-            return html.Div([
-                html.Img(
-                    src='https://img.icons8.com/color/48/microsoft-excel-2019--v1.png',
-                    style={'height': '40px', 'marginBottom': '10px'}
-                ),
-                html.Div(f"{filename}", style={'wordWrap': 'break-word'})
-            ]), "", {
-                'width': '100%',
-                'height': 'auto',
-                'lineHeight': '60px',
-                'borderWidth': '0px',
-                'borderRadius': '10px',
-                'textAlign': 'center',
-                'margin': '10px',
-                'cursor': 'pointer',
-                'padding': '10px'
-            }
+        try:
 
-        return "", html.Div('Arrastra o selecciona un archivo Excel'), {
-            'width': '100%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '2px',
-            'borderStyle': 'dashed',
-            'borderRadius': '10px',
-            'textAlign': 'center',
-            'margin': '10px',
-            'cursor': 'pointer',
-            'padding': '10px'
-        }
+            if not content:
+                return "Seleccione un archivo"
+
+            procesar_y_guardar_archivo(
+                content,
+                filename,
+                valor_dropdown,
+                valor_wcag
+            )
+
+            return "Importación realizada correctamente"
+
+        except Exception as e:
+
+            return f"Error durante la importación: {e}"
 
     
     @app.callback(
@@ -198,7 +225,8 @@ def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):
 
         qr.guardar_entidades(valor_dropdown, columnas_limpias)
 
-        qr.guardar_valores(valor_dropdown, valor_wcag, df)
+        result = qr.guardar_valores(valor_dropdown, valor_wcag, df)
+
 
     except Exception as error:
 
