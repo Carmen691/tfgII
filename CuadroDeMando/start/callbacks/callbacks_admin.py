@@ -119,12 +119,13 @@ def registrar_callbacks_admin(app):
         State("input-usuario", "value"),
         State("input-passwd", "value"),
         State("check-admin", "value"),
+        State("store-idioma", "data")
     )
     def gestionar_usuarios(
         n_borrar, n_cancelar_del, n_confirmar_del,
         n_add, n_cancelar_add, n_confirmar_add,
         is_open_del, is_open_add,
-        usuario_a_borrar, nuevo_usuario, nuevo_pass, es_admin
+        usuario_a_borrar, nuevo_usuario, nuevo_pass, es_admin, idioma
     ):
 
         ctx = dash.callback_context
@@ -173,6 +174,18 @@ def registrar_callbacks_admin(app):
 
             elif trigger_id == "confirmar-anadir":
 
+                if len(nuevo_pass) < 7:
+                    return  dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo
+
+                if not re.search(r"[a-z]", nuevo_pass):
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo
+
+                if not re.search(r"[A-Z]", nuevo_pass):
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo
+
+                if not re.search(r"\d", nuevo_pass):
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo
+
                 qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
 
                 usuarios_actualizados = pd.DataFrame(
@@ -185,7 +198,7 @@ def registrar_callbacks_admin(app):
                     for usu in usuarios_actualizados["usuario"].unique()
                 ]
 
-                mensaje = "✅ Usuario añadido correctamente"
+                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuario", "usuario_add")
                 estilo = {"color": "green", "marginTop": "10px"}
 
                 return opciones, is_open_del, False, "", estilo, mensaje, estilo
@@ -209,13 +222,14 @@ def registrar_callbacks_admin(app):
         Output("mensaje-auditoria", "style"),
         Input("borrar-auditoria-button", "n_clicks"),
         State("auditorias-dropdown", "value"),
+        State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada):
+    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada, idioma):
 
         if not auditoria_seleccionada:
 
-            return dash.no_update, "❌ Selecciona una auditoría para eliminar", {"color": "red"}
+            return dash.no_update, "❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditorias_eliminar"), {"color": "red"}
 
         try:
 
@@ -230,12 +244,12 @@ def registrar_callbacks_admin(app):
                 {"label": str(aud), "value": str(aud)}
                 for aud in df_actualizado["nombre"].unique()
             ]
-
-            return opciones_actualizadas, "✅ Auditoría eliminada correctamente", {"color": "green"}
+            qr.registrar_auditoria(session.get('user'), "DELETE", "Auditoria " + str(auditoria_seleccionada) + " eliminada")
+            return opciones_actualizadas, "✅ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ok"), {"color": "green"}
 
         except Exception as e:
 
-            return dash.no_update, f"❌ Error al eliminar la auditoría: {e}", {"color": "red"}
+            return dash.no_update, f"❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ko") + ": {e}", {"color": "red"}
         
 
 
@@ -353,13 +367,10 @@ def registrar_callbacks_admin(app):
 
     @app.callback(
         Output("modal-confirmacion-password", "is_open"),
-
         Input("cambiar-password-button", "n_clicks"),
         Input("cancelar-password", "n_clicks"),
         Input("confirmar-password", "n_clicks"),
-
         State("modal-confirmacion-password", "is_open"),
-
         prevent_initial_call=True
     )
     def toggle_modal_password(
@@ -376,41 +387,34 @@ def registrar_callbacks_admin(app):
         Output("input-password-actual","value"),
         Output("input-password-nueva","value"),
         Output("input-password-confirmar","value"),
-
         Input("confirmar-password","n_clicks"),
-
         State("input-password-actual","value"),
         State("input-password-nueva","value"),
         State("input-password-confirmar","value"),
-
+        State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def cambiar_password(
-        n,
-        actual,
-        nueva,
-        confirmar
-    ):
+    def cambiar_password(n, actual, nueva, confirmar, idioma):
 
         usuario = session.get("user")
 
         if not usuario:
-            return "Sesión expirada", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "sesion", "sesion_exp"), actual, nueva, confirmar
 
         if nueva != confirmar:
-            return "Las contraseñas no coinciden", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_change"), actual, nueva, confirmar
 
         if len(nueva) < 7:
-            return "La contraseña debe tener al menos 7 caracteres", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), actual, nueva, confirmar
 
         if not re.search(r"[a-z]", nueva):
-            return "La contraseña debe contener una minúscula", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), actual, nueva, confirmar
 
         if not re.search(r"[A-Z]", nueva):
-            return "La contraseña debe contener una mayúscula", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), actual, nueva, confirmar
 
         if not re.search(r"\d", nueva):
-            return "La contraseña debe contener un número", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), actual, nueva, confirmar
 
         passwd_guardada = qr.obtener_pwd(usuario)
 
@@ -418,7 +422,7 @@ def registrar_callbacks_admin(app):
             actual.encode(),
             passwd_guardada.encode()
         ):
-            return "Contraseña actual incorrecta", actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_incorrecta"), actual, nueva, confirmar
 
         nueva_hash = bcrypt.hashpw(
             nueva.encode(),
@@ -431,7 +435,7 @@ def registrar_callbacks_admin(app):
         )
 
         return (
-            "Contraseña actualizada",
+            qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_actualizada"),
             "",
             "",
             ""
@@ -443,11 +447,9 @@ def registrar_callbacks_admin(app):
         Output("input-password-actual", "type"),
         Output("input-password-nueva", "type"),
         Output("input-password-confirmar", "type"),
-
         Input("ver-password-actual", "n_clicks"),
         Input("ver-password-nueva", "n_clicks"),
         Input("ver-password-confirmar", "n_clicks"),
-
         prevent_initial_call=True
     )
     def ver_password(actual, nueva, confirmar):
@@ -474,3 +476,10 @@ def registrar_callbacks_admin(app):
                 "password",
                 "text" if confirmar % 2 else "password"
             )
+        
+    @app.callback(
+        Output("input-passwd", "type"),
+        Input("ver-password-alta", "n_clicks"),
+    )
+    def ver_password_alta(n):
+        return "text" if n and n % 2 else "password"

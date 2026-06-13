@@ -95,11 +95,19 @@ def layout_usuarios():
                         className="input-style"
                     ),
 
-                    dcc.Input(
-                        id='input-passwd',
-                        type='password',
-                        className="input-style"
-                    ),
+                    html.Div([
+                        dcc.Input(
+                            id='input-passwd',
+                            type='password',
+                            className="input-style"
+                        ),
+                        html.Button(
+                            "👁",
+                            id="ver-password-alta",
+                            n_clicks=0,
+                            className="ojo-password"
+                        )
+                    ], className="password-container"),
 
                     dbc.Checkbox(
                         id="check-admin",

@@ -139,116 +139,120 @@ def registrar_callbacks_filtros(app):
 
         return html.Div([
 
-            # 🔹 TÍTULO
+            # TÍTULO PRINCIPAL
             html.Div(
                 qr.obtener_textos_interfaz(idioma, "filtros", "filtros"),
-                className="filtros-titulo"
+                className="filtros-title-card"
             ),
 
-            # 🔹 BLOQUE 1
+            # GRID DE FILTROS
             html.Div([
 
-                html.Label(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
-                    className="filtros-label"
-                ),
+                # Tipo entidad
+                html.Div([
 
-                dcc.Dropdown(
-                    id='tipo-entidad-dropdown',
-                    options=[{'label': e['nombre'], 'value': e['id']} for e in tiposEntidad],
-                    multi=False,
-                    persistence=True,
-                    persistence_type='session',
-                    className="dropdown-pro",
-                )
+                    html.Label(
+                        qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
+                        className="filtros-label"
+                    ),
 
-            ], className="filtros-bloque"),
+                    dcc.Dropdown(
+                        id='tipo-entidad-dropdown',
+                        options=[{'label': e['nombre'], 'value': e['id']} for e in tiposEntidad],
+                        multi=False,
+                        persistence=True,
+                        persistence_type='session',
+                        className="dropdown-pro"
+                    )
 
-            # 🔹 BLOQUE 2
-            html.Div([
+                ], className="filtro-card"),
 
-                html.Label(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
-                    className="filtros-label"
-                ),
+                # Entidades
+                html.Div([
 
-                dcc.Dropdown(
-                    id='entidad-dropdown',
-                    options=[
-                        {'label': row['nombre'], 'value': row['id']}
-                        for _, row in entidades.drop_duplicates('id').iterrows()
-                    ],
-                    multi=True,
-                    searchable=True,
-                    persistence=True,
-                    persistence_type='session',
-                    className="dropdown-pro",
-                    style={"maxHeight": "140px", "overflowY": "auto"}
-                )
+                    html.Label(
+                        qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
+                        className="filtros-label"
+                    ),
 
-            ], className="filtros-bloque"),
+                    dcc.Dropdown(
+                        id='entidad-dropdown',
+                        options=[
+                            {'label': row['nombre'], 'value': row['id']}
+                            for _, row in entidades.drop_duplicates('id').iterrows()
+                        ],
+                        multi=True,
+                        searchable=True,
+                        persistence=True,
+                        persistence_type='session',
+                        className="dropdown-pro"
+                    )
 
-            # 🔹 BLOQUE 3
-            html.Div([
+                ], className="filtro-card"),
 
-                html.Label(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
-                    className="filtros-label"
-                ),
+                # Principios
+                html.Div([
 
-                dcc.Checklist(
-                    id='principios-checklist',
-                    options=[
-                        {'label': row['nombre'], 'value': row['id']}
-                        for _, row in principios.drop_duplicates('id').iterrows()
-                    ],
-                    value=principios['id'].drop_duplicates().tolist(),
-                    className="checklist-pro",
-                )
+                    html.Label(
+                        qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
+                        className="filtros-label"
+                    ),
 
-            ], className="filtros-bloque"),
+                    dcc.Checklist(
+                        id='principios-checklist',
+                        options=[
+                            {'label': row['nombre'], 'value': row['id']}
+                            for _, row in principios.drop_duplicates('id').iterrows()
+                        ],
+                        value=principios['id'].drop_duplicates().tolist(),
+                        className="checklist-pro",
+                    )
 
-            # 🔹 BLOQUE 4
-            html.Div([
+                ], className="filtro-card"),
 
-                html.Label(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "version"),
-                    className="filtros-label"
-                ),
+                # WCAG
+                html.Div([
 
-                dcc.Checklist(
-                    id='wcag-version-checklist',
-                    options=[
-                        {'label': row['version'], 'value': row['id']}
-                        for _, row in versionesWCAG.drop_duplicates('id').iterrows()
-                    ],
-                    value=versionesWCAG["id"].unique().tolist(),
-                    className="checklist-pro",
-                )
+                    html.Label(
+                        qr.obtener_textos_interfaz(idioma, "filtros", "version"),
+                        className="filtros-label"
+                    ),
 
-            ], className="filtros-bloque"),
+                    dcc.Checklist(
+                        id='wcag-version-checklist',
+                        options=[
+                            {'label': row['version'], 'value': row['id']}
+                            for _, row in versionesWCAG.drop_duplicates('id').iterrows()
+                        ],
+                        value=versionesWCAG["id"].unique().tolist(),
+                        className="checklist-pro",
+                    )
 
-            # 🔹 BLOQUE 5
-            html.Div([
+                ], className="filtro-card"),
 
-                html.Label(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
-                    className="filtros-label"
-                ),
+                # Nivel
+                html.Div([
 
-                dcc.Checklist(
-                    id='nivel-checklist',
-                    options=[
-                        {'label': row['nombre'], 'value': row['id']}
-                        for _, row in niveles.iterrows()
-                    ],
-                    value=niveles['id'].drop_duplicates().tolist(),
-                    className="checklist-pro",
-                )
+                    html.Label(
+                        qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
+                        className="filtros-label"
+                    ),
 
-            ], className="filtros-bloque"),
+                    dcc.Checklist(
+                        id='nivel-checklist',
+                        options=[
+                            {'label': row['nombre'], 'value': row['id']}
+                            for _, row in niveles.iterrows()
+                        ],
+                        value=niveles['id'].drop_duplicates().tolist(),
+                        className="checklist-pro",
+                    )
 
-            # 🔹 BOTÓN
+                ], className="filtro-card"),
+
+            ], className="filtros-grid"),
+
+            # BOTÓN
             html.Div([
                 html.Button(
                     qr.obtener_textos_interfaz(idioma, "filtros", "actualizar"),

@@ -1,6 +1,6 @@
 import dash
 from dash import Output, Input, State, html, dash_table, no_update
-from flask import app
+from flask import app, session
 import pandas as pd
 import base64
 import io
@@ -112,7 +112,7 @@ def registrar_callbacks_upload(app):
                 valor_dropdown,
                 valor_wcag
             )
-
+            qr.registrar_auditoria(session.get('user'), "INSERT", "Auditoria insertada")
             return "Importación realizada correctamente"
 
         except Exception as e:
@@ -154,7 +154,7 @@ def registrar_callbacks_upload(app):
     def cargar_importar(data):
 
         if not data:
-            return no_update
+            return []
 
         wcag = pd.DataFrame(data["tiposWCAG"])
 

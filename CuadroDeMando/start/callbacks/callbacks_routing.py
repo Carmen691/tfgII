@@ -1,4 +1,5 @@
 from dash import Output, Input, State, callback_context, html, dcc
+import dash
 from dash.exceptions import PreventUpdate
 from flask import session
 import pandas as pd
@@ -21,6 +22,8 @@ def registrar_callbacks_routing(app):
 
     )
     def mostrar_contenido(pathname):
+        if 'user' not in session:
+            return dcc.Location(pathname='/', id='redir-login')
         if pathname == '/dash/':
             return dcc.Location(href='/dash/filtros', id='redir')
 
@@ -106,3 +109,14 @@ def registrar_callbacks_routing(app):
                 html.Span(qr.obtener_textos_interfaz(idioma, "menu", "cerrar_sesion"), className="menu-text")
             ],
         )
+
+
+    @app.callback(
+        Output('url', 'pathname'),
+        Input('session-check', 'n_intervals')
+    )
+    def comprobar_sesion(n):
+        if not session.get('user'):
+            return '/login'
+
+        return dash.no_update

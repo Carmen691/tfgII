@@ -1,4 +1,6 @@
-﻿from flask import Flask, render_template, request, redirect, session, url_for
+﻿from datetime import timedelta
+
+from flask import Flask, render_template, request, redirect, session, url_for
 import json
 import bcrypt  
 from start.home import crear_dash_app  # Importamos la función del dashboard  
@@ -6,10 +8,12 @@ import data.querys as dq
 
 application = Flask(__name__)
 application.secret_key = 'clave_secreta_segura'
+application.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
 crear_dash_app(application)
 @application.before_request
 def proteger_dash():
-    # Si la ruta empieza con /dash y el usuario no está logueado, redirige a login
+    if '/_dash-' in request.path:
+        return None
     if request.path.startswith('/dash') and 'user' not in session:
         return redirect(url_for('login'))
 
@@ -26,6 +30,8 @@ def login():
             if bcrypt.checkpw(password, passwd):
                 session['user'] = username
                 session['admin'] = dq.obtener_admin(username)
+                session.permanent = True
+                dq.registrar_auditoria(username, 'LOGIN', 'El usuario se ha logado correctamente')
                 return redirect(url_for('dashboard'))
         error = "Usuario o contraseña incorrectos"
     
@@ -42,6 +48,7 @@ def dashboard():
 
 @application.route('/logout')
 def logout():
+    dq.registrar_auditoria(session.get('user'), 'LOGOUT', 'El usuario ha cerrado la sesión')
     session.pop('user', None)
     return redirect(url_for('login'))
 

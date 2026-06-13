@@ -15,6 +15,12 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
+def registrar_auditoria(usuario, accion, descripcion):
+    datos = [{'usuario': usuario, 'accion': accion, 'descripcion': descripcion}]
+    with engine.begin() as conn:
+        sql = text("INSERT INTO auditoria (usuario, accion, descripcion) VALUES (:usuario, :accion, :descripcion)")
+        conn.execute(sql, datos)
+
 def obtener_idioma():
     with engine.begin() as conn:
         result = conn.execute(text("SELECT * FROM idiomas"))

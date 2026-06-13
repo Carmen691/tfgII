@@ -25,6 +25,7 @@ def crear_layout():
         dcc.Store(id='store-niveles', storage_type='session'),
         dcc.Store(id='store-entidad', storage_type='session'),
         dcc.Store(id="tabla-actual-store", storage_type='session'),
+        #dcc.Interval(id='session-check', interval=60*1000, n_intervals=0),
 
         # =========================
         # INIT
@@ -72,27 +73,22 @@ def crear_layout():
 
                 dcc.Link([
                     html.Span("📊", className="icon"),
-                    html.Span("Filtros", className="menu-text")
                 ], href="/dash/filtros", className="sidebar-link", id="link-filtros"),
 
                 dcc.Link([
                     html.Span("📈", className="icon"),
-                    html.Span("Cuadro de mando", className="menu-text")
                 ], href="/dash/cuadroMando", className="sidebar-link", id="link-cuadro"),
 
                 dcc.Link([
                     html.Span("📋", className="icon"),
-                    html.Span("Tabla de datos", className="menu-text")
                 ], href="/dash/datos", className="sidebar-link", id="link-datos"),
 
                 dcc.Link([
                     html.Span("📥", className="icon"),
-                    html.Span("Importar", className="menu-text")
                 ], href="/dash/importar", className="sidebar-link", id="link-importar"),
 
                 html.Div([
                     html.Span("⚙️", className="icon"),
-                    html.Span("Administración", className="menu-text")
                 ],
                 id="admin-toggle",
                 className="sidebar-link sidebar-section"
@@ -102,27 +98,24 @@ def crear_layout():
 
                     dcc.Link([
                         html.Span("👤", className="icon"),
-                        html.Span("Usuarios", className="menu-text")
                     ], href="/dash/administracion/usuarios", className="sidebar-sublink", id="link-usuarios"),
 
                     dcc.Link([
                         html.Span("📑", className="icon"),
-                        html.Span("Auditorías", className="menu-text")
                     ], href="/dash/administracion/auditorias", className="sidebar-sublink", id="link-auditorias"),
 
                 ], id="admin-collapse", is_open=False),
 
             ], className="menu-container"),
 
-            html.Button(
+            html.A(
                 [
                     html.Span("🚪", className="icon"),
-                    html.Span("Cerrar sesión", className="menu-text")
                 ],
+                href="/logout",
                 id="logout-button",
-                className="sidebar-link logout",
-                n_clicks=0
-            )
+                className="sidebar-link logout"
+            ),
 
         ],
         id="sidebar",
