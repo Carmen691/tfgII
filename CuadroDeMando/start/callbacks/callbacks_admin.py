@@ -161,7 +161,8 @@ def registrar_callbacks_admin(app):
                     for usu in usuarios_actualizados["usuario"].unique()
                 ]
 
-                mensaje = "✅ Usuario eliminado correctamente"
+                qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(usuario_a_borrar) + " eliminado")
+                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_eliminado_ok")
                 estilo = {"color": "green", "marginTop": "10px"}
 
                 return opciones, False, is_open_add, mensaje, estilo, "", estilo
@@ -173,7 +174,7 @@ def registrar_callbacks_admin(app):
                 return dash.no_update, is_open_del, False, "", estilo, "", estilo
 
             elif trigger_id == "confirmar-anadir":
-
+                estilo = {"color": "orange", "marginTop": "10px"}
                 if len(nuevo_pass) < 7:
                     return  dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo
 
@@ -186,7 +187,14 @@ def registrar_callbacks_admin(app):
                 if not re.search(r"\d", nuevo_pass):
                     return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo
 
-                qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
+                resultado = qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
+
+                if resultado == 0:
+                    qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " no añadido")
+                    mensaje = "❌ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add_error")
+                    estilo = {"color": "red", "marginTop": "10px"}
+                    return dash.no_update, is_open_del, False, "", estilo, mensaje, estilo
+
 
                 usuarios_actualizados = pd.DataFrame(
                     qr.obtener_usuarios(),
@@ -198,7 +206,8 @@ def registrar_callbacks_admin(app):
                     for usu in usuarios_actualizados["usuario"].unique()
                 ]
 
-                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuario", "usuario_add")
+                qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " añadido")
+                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add")
                 estilo = {"color": "green", "marginTop": "10px"}
 
                 return opciones, is_open_del, False, "", estilo, mensaje, estilo
@@ -384,6 +393,7 @@ def registrar_callbacks_admin(app):
 
     @app.callback(
         Output("mensaje-password","children"),
+        Output("mensaje-password", "style"),
         Output("input-password-actual","value"),
         Output("input-password-nueva","value"),
         Output("input-password-confirmar","value"),
@@ -397,24 +407,24 @@ def registrar_callbacks_admin(app):
     def cambiar_password(n, actual, nueva, confirmar, idioma):
 
         usuario = session.get("user")
-
+        estilo = {"color": "orange", "marginTop": "10px"}
         if not usuario:
-            return qr.obtener_textos_interfaz(idioma, "sesion", "sesion_exp"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "sesion", "sesion_exp"), estilo, actual, nueva, confirmar
 
         if nueva != confirmar:
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_change"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_change"), estilo, actual, nueva, confirmar
 
         if len(nueva) < 7:
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo, actual, nueva, confirmar
 
         if not re.search(r"[a-z]", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo, actual, nueva, confirmar
 
         if not re.search(r"[A-Z]", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo, actual, nueva, confirmar
 
         if not re.search(r"\d", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), actual, nueva, confirmar
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo, actual, nueva, confirmar
 
         passwd_guardada = qr.obtener_pwd(usuario)
 
@@ -422,7 +432,8 @@ def registrar_callbacks_admin(app):
             actual.encode(),
             passwd_guardada.encode()
         ):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_incorrecta"), actual, nueva, confirmar
+            estilo = {"color": "red", "marginTop": "10px"}
+            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_incorrecta"), estilo, actual, nueva, confirmar
 
         nueva_hash = bcrypt.hashpw(
             nueva.encode(),
@@ -433,9 +444,11 @@ def registrar_callbacks_admin(app):
             usuario,
             nueva_hash
         )
-
+        qr.registrar_auditoria(session.get('user'), "UPDATE", "Usuario " + str(usuario) + " actualizó su contraseña")
+        estilo = {"color": "green", "marginTop": "10px"}
         return (
             qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_actualizada"),
+            estilo,
             "",
             "",
             ""

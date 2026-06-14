@@ -426,7 +426,8 @@ def guardar_nuevo_usuario(usuario, passwd, admin):
         datos = [{'usuario': usuario, 'pwd': pwd_converted, 'es_admin': admin}]
         # Insertar datos con executemany
         sql = text("INSERT INTO usuarios (usuario, pwd, es_admin) VALUES (:usuario, :pwd, :es_admin)")
-        conn.execute(sql, datos)
+        resultado = conn.execute(sql, datos)
+        return resultado.rowcount
 
 
 

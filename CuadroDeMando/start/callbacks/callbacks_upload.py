@@ -165,50 +165,28 @@ def registrar_callbacks_upload(app):
 
         return opciones_wcag
 
-# def parse_contents(contents, filename, date):
+    @app.callback(
+            Output("dropdown-sugerencias", "options"),
+            Input("refresh-trigger", "data"),
+            Input('store-data', 'data')
+        )
+    def actualizar_dropdown(_, data):
+        if not data or "tiposEntidad" not in data:
+            return no_update
 
-#     content_type, content_string = contents.split(',')
-#     decoded = base64.b64decode(content_string)
+        entidades = data["tiposEntidad"]
 
-#     try:
+        if len(entidades) == 1 and isinstance(entidades[0], list):
+            entidades = entidades[0]
 
-#         if 'csv' in filename:
-#             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        opciones = []
+        for entidad in entidades:
+            opciones.append({
+                "label": entidad["nombre"],
+                "value": entidad["id"]
+            })
 
-#         elif 'xls' in filename:
-#             df = pd.read_excel(io.BytesIO(decoded))
-
-#     except Exception as e:
-
-#         print(e)
-
-#         return html.Div([
-#             'There was an error processing this file.'
-#         ])
-
-#     return html.Div([
-
-#         html.H5(filename),
-#         html.H6(datetime.datetime.fromtimestamp(date)),
-
-#         dash_table.DataTable(
-#             df.to_dict('records'),
-#             [{'name': i, 'id': i} for i in df.columns]
-#         ),
-
-#         html.Hr(),
-
-#         html.Div('Raw Content'),
-
-#         html.Pre(
-#             contents[0:200] + '...',
-#             style={
-#                 'whiteSpace': 'pre-wrap',
-#                 'wordBreak': 'break-all'
-#             }
-#         )
-#     ])
-
+        return opciones
 
 def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):
 
