@@ -77,21 +77,18 @@ def eliminar_auditoria(auditoria):
             DELETE FROM dashboard.mediciones_wcag
             WHERE id_entidad IN (
                 SELECT id FROM dashboard.entidades
-                WHERE nombre = :auditoria
+                WHERE id_tipo = :auditoria
             )
         """), {"auditoria": auditoria})
 
         conn.execute(text("""
             DELETE FROM dashboard.entidades
-            WHERE id_tipo = (
-                SELECT id FROM dashboard.tipos_entidad
-                WHERE nombre = :auditoria
-            )
+            WHERE id_tipo = :auditoria
         """), {"auditoria": auditoria})
 
         conn.execute(text("""
             DELETE FROM dashboard.tipos_entidad
-            WHERE nombre = :auditoria
+            WHERE id = :auditoria
         """), {"auditoria": auditoria})
 
 
@@ -301,24 +298,22 @@ def obtener_versiones():
         datos = result.fetchall()
         return datos
 
-def guardar_nuevo_tipo_entidad(valor_input):
-    with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
-        if result.rowcount > 0:
-            return result.rowcount
-        else:
-            result = conn.execute(text("INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
-            return result.rowcount
+def guardar_nuevo_tipo_entidad(conn, valor_input):
+    result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
+    if result.rowcount > 0:
+        return 0
+    else:
+        result = conn.execute(text("INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
+        return result.lastrowid
 
-def guardar_entidades(id_tipo, columnas_limpias):
-    with engine.begin() as conn:
+def guardar_entidades(conn, id_tipo, columnas_limpias):
+    # Preparar datos para inserción masiva
+    datos = [{'nombre': nombre, 'id_tipo': id_tipo} for nombre in columnas_limpias]
 
-        # Preparar datos para inserción masiva
-        datos = [{'nombre': nombre, 'id_tipo': id_tipo} for nombre in columnas_limpias]
-
-        # Insertar datos con executemany
-        sql = text("INSERT INTO entidades (nombre, id_tipo) VALUES (:nombre, :id_tipo)")
-        conn.execute(sql, datos)
+    # Insertar datos con executemany
+    sql = text("INSERT INTO entidades (nombre, id_tipo) VALUES (:nombre, :id_tipo)")
+    result = conn.execute(sql, datos)
+    return result.rowcount
 
 
 def obtener_entidades_por_id(id_entidad):
@@ -334,71 +329,74 @@ def obtener_entidades_por_nombre(id_entidad):
         return datos
 
 
-def guardar_valores(id_tipo, id_wcag, df):
+def guardar_valores(conn, id_tipo, id_wcag, df):
 
-    entidades = obtener_entidades_por_id(id_tipo)
+    result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = {id_tipo}"))
+    entidades = result.fetchall()
 
     # Cargar todos los criterios una sola vez
-    with engine.connect() as conn:
 
-        result = conn.execute(text("""
-            SELECT id, codigo
-            FROM dashboard.criterios_wcag
-        """))
+    result = conn.execute(text("""
+        SELECT id, codigo
+        FROM dashboard.criterios_wcag
+    """))
 
-        criterios = {
-            row.codigo: row.id
-            for row in result
-        }
+    criterios = {
+        row.codigo: row.id
+        for row in result
+    }
 
     datos = []
 
-    for row in df.itertuples(index=False):
+    try:
+        for row in df.itertuples(index=False):
 
-        # Primera columna
-        if pd.isna(row[0]):
-            continue
+            # Primera columna
+            if pd.isna(row[0]):
+                continue
 
-        codigo = re.split(r'[ :]', str(row[1]))[0]
+            codigo = re.split(r'[ :]', str(row[1]))[0]
 
-        id_criterio = criterios.get(codigo)
+            id_criterio = criterios.get(codigo)
 
-        if id_criterio is None:
-            continue
+            if id_criterio is None:
+                continue
+            
+            j = 0
+            for i, dato in enumerate(row):
+                if isinstance(dato, (int, float)):
 
-        for i, dato in enumerate(row):
-
-            if isinstance(dato, (int, float)):
-
-                datos.append({
-                    "id_entidad": entidades[i][0],
-                    "id_criterio": id_criterio,
-                    "id_version": id_wcag,
-                    "medicion": dato
-                })
+                    datos.append({
+                        "id_entidad": entidades[j][0],
+                        "id_criterio": id_criterio,
+                        "id_version": id_wcag,
+                        "medicion": dato
+                    })
+                    j = j+1
+    except Exception as e:
+        print("ERROR:", repr(e))
+        raise
 
     if not datos:
         return
 
-    with engine.begin() as conn:
+    sql = text("""
+        INSERT INTO mediciones_wcag (
+            id_entidad,
+            id_criterio,
+            id_version,
+            medicion
+        )
+        VALUES (
+            :id_entidad,
+            :id_criterio,
+            :id_version,
+            :medicion
+        )
+    """)
 
-        sql = text("""
-            INSERT INTO mediciones_wcag (
-                id_entidad,
-                id_criterio,
-                id_version,
-                medicion
-            )
-            VALUES (
-                :id_entidad,
-                :id_criterio,
-                :id_version,
-                :medicion
-            )
-        """)
-
-        result = conn.execute(sql, datos)
-        return result.rowcount
+    result = conn.execute(sql, datos)
+    return result.rowcount
 
 def obtener_criterio(codigo):
     with engine.begin() as conn:

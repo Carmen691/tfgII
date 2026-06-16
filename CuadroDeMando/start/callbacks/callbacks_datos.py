@@ -55,39 +55,6 @@ def registrar_callbacks_datos(app):
             return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles)
         return no_update
 
-
-    @app.callback(
-        Output('store-data', 'data'),
-        Input('add-option-button', 'n_clicks'),
-        State('store-data', 'data'),
-        prevent_initial_call=True
-    )
-    def actualizar_datos_filtros(nent, store_data):
-        if nent > 0:
-            store_data["tiposEntidad"] = cargar_tipo_entidades()
-            return store_data
-        return no_update
-    
-
-    @app.callback(
-        dash.Output('mensaje-confirmacion', 'children'),
-        dash.Output('refresh-trigger', 'data'),
-        dash.Input('add-option-button', 'n_clicks'),
-        dash.State('input-texto', 'value'),
-        prevent_initial_call=True
-    )
-    def guardar_texto(n_clicks, valor_input):
-        if not valor_input:
-            return 'No hay texto para guardar', dash.no_update
-
-        mensaje = qr.guardar_nuevo_tipo_entidad(valor_input)
-
-        if mensaje == 0:
-            return '❌ Error al guardar el nuevo tipo', dash.no_update
-        else:
-            return '✅ Tipo guardado correctamente', {'refresh': True}
-
-
     @app.callback(
         Output("tabla-datos-container", "children"),
         Input("store-data", "data"),

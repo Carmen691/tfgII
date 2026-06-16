@@ -5,6 +5,8 @@ import pandas as pd
 import base64
 import io
 import datetime
+
+from sqlalchemy import engine
 import data.querys as qr
 
 
@@ -86,34 +88,31 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output("mensaje-importacion", "children"),
+        Output("mensaje-importacion", "style"),
         Input("btn-importar", "n_clicks"),
         State("upload-data", "contents"),
         State("upload-data", "filename"),
-        State("dropdown-sugerencias", "value"),
+        State("input-texto", "value"),
         State("dropdown-wcag", "value"),
+        State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def importar_archivo(
-        n_clicks,
-        content,
-        filename,
-        valor_dropdown,
-        valor_wcag
-    ):
+    def importar_archivo(n_clicks, content, filename, valor_dropdown, valor_wcag, idioma):
 
         try:
 
             if not content:
                 return "Seleccione un archivo"
 
-            procesar_y_guardar_archivo(
+            resultado = procesar_y_guardar_archivo(
                 content,
                 filename,
                 valor_dropdown,
-                valor_wcag
+                valor_wcag,
+                idioma
             )
-            qr.registrar_auditoria(session.get('user'), "INSERT", "Auditoria insertada")
-            return "Importación realizada correctamente"
+            qr.registrar_auditoria(session.get('user'), "INSERT", "Auditoria insertada " + str(valor_dropdown))
+            return resultado
 
         except Exception as e:
 
@@ -123,9 +122,7 @@ def registrar_callbacks_upload(app):
     @app.callback(
         Output("importar-titulo", "children"),
         Output("entidad-datos", "children"),
-        Output("dropdown-sugerencias", "placeholder"),
         Output("input-texto", "placeholder"),
-        Output("add-option-button", "children"),
         Output("version-wcag", "children"),
         Output("dropdown-wcag", "placeholder"),
         Output("arrastra-ficheros", "children"),
@@ -137,9 +134,7 @@ def registrar_callbacks_upload(app):
         return (
             qr.obtener_textos_interfaz(idioma, "auditorias", "importar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "datos"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "escribir"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "anadir"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "fichero"),
@@ -150,8 +145,9 @@ def registrar_callbacks_upload(app):
     @app.callback(
         Output("dropdown-wcag", "options"),
         Input("store-data", "data"),
+        State("store-idioma", "data")
     )
-    def cargar_importar(data):
+    def cargar_importar(data, idioma):
 
         if not data:
             return []
@@ -165,33 +161,11 @@ def registrar_callbacks_upload(app):
 
         return opciones_wcag
 
-    @app.callback(
-            Output("dropdown-sugerencias", "options"),
-            Input("refresh-trigger", "data"),
-            Input('store-data', 'data')
-        )
-    def actualizar_dropdown(_, data):
-        if not data or "tiposEntidad" not in data:
-            return no_update
 
-        entidades = data["tiposEntidad"]
-
-        if len(entidades) == 1 and isinstance(entidades[0], list):
-            entidades = entidades[0]
-
-        opciones = []
-        for entidad in entidades:
-            opciones.append({
-                "label": entidad["nombre"],
-                "value": entidad["id"]
-            })
-
-        return opciones
-
-def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):
+def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag, idioma):
 
     try:
-
+        estilo = {"color": "red", "marginTop": "10px"}
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
 
@@ -200,11 +174,20 @@ def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag):
         columnas_limpias = [
             col for col in df.columns if not col.startswith('Unnamed')
         ]
+        with qr.engine.begin() as conn:
+            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown)
 
-        qr.guardar_entidades(valor_dropdown, columnas_limpias)
-
-        result = qr.guardar_valores(valor_dropdown, valor_wcag, df)
-
+            if tipo == 0:
+                return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "tipo_entidad_ko"), estilo
+            else:
+                if qr.guardar_entidades(conn, tipo, columnas_limpias) > 0:
+                    if qr.guardar_valores(conn, tipo, valor_wcag, df) > 0:
+                        estilo = {"color": "green", "marginTop": "10px"}
+                        return '✅' + qr.obtener_textos_interfaz(idioma, "importar", "imp_auditoria_ok"), estilo
+                    else:
+                        return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "imp_auditoria_ko"), estilo
+                else:
+                    return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "entidad_ko"), estilo
 
     except Exception as error:
 

@@ -13,11 +13,6 @@ def layout_importar():
 
             html.Label(id="entidad-datos"),
 
-            dcc.Dropdown(
-                id='dropdown-sugerencias',
-                style={'width': '300px'}
-            ),
-
             dcc.Store(id='refresh-trigger'),
 
             html.Br(),
@@ -29,11 +24,10 @@ def layout_importar():
                 style={'width': '300px', 'marginRight': '10px'}
             ),
 
-            html.Button(id='add-option-button', n_clicks=0),
 
             html.Div(id='mensaje-confirmacion'),
 
-            html.Br(),
+            html.Br(), html.Br(),
 
             html.Label(id="version-wcag"),
 
