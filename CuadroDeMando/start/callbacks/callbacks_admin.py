@@ -231,22 +231,23 @@ def registrar_callbacks_admin(app):
         Output("mensaje-auditoria", "style"),
         Input("borrar-auditoria-button", "n_clicks"),
         State("auditorias-dropdown", "value"),
+        State("versiones-dropdown", "value"),
         State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada, idioma):
+    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada, version_seleccionada, idioma):
 
-        if not auditoria_seleccionada:
+        if not auditoria_seleccionada or not version_seleccionada:
 
             return dash.no_update, "❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditorias_eliminar"), {"color": "red"}
 
         try:
 
-            qr.eliminar_auditoria(auditoria_seleccionada)
+            qr.eliminar_auditoria(auditoria_seleccionada, version_seleccionada)
 
             df_actualizado = pd.DataFrame(
                 qr.obtener_auditorias(),
-                columns=["id", "nombre"]
+                columns=["id", "nombre", "idversion", "fecha"]
             )
 
             opciones_actualizadas = [
@@ -258,7 +259,7 @@ def registrar_callbacks_admin(app):
 
         except Exception as e:
 
-            return dash.no_update, f"❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ko") + ": {e}", {"color": "red"}
+            return dash.no_update, "❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ko") + f": {e}", {"color": "red"}
         
 
 
@@ -284,6 +285,7 @@ def registrar_callbacks_admin(app):
     @app.callback(
         Output("titulo-gestion", "children"),
         Output("label-auditorias", "children"),
+        Output("label-versiones", "children"),
         Output("borrar-auditoria-button", "children"),
         Input("store-idioma", "data")
     )
@@ -292,6 +294,7 @@ def registrar_callbacks_admin(app):
         return (
             qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
             qr.obtener_textos_interfaz(idioma, "gestion", "auditorias"),
+            qr.obtener_textos_interfaz(idioma, "gestion", "versiones"),
             qr.obtener_textos_interfaz(idioma, "gestion", "titulo")
         )
     
@@ -366,12 +369,46 @@ def registrar_callbacks_admin(app):
 
         auditorias = qr.obtener_auditorias()
 
-        df = pd.DataFrame(auditorias)
+        df = pd.DataFrame(
+            auditorias,
+            columns=["id_tipo", "nombre", "id_version", "fecha"]
+        )
 
-        return [
-            {"label": row["nombre"], "value": row["id"]}
+        opciones_auditorias = [
+            {"label": row["nombre"], "value": row["id_tipo"]}
+            for _, row in df.drop_duplicates(subset=["id_tipo"]).iterrows()
+        ]
+
+        return opciones_auditorias
+    
+
+    
+    @app.callback(
+        Output("versiones-dropdown", "options", allow_duplicate=True),
+        Input("auditorias-dropdown", "value"),
+        prevent_initial_call='initial_duplicate'
+    )
+    def cargar_auditorias(auditoria):
+
+        if not auditoria:
+            return []
+
+        auditorias = qr.obtener_versiones_auditoria(auditoria)
+
+        df = pd.DataFrame(
+            auditorias,
+            columns=["id_version", "fecha"]
+        )
+
+        opciones_versiones = [
+            {
+                "label": row["fecha"].strftime("%d/%m/%Y"),
+                "value": row["id_version"]
+            }
             for _, row in df.iterrows()
         ]
+
+        return opciones_versiones
     
 
     @app.callback(

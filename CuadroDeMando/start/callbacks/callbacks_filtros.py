@@ -29,7 +29,7 @@ def registrar_callbacks_filtros(app):
 
         df_entidades = pd.DataFrame(
             qr.obtener_entidades_por_nombre(tipo_seleccionado),
-            columns=["id", "nombre", "id_tipo"]
+            columns=["id", "nombre", "id_version"]
         )
 
         options = [
@@ -167,6 +167,25 @@ def registrar_callbacks_filtros(app):
 
                 ], className="filtro-card"),
 
+
+                # Fecha
+
+                html.Div([
+                    html.Label(
+                        "Fecha auditoría",
+                        className="filtros-label"
+                    ),
+
+                    dcc.Dropdown(
+                        id='version-auditoria-dropdown',
+                        multi=False,
+                        persistence=True,
+                        persistence_type='session',
+                        className="dropdown-pro"
+                    )
+
+                ], className="filtro-card"),
+
                 # Entidades
                 html.Div([
 
@@ -263,3 +282,32 @@ def registrar_callbacks_filtros(app):
             ], className="filtros-actions")
 
         ])
+
+
+    @app.callback(
+        Output("version-auditoria-dropdown", "options"),
+        Output("version-auditoria-dropdown", "value"),
+        Input("tipo-entidad-dropdown", "value")
+    )
+    def cargar_versiones_auditoria(id_tipo):
+
+        if not id_tipo:
+            return [], None
+
+        versiones = pd.DataFrame(
+            qr.obtener_versiones_auditoria(id_tipo),
+            columns=["id", "fecha"]
+        )
+
+        if versiones.empty:
+            return [], None
+
+        opciones = [
+            {
+                "label": row["fecha"].strftime("%d/%m/%Y"),
+                "value": row["id"]
+            }
+            for _, row in versiones.iterrows()
+        ]
+
+        return opciones, opciones[0]["value"]

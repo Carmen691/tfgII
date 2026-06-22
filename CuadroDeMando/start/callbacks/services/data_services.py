@@ -5,13 +5,14 @@ import data.querys as qr
 def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles):
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
     usuarios = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
-    auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre"])
+    auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre", "idversion", "fecha"])
     tipos_wcag = pd.DataFrame(qr.obtener_tipos_wcag())
     principios = pd.DataFrame(qr.obtener_principios())
     niveles = pd.DataFrame(qr.obtener_niveles())
     versiones = pd.DataFrame(qr.obtener_versiones())
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
-    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipo_entidad_sel), columns=["id", "nombre", "id_tipo"])
+    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipo_entidad_sel), columns=["id", "nombre", "id_version"])
+    escalas = pd.DataFrame(qr.obtener_escalas())
 
 
     entidades_ids = list(entidades['id'])
@@ -56,7 +57,8 @@ def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles
         "tiposEntidad": tipos_entidad.to_dict('records'),
         "tiposWCAG": tipos_wcag.to_dict('records'),
         "principios": principios.to_dict('records'),
-        "niveles": niveles.to_dict('records')
+        "niveles": niveles.to_dict('records'),
+        "escalas": escalas.to_dict('records')
     }
 
 
@@ -68,14 +70,14 @@ def cargar_tipo_entidades():
 def cargar_datos_inicio():
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
     usuarios = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
-    auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre"])
+    auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre", "idversion", "fecha"])
     tipos_wcag = pd.DataFrame(qr.obtener_tipos_wcag())
     principios = pd.DataFrame(qr.obtener_principios())
     niveles = pd.DataFrame(qr.obtener_niveles())
     versiones = pd.DataFrame(qr.obtener_versiones())
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
-    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipos_entidad.iloc[0,0]), columns=["id", "nombre", "id_tipo"])
-
+    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipos_entidad.iloc[0,0]), columns=["id", "nombre", "id_version"])
+    escalas = pd.DataFrame(qr.obtener_escalas())
     entidades_ids = list(entidades['id'])
     entidades_sql = f"({','.join(map(str, entidades_ids))})"
 
@@ -116,5 +118,6 @@ def cargar_datos_inicio():
         "tiposEntidad": tipos_entidad.to_dict('records'),
         "tiposWCAG": tipos_wcag.to_dict('records'),
         "principios": principios.to_dict('records'),
-        "niveles": niveles.to_dict('records')
+        "niveles": niveles.to_dict('records'),
+        "escalas": escalas.to_dict('records')
     }

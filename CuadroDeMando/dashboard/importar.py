@@ -24,8 +24,21 @@ def layout_importar():
                 style={'width': '300px', 'marginRight': '10px'}
             ),
 
+            html.Br(),
+            html.Br(),
 
-            html.Div(id='mensaje-confirmacion'),
+            html.Label(id="fecha-audit"),
+
+
+            dcc.Input(
+                id='input-fecha',
+                type='date',
+                style={
+                    'width': '300px',
+                    'height': '38px',
+                    'padding': '0 8px'
+                }
+            ),
 
             html.Br(), html.Br(),
 
@@ -38,11 +51,18 @@ def layout_importar():
 
             html.Br(),
 
+            html.Label(id="escala-wcag"),
+
+            dcc.Dropdown(
+                id='dropdown-escala',
+                style={'width': '300px'}
+            ),
+
+            html.Br(),
+
             dcc.Upload(
                 id='upload-data',
-                children=html.Div([
-                    html.Div(id="arrastra-ficheros")
-                ]),
+                children=html.Div(id="arrastra-ficheros"),
                 style={
                     'width': '100%',
                     'height': '60px',

@@ -66,25 +66,51 @@ def obtener_usuarios():
 
 def obtener_auditorias():
     with engine.begin() as conn:
-        result = conn.execute(text("SELECT id, nombre FROM tipos_entidad"))
+        result = conn.execute(text("""SELECT
+                t.id AS id_tipo,
+                t.nombre,
+                v.id AS id_version,
+                v.fecha
+            FROM tipos_entidad t
+            JOIN versiones v
+                ON v.id_tipo_entidad = t.id
+            ORDER BY t.nombre, v.fecha DESC
+        """))
+        datos = result.fetchall()
+        return datos
+    
+def obtener_versiones_auditoria(auditoria):
+    with engine.begin() as conn:
+        result = conn.execute(text(f"""SELECT
+                id AS id_version,
+                fecha
+                FROM versiones
+                WHERE id_tipo_entidad = {auditoria}
+            ORDER BY fecha DESC
+        """))
         datos = result.fetchall()
         return datos
 
-def eliminar_auditoria(auditoria):
+def eliminar_auditoria(auditoria, version):
     with engine.begin() as conn:
 
         conn.execute(text("""
             DELETE FROM dashboard.mediciones_wcag
             WHERE id_entidad IN (
                 SELECT id FROM dashboard.entidades
-                WHERE id_tipo = :auditoria
+                WHERE id_version = :id_version
             )
-        """), {"auditoria": auditoria})
+        """), {"id_version": version})
 
         conn.execute(text("""
             DELETE FROM dashboard.entidades
-            WHERE id_tipo = :auditoria
-        """), {"auditoria": auditoria})
+            WHERE id_version = :id_version
+        """), {"id_version": version})
+
+        conn.execute(text("""
+            DELETE FROM dashboard.versiones
+            WHERE id = :version
+        """), {"version":version})
 
         conn.execute(text("""
             DELETE FROM dashboard.tipos_entidad
@@ -149,7 +175,7 @@ def obtener_datos(entidades, principios, versiones, niveles):
             and p.id in {principios}
             JOIN versiones_wcag v ON m.id_version = v.id
             and v.id in {versiones}
-            JOIN escala_valores ev ON ev.id_escala = m.medicion
+            JOIN escala_valores ev ON ev.id_descripcion = m.medicion
             LEFT JOIN traducciones pt ON p.id = pt.id_elemento 
             AND pt.tabla = 'principios' AND pt.campo = 'nombre' 
             AND pt.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
@@ -220,6 +246,13 @@ def obtener_mapa_calor():
 def obtener_opciones_cumplimiento():
     with engine.begin() as conn:
         result = conn.execute(text("""SELECT id_escala, descripcion FROM dashboard.escala_valores;"""))
+        datos = result.fetchall()
+        return datos
+
+
+def obtener_escalas():
+    with engine.begin() as conn:
+        result = conn.execute(text(""" SELECT id, descripcion FROM escalas;"""))
         datos = result.fetchall()
         return datos
 
@@ -298,40 +331,49 @@ def obtener_versiones():
         datos = result.fetchall()
         return datos
 
-def guardar_nuevo_tipo_entidad(conn, valor_input):
+def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha):
     result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
-    if result.rowcount > 0:
-        return 0
+    fila = result.fetchone()
+    if fila:
+        id_tipo = fila.id
+        result = conn.execute(text(f"""SELECT id FROM versiones
+            WHERE id_tipo_entidad = (Select id from tipos_entidad where nombre = '{valor_input}') AND fecha = '{fecha}' AND id_escala = '{valor_escala}'"""))
+        if result.rowcount > 0:
+            return 0
+        else: 
+            result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala) VALUES (:id_tipo, :fecha, :escala)"""), {"id_tipo": id_tipo, "fecha": fecha, "escala": valor_escala})
+            return result.lastrowid
     else:
-        result = conn.execute(text("INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
+        result = conn.execute(text(f"INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
+        result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala) VALUES (:id_tipo, :fecha, :escala)"""), {"id_tipo": result.lastrowid, "fecha": fecha, "escala": valor_escala})
         return result.lastrowid
 
-def guardar_entidades(conn, id_tipo, columnas_limpias):
+def guardar_entidades(conn, id_version, columnas_limpias):
     # Preparar datos para inserción masiva
-    datos = [{'nombre': nombre, 'id_tipo': id_tipo} for nombre in columnas_limpias]
+    datos = [{'nombre': nombre, 'id_version': id_version} for nombre in columnas_limpias]
 
     # Insertar datos con executemany
-    sql = text("INSERT INTO entidades (nombre, id_tipo) VALUES (:nombre, :id_tipo)")
+    sql = text("INSERT INTO entidades (nombre, id_version) VALUES (:nombre, :id_version)")
     result = conn.execute(sql, datos)
     return result.rowcount
 
 
-def obtener_entidades_por_id(id_entidad):
+def obtener_entidades_por_id(id_version):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = {id_entidad}"))
+        result = conn.execute(text(f"SELECT * FROM entidades where id_version = {id_version}"))
         datos = result.fetchall()
         return datos
 
-def obtener_entidades_por_nombre(id_entidad):
+def obtener_entidades_por_nombre(id_version):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = '{id_entidad}'"))
+        result = conn.execute(text(f"SELECT * FROM entidades where id_version = '{id_version}'"))
         datos = result.fetchall()
         return datos
 
 
-def guardar_valores(conn, id_tipo, id_wcag, df):
+def guardar_valores(conn, id_version, id_wcag, df):
 
-    result = conn.execute(text(f"SELECT * FROM entidades where id_tipo = {id_tipo}"))
+    result = conn.execute(text(f"SELECT * FROM entidades where id_version = {id_version}"))
     entidades = result.fetchall()
 
     # Cargar todos los criterios una sola vez

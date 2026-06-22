@@ -17,6 +17,12 @@ def layout_gestion():
                 style={'width': '50%'}
             ),
 
+            html.Label(id="label-versiones"),
+            
+            dcc.Dropdown(
+                id='versiones-dropdown'
+            ),
+
             html.Br(),
 
             html.Button(

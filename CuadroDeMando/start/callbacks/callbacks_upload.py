@@ -32,7 +32,6 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output('file-upload-info', 'children'),
-        Output('upload-data', 'children'),
         Output('upload-data', 'style'),
         Input('upload-data', 'filename'),
         Input('upload-data', 'contents'),
@@ -71,7 +70,6 @@ def registrar_callbacks_upload(app):
 
         return (
             "",
-            html.Div('Arrastra o selecciona un archivo Excel'),
             {
                 'width': '100%',
                 'height': '60px',
@@ -91,13 +89,14 @@ def registrar_callbacks_upload(app):
         Output("mensaje-importacion", "style"),
         Input("btn-importar", "n_clicks"),
         State("upload-data", "contents"),
-        State("upload-data", "filename"),
         State("input-texto", "value"),
         State("dropdown-wcag", "value"),
+        State("dropdown-escala", "value"),
+        State("input-fecha", "value"),
         State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def importar_archivo(n_clicks, content, filename, valor_dropdown, valor_wcag, idioma):
+    def importar_archivo(n_clicks, content, valor_dropdown, valor_wcag, valor_escala, fecha, idioma):
 
         try:
 
@@ -106,9 +105,10 @@ def registrar_callbacks_upload(app):
 
             resultado = procesar_y_guardar_archivo(
                 content,
-                filename,
                 valor_dropdown,
                 valor_wcag,
+                valor_escala,
+                fecha,
                 idioma
             )
             qr.registrar_auditoria(session.get('user'), "INSERT", "Auditoria insertada " + str(valor_dropdown))
@@ -122,9 +122,12 @@ def registrar_callbacks_upload(app):
     @app.callback(
         Output("importar-titulo", "children"),
         Output("entidad-datos", "children"),
+        Output("fecha-audit", "children"),
         Output("input-texto", "placeholder"),
-        Output("version-wcag", "children"),
         Output("dropdown-wcag", "placeholder"),
+        Output("version-wcag", "children"),
+        Output("escala-wcag", "children"),
+        Output("dropdown-escala", "placeholder"),
         Output("arrastra-ficheros", "children"),
         Output("btn-importar", "children"),
         Input("store-idioma", "data")
@@ -134,9 +137,12 @@ def registrar_callbacks_upload(app):
         return (
             qr.obtener_textos_interfaz(idioma, "auditorias", "importar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "datos"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "escribir"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "escala"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "fichero"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
         )
@@ -147,7 +153,7 @@ def registrar_callbacks_upload(app):
         Input("store-data", "data"),
         State("store-idioma", "data")
     )
-    def cargar_importar(data, idioma):
+    def dropdown_wcag(data, idioma):
 
         if not data:
             return []
@@ -162,7 +168,26 @@ def registrar_callbacks_upload(app):
         return opciones_wcag
 
 
-def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag, idioma):
+    @app.callback(
+        Output("dropdown-escala", "options"),
+        Input("store-data", "data"),
+        State("store-idioma", "data")
+    )
+    def dropdown_escala(data, idioma):
+
+        if not data:
+            return []
+
+        escala = pd.DataFrame(data["escalas"])
+
+        opciones_escala = [
+            {"label": row["descripcion"], "value": row["id"]}
+            for _, row in escala.iterrows()
+        ]
+
+        return opciones_escala
+
+def procesar_y_guardar_archivo(content, valor_dropdown, valor_wcag, valor_escala, fecha, idioma):
 
     try:
         estilo = {"color": "red", "marginTop": "10px"}
@@ -175,7 +200,7 @@ def procesar_y_guardar_archivo(content, filename, valor_dropdown, valor_wcag, id
             col for col in df.columns if not col.startswith('Unnamed')
         ]
         with qr.engine.begin() as conn:
-            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown)
+            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown, valor_escala, fecha)
 
             if tipo == 0:
                 return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "tipo_entidad_ko"), estilo

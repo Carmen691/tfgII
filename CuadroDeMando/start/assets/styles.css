@@ -823,6 +823,8 @@ body {
 
 /* labels */
 #entidad-datos,
+#fecha-audit,
+#escala-wcag,
 #version-wcag {
     display: block;
     font-size: 15px;
@@ -1179,3 +1181,5 @@ select:focus {
     padding: 0;
     line-height: 1;
 }
+
+
