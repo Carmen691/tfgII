@@ -1183,3 +1183,78 @@ select:focus {
 }
 
 
+/* ==========================================
+   TABLA DATOS
+   ========================================== */
+
+/* Ocultar selector de columnas */
+.show-hide {
+    display: none !important;
+}
+
+/* Dropdowns dentro del DataTable */
+.dash-dropdown {
+    position: relative !important;
+    z-index: 9999 !important;
+}
+
+.Select-menu-outer {
+    display: block !important;
+    z-index: 10000 !important;
+}
+
+/* Campo de número de página */
+.previous-next-container input {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    max-width: 30px !important;
+
+    padding: 0 !important;
+    margin: 0 4px !important;
+
+    line-height: 30px !important;
+    text-align: center !important;
+
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+
+    font-size: 14px !important;
+    font-weight: 500 !important;
+
+    background: white !important;
+    box-sizing: border-box !important;
+}
+
+/* Quitar flechas del input numérico */
+.previous-next-container input[type=number] {
+    appearance: textfield !important;
+    -moz-appearance: textfield !important;
+    -webkit-appearance: none !important;
+}
+
+/* Botones de paginación */
+.previous-next-container button {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+
+    padding: 0 !important;
+    margin: 0 2px !important;
+
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+/* Hover botones paginación */
+.previous-next-container button:hover {
+    opacity: 0.9;
+}
+
+/* Centrado visual paginación */
+.previous-next-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

@@ -287,6 +287,8 @@ def registrar_callbacks_admin(app):
         Output("label-auditorias", "children"),
         Output("label-versiones", "children"),
         Output("borrar-auditoria-button", "children"),
+        Output("versiones-dropdown", "placeholder"),
+        Output("auditorias-dropdown", "placeholder"),
         Input("store-idioma", "data")
     )
     def textos_gestion(idioma):
@@ -295,7 +297,9 @@ def registrar_callbacks_admin(app):
             qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
             qr.obtener_textos_interfaz(idioma, "gestion", "auditorias"),
             qr.obtener_textos_interfaz(idioma, "gestion", "versiones"),
-            qr.obtener_textos_interfaz(idioma, "gestion", "titulo")
+            qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar")
         )
     
 

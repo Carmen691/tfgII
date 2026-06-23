@@ -90,6 +90,7 @@ def obtener_versiones_auditoria(auditoria):
         """))
         datos = result.fetchall()
         return datos
+        
 
 def eliminar_auditoria(auditoria, version):
     with engine.begin() as conn:
@@ -159,11 +160,11 @@ def existe_usuario(username):
         return datos
 
 
-def obtener_datos(entidades, principios, versiones, niveles):
+def obtener_datos(entidades, principios, versiones, niveles, version):
     with engine.begin() as conn:
         result = conn.execute(text(f"""SELECT m.id as id_medicion, p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
             e.id AS id_entidad, e.nombre AS entidad, c.id AS id_criterio,
-            COALESCE(ct.texto, c.nombre) AS criterio, ev.id_escala as id_descripcion, ev.descripcion,
+            COALESCE(ct.texto, c.nombre) AS criterio, ev.id_descripcion as id_descripcion, ev.descripcion,
             m.observaciones, v.version FROM mediciones_wcag m
             JOIN entidades e ON m.id_entidad = e.id
             and e.id in {entidades}
@@ -175,7 +176,9 @@ def obtener_datos(entidades, principios, versiones, niveles):
             and p.id in {principios}
             JOIN versiones_wcag v ON m.id_version = v.id
             and v.id in {versiones}
-            JOIN escala_valores ev ON ev.id_descripcion = m.medicion
+            JOIN versiones ver ON ver.id = {version}
+            JOIN escala_valores ev ON ev.id_escala = ver.id_escala
+            AND ev.id_descripcion = m.medicion
             LEFT JOIN traducciones pt ON p.id = pt.id_elemento 
             AND pt.tabla = 'principios' AND pt.campo = 'nombre' 
             AND pt.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
@@ -243,9 +246,9 @@ def obtener_mapa_calor():
         datos = result.fetchall()
         return datos
 
-def obtener_opciones_cumplimiento():
+def obtener_opciones_cumplimiento(idioma):
     with engine.begin() as conn:
-        result = conn.execute(text("""SELECT id_escala, descripcion FROM dashboard.escala_valores;"""))
+        result = conn.execute(text("""SELECT id_descripcion, descripcion FROM dashboard.escala_valores;"""))
         datos = result.fetchall()
         return datos
 
@@ -364,9 +367,9 @@ def obtener_entidades_por_id(id_version):
         datos = result.fetchall()
         return datos
 
-def obtener_entidades_por_nombre(id_version):
+def obtener_entidades_por_nombre(id_tipo):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM entidades where id_version = '{id_version}'"))
+        result = conn.execute(text(f"SELECT * FROM entidades where id_version = (SELECT id from versiones where id_tipo_entidad = '{id_tipo}')"))
         datos = result.fetchall()
         return datos
 

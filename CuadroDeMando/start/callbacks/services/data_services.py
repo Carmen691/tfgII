@@ -2,7 +2,7 @@ import pandas as pd
 import data.querys as qr
 
 
-def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles):
+def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles, version_aud):
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
     usuarios = pd.DataFrame(qr.obtener_usuarios(), columns=["id", "usuario"])
     auditorias = pd.DataFrame(qr.obtener_auditorias(), columns=["id", "nombre", "idversion", "fecha"])
@@ -11,12 +11,11 @@ def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles
     niveles = pd.DataFrame(qr.obtener_niveles())
     versiones = pd.DataFrame(qr.obtener_versiones())
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
-    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipo_entidad_sel), columns=["id", "nombre", "id_version"])
+    entidades = pd.DataFrame(qr.obtener_entidades_por_id(version_aud), columns=["id", "nombre", "id_version"])
     escalas = pd.DataFrame(qr.obtener_escalas())
 
 
     entidades_ids = list(entidades['id'])
-    entidades_sql = f"({','.join(map(str, entidades_ids))})"
 
     principios_ids = list(principios['id'])
     principios_sql = f"({','.join(map(str, principios_ids))})"
@@ -30,7 +29,7 @@ def cargar_datos(tipo_entidad_sel, entidades_sel, principios, versiones, niveles
     ids = tuple(entidades_sel)
     ids_sql = str(ids).replace(",)", ")")
     datos = pd.DataFrame(
-        qr.obtener_datos(ids_sql, principios_sql, versiones_sql, niveles_sql),
+        qr.obtener_datos(ids_sql, principios_sql, versiones_sql, niveles_sql, version_aud),
         columns=[
             "id_medicion","id_principio","principio","id_entidad","entidad",
             "id_criterio","criterio","id_descripcion","descripcion",
@@ -76,7 +75,8 @@ def cargar_datos_inicio():
     niveles = pd.DataFrame(qr.obtener_niveles())
     versiones = pd.DataFrame(qr.obtener_versiones())
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
-    entidades = pd.DataFrame(qr.obtener_entidades_por_id(tipos_entidad.iloc[0,0]), columns=["id", "nombre", "id_version"])
+    version_aud = pd.DataFrame(qr.obtener_versiones_auditoria(tipos_entidad.iloc[0,0]))
+    entidades = pd.DataFrame(qr.obtener_entidades_por_id(version_aud.iloc[0,0]), columns=["id", "nombre", "id_version"])
     escalas = pd.DataFrame(qr.obtener_escalas())
     entidades_ids = list(entidades['id'])
     entidades_sql = f"({','.join(map(str, entidades_ids))})"
@@ -91,7 +91,7 @@ def cargar_datos_inicio():
     niveles_sql = f"({','.join(map(str, niveles_ids))})"
 
     datos = pd.DataFrame(
-        qr.obtener_datos(entidades_sql, principios_sql, versiones_sql, niveles_sql),
+        qr.obtener_datos(entidades_sql, principios_sql, versiones_sql, niveles_sql, version_aud.iloc[0,0]),
         columns=[
             "id_medicion","id_principio","principio","id_entidad","entidad",
             "id_criterio","criterio","id_descripcion","descripcion",

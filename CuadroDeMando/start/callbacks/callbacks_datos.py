@@ -2,6 +2,7 @@ import dash
 from dash import Input, Output, State, no_update
 from dash import html
 from dash import dash_table
+from flask import session
 import plotly.express as px
 import pandas as pd
 from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_tipo_entidades
@@ -48,11 +49,12 @@ def registrar_callbacks_datos(app):
         State('principios-checklist', 'value'),
         State('wcag-version-checklist', 'value'),
         State('nivel-checklist', 'value'),
+        State('version-auditoria-dropdown', 'value'),
         prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos_filtros(nact, tipo_entidad, entidades, principios, versiones, niveles):
+    def actualizar_datos_filtros(nact, tipo_entidad, entidades, principios, versiones, niveles, version_aud):
         if nact > 0:
-            return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles)
+            return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles, version_aud)
         return no_update
 
     @app.callback(
@@ -75,10 +77,10 @@ def registrar_callbacks_datos(app):
             page_size=10,
             data=df.to_dict('records'),
             columns=[
-                {"name": "Criterios", "id": "Criterios"},
-                {"name": "Entidades", "id": "Entidades"},
+                {"name": qr.obtener_textos_interfaz(idioma, "tabla", "criterios"), "id": "Criterios"},
+                {"name": qr.obtener_textos_interfaz(idioma, "tabla", "entidades"), "id": "Entidades"},
                 {
-                    "name": "Valores",
+                    "name": qr.obtener_textos_interfaz(idioma, "tabla", "valores"),
                     "id": "Valores",
                     "presentation": "dropdown",
                     "editable": True
@@ -91,81 +93,14 @@ def registrar_callbacks_datos(app):
                     "options": [
                         {
                             "label": row["descripcion"],
-                            "value": row["id_escala"]
+                            "value": row["id_descripcion"]
                         }
                         for _, row in pd.DataFrame(
-                            qr.obtener_opciones_cumplimiento()
+                            qr.obtener_opciones_cumplimiento(idioma)
                         ).iterrows()
                     ],
                 }
-            ],
-             css=[
-                {
-                    "selector": ".dash-dropdown",
-                    "rule": "position: relative !important; z-index: 9999 !important;"
-                },
-                {
-                    "selector": ".Select-menu-outer",
-                    "rule": "display: block !important; z-index: 10000 !important;"
-                },
-                {
-                    "selector": ".show-hide",
-                    "rule": "display: none"
-                },
-                {
-                    "selector": ".previous-next-container input",
-                    "rule": """
-                        width: 30px !important;
-                        height: 30px !important;
-                        min-width: 30px !important;
-                        max-width: 30px !important;
-
-                        padding: 0 !important;
-                        margin: 0 4px !important;
-                        line-height: 30px !important;
-                        text-align: center !important;
-
-                        border: 1px solid #d1d5db !important;
-                        border-radius: 8px !important;
-
-                        font-size: 14px !important;
-                        font-weight: 500 !important;
-
-                        background: white !important;
-                        box-sizing: border-box !important;
-                    """
-                },
-                {
-                    "selector": ".previous-next-container input[type=number]",
-                    "rule": """
-                        appearance: textfield !important;
-                        -moz-appearance: textfield !important;
-                        -webkit-appearance: none !important;
-                    """
-                },
-                {
-                    "selector": ".previous-next-container button",
-                    "rule": """
-                        width: 36px !important;
-                        height: 36px !important;
-                        min-width: 36px !important;
-                            min-height: 36px !important;
-
-                            padding: 0 !important;
-                            margin: 0 2px !important;
-
-                            border-radius: 8px !important;
-                            font-weight: 600 !important;
-                        """
-                    },
-                {
-                    "selector": ".previous-next-container button",
-                    "rule": """
-                        border-radius: 8px !important;
-                        font-weight: 600 !important;
-                    """
-                }
-            ],
+            ]
         )
     
 
@@ -195,9 +130,10 @@ def registrar_callbacks_datos(app):
         Input("btn-guardar-tabla", "n_clicks"),
         State("store-data", "data"),
         State("tabla-actual-store", "data"),
+        State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def guardar_datos_tabla(n_clicks, data, datosn):
+    def guardar_datos_tabla(n_clicks, data, datosn, idioma):
         if n_clicks > 0:
 
             datos_antiguos = pd.DataFrame(data["df_datos"])
@@ -212,7 +148,7 @@ def registrar_callbacks_datos(app):
             cambios = df[df["Valores_new"] != df["Valores_old"]]
 
             if cambios.empty:
-                return no_update, "No hay cambios que guardar"
+                return no_update, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_vacio")
             
             tuplas_update = [
                 (row["Valores_new"], row["Id"])
@@ -223,8 +159,9 @@ def registrar_callbacks_datos(app):
 
             if result > 0:
                 data["df_datos"]=datosn
-                return data, "Se ha guardado correctamente"
+                qr.registrar_auditoria(session.get('user'), 'GUARDAR_DATOS', 'Se han guardado los datos correctamente')
+                return data, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok")
             else:
-                return no_update, "No se ha realizado el guardado"
+                return no_update, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko")
             return data
         return no_update
