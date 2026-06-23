@@ -44,7 +44,6 @@ def registrar_callbacks_datos(app):
     @app.callback(
         Output('store-data', 'data', allow_duplicate=True),
         Input('boton-actualizar', 'n_clicks'),
-        State('tipo-entidad-dropdown', 'value'),
         State('entidad-dropdown', 'value'),
         State('principios-checklist', 'value'),
         State('wcag-version-checklist', 'value'),
@@ -52,57 +51,58 @@ def registrar_callbacks_datos(app):
         State('version-auditoria-dropdown', 'value'),
         prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos_filtros(nact, tipo_entidad, entidades, principios, versiones, niveles, version_aud):
+    def actualizar_datos_filtros(nact, entidades, principios, versiones, niveles, version_aud):
         if nact > 0:
-            return cargar_datos(tipo_entidad, entidades, principios, versiones, niveles, version_aud)
+            return cargar_datos(entidades, principios, versiones, niveles, version_aud)
         return no_update
 
     @app.callback(
-        Output("tabla-datos-container", "children"),
+        Output("tabla-datos", "data"),
+        Output("tabla-datos", "columns"),
+        Output("tabla-datos", "dropdown_conditional"),
         Input("store-data", "data"),
-        Input("store-idioma", "data"),
+        Input("store-idioma", "data")
     )
     def cargar_tabla_datos(data, idioma):
 
         if not data:
-            return html.Div("Cargando datos...")
+            return [], [], []
 
         df = pd.DataFrame(data["df_datos"])
 
-        return dash_table.DataTable(
-            id='tabla-datos',
-            editable=True,
-            page_action='native',
-            page_current=0,
-            page_size=10,
-            data=df.to_dict('records'),
-            columns=[
-                {"name": qr.obtener_textos_interfaz(idioma, "tabla", "criterios"), "id": "Criterios"},
-                {"name": qr.obtener_textos_interfaz(idioma, "tabla", "entidades"), "id": "Entidades"},
-                {
-                    "name": qr.obtener_textos_interfaz(idioma, "tabla", "valores"),
-                    "id": "Valores",
-                    "presentation": "dropdown",
-                    "editable": True
-                },
-            ],
-            hidden_columns=["ID"],
-            dropdown_conditional=[
-                {
-                    "if": {"column_id": "Valores"},
-                    "options": [
-                        {
-                            "label": row["descripcion"],
-                            "value": row["id_descripcion"]
-                        }
-                        for _, row in pd.DataFrame(
-                            qr.obtener_opciones_cumplimiento(idioma)
-                        ).iterrows()
-                    ],
-                }
-            ]
-        )
-    
+        columnas = [
+            {
+                "name": qr.obtener_textos_interfaz(idioma, "tabla", "criterios"),
+                "id": "Criterios"
+            },
+            {
+                "name": qr.obtener_textos_interfaz(idioma, "tabla", "entidades"),
+                "id": "Entidades"
+            },
+            {
+                "name": qr.obtener_textos_interfaz(idioma, "tabla", "valores"),
+                "id": "Valores",
+                "presentation": "dropdown",
+                "editable": True
+            }
+        ]
+
+        dropdown = [
+            {
+                "if": {"column_id": "Valores"},
+                "options": [
+                    {
+                        "label": row["descripcion"],
+                        "value": row["id_descripcion"]
+                    }
+                    for _, row in pd.DataFrame(
+                        qr.obtener_opciones_cumplimiento(idioma)
+                    ).iterrows()
+                ]
+            }
+        ]
+
+        return df.to_dict("records"), columnas, dropdown
 
     @app.callback(
         Output("btn-guardar-tabla", "children"),

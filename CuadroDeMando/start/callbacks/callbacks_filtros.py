@@ -224,6 +224,8 @@ def registrar_callbacks_filtros(app):
                             for _, row in principios.drop_duplicates('id').iterrows()
                         ],
                         value=principios['id'].drop_duplicates().tolist(),
+                        persistence=True,
+                        persistence_type='session',
                         className="checklist-pro",
                     )
 
@@ -244,6 +246,8 @@ def registrar_callbacks_filtros(app):
                             for _, row in versionesWCAG.drop_duplicates('id').iterrows()
                         ],
                         value=versionesWCAG["id"].unique().tolist(),
+                        persistence=True,
+                        persistence_type='session',
                         className="checklist-pro",
                     )
 
@@ -264,6 +268,8 @@ def registrar_callbacks_filtros(app):
                             for _, row in niveles.iterrows()
                         ],
                         value=niveles['id'].drop_duplicates().tolist(),
+                        persistence=True,
+                        persistence_type='session',
                         className="checklist-pro",
                     )
 
