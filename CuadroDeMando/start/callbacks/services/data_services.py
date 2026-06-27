@@ -72,7 +72,7 @@ def cargar_tipo_entidades():
     return tipos_entidad.to_dict(orient="records"),
 
 def cargar_filtros_posibles():
-    return qr.obtener_opciones_filtros()
+    return pd.DataFrame(qr.obtener_opciones_filtros()).to_dict('records')
 
 def cargar_datos_inicio():
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])

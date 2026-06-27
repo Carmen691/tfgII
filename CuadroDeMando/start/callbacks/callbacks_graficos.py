@@ -36,9 +36,10 @@ def registrar_callbacks_graficos(app):
         State("store-principios", "data"),
         State("store-versiones", "data"),
         State("store-niveles", "data"),
+        State("store-fecha", "data"),
         prevent_initial_call=False
     )
-    def actualizar_graficos(data, entidades, principios, versiones, niveles):
+    def actualizar_graficos(data, entidades, principios, versiones, niveles, fecha):
         if entidades:
             entidades_sql = f"({", ".join(map(str, entidades))})"
         else:
@@ -58,7 +59,7 @@ def registrar_callbacks_graficos(app):
 
         df = pd.DataFrame(data["df_datos"])
 
-        porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql), 
+        porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha), 
                                             columns = ["principio", "num_no_conseguido",
                                             "num_parcialmente_conseguido", "num_no_aplicable",
                                             "num_ampliamente_conseguido", "num_totalmente_conseguido"])
@@ -118,7 +119,7 @@ def registrar_callbacks_graficos(app):
             height=450)
         
 
-        datos_por_niveles = qr.obtener_cumplimiento_niveles(entidades_sql, principios_sql, versiones_sql, niveles_sql)
+        datos_por_niveles = qr.obtener_cumplimiento_niveles(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha)
         df_niveles = pd.DataFrame(datos_por_niveles)
 
         orden_niveles = ["A", "AA", "AAA"]
@@ -227,7 +228,7 @@ def registrar_callbacks_graficos(app):
             )
         ])
 
-        datos_lista_principios = qr.obtener_cumplimiento_principios(entidades_sql, principios_sql, versiones_sql, niveles_sql)
+        datos_lista_principios = qr.obtener_cumplimiento_principios(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha)
 
         datos_principios = {fila[0]: fila[1] for fila in datos_lista_principios}
 

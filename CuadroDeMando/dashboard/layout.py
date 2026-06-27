@@ -25,6 +25,7 @@ def crear_layout():
         dcc.Store(id='store-versiones', storage_type='session'),
         dcc.Store(id='store-niveles', storage_type='session'),
         dcc.Store(id='store-entidad', storage_type='session'),
+        dcc.Store(id="store-fecha", storage_type='session'),
         dcc.Store(id="tabla-actual-store", storage_type='session'),
         #dcc.Interval(id='session-check', interval=60*1000, n_intervals=0),
 

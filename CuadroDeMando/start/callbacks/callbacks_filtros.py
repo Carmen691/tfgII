@@ -7,6 +7,39 @@ import data.querys as qr
 def registrar_callbacks_filtros(app):
 
     @app.callback(
+        Output("tipo-entidad-dropdown", "options"),
+        Output("tipo-entidad-dropdown", "value"),
+        Input("store-data", "data"),
+        State("store-tipo-entidad", "data"),
+    )
+    def cargar_tipos_entidad(data, tipo_guardado):
+
+        if not data:
+            raise PreventUpdate
+
+        tipos = data.get("tiposEntidad", [])
+
+        options = [
+            {
+                "label": t["nombre"],
+                "value": t["id"]
+            }
+            for t in tipos
+        ]
+
+        # Si había uno guardado y sigue existiendo, lo usamos
+        ids = [t["id"] for t in tipos]
+
+        if tipo_guardado in ids:
+            value = tipo_guardado
+        elif ids:
+            value = ids[0]
+        else:
+            value = None
+
+        return options, value
+
+    @app.callback(
         Output('entidad-dropdown', 'options'),
         Output('entidad-dropdown', 'value'),
         Input('init-done', 'data'),
@@ -105,190 +138,87 @@ def registrar_callbacks_filtros(app):
         Output('store-principios', 'data'),
         Output('store-versiones', 'data'),
         Output('store-niveles', 'data'),
+        Output('store-fecha', 'data'),
         Input('boton-actualizar', 'n_clicks'),
         State('tipo-entidad-dropdown', 'value'),
         State('entidad-dropdown', 'value'),
         State('principios-checklist', 'value'),
         State('wcag-version-checklist', 'value'),
         State('nivel-checklist', 'value'),
+        State('version-auditoria-dropdown', 'value'),
         prevent_initial_call=True
     )
-    def actualizar_filtros(n, tipo, entidades, principios, versiones, niveles):
+    def actualizar_filtros(n, tipo, entidades, principios, versiones, niveles, fecha):
         if n > 0:
-            return entidades, tipo, principios, versiones, niveles
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            return entidades, tipo, principios, versiones, niveles, fecha
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     @app.callback(
-        Output("filtros-container", "children"),
-        Input("store-data", "data"),
-        Input("store-idioma", "data"),
+        Output("principios-checklist", "options"),
+        Output("wcag-version-checklist", "options"),
+        Output("nivel-checklist", "options"),
+        Input("store-filtros-posibles", "data"),
+        Input("principios-checklist", "value"),
+        Input("wcag-version-checklist", "value"),
+        Input("nivel-checklist", "value"),
+        State("store-data", "data")
     )
-    def cargar_filtros(data, idioma):
+    def actualizar_filtros_dependientes(
+            filtros, principios_sel, wcag_sel, nivel_sel, data):
 
-        if not data:
-            return html.Div("Cargando filtros...")
+        if not filtros or not data:
+            raise PreventUpdate
 
-        tiposEntidad = data["tiposEntidad"]
-        entidades = pd.DataFrame(data["entidades"])
-        versionesWCAG = pd.DataFrame(data["tiposWCAG"])
-        principios = pd.DataFrame(data["principios"])
-        niveles = pd.DataFrame(data["niveles"])
+        df = pd.DataFrame(filtros)
 
-        if len(tiposEntidad) == 1 and isinstance(tiposEntidad[0], list):
-            tiposEntidad = tiposEntidad[0]
+        # Aplicamos los filtros seleccionados
+        if principios_sel:
+            df = df[df["id_principio"].isin(principios_sel)]
 
-        return html.Div([
+        if wcag_sel:
+            df = df[df["id_version"].isin(wcag_sel)]
 
-            # TÍTULO PRINCIPAL
-            html.Div(
-                qr.obtener_textos_interfaz(idioma, "filtros", "filtros"),
-                className="filtros-title-card"
-            ),
+        if nivel_sel:
+            df = df[df["id_nivel"].isin(nivel_sel)]
 
-            # GRID DE FILTROS
-            html.Div([
+        # Qué valores siguen siendo válidos
+        ok_principios = set(df["id_principio"])
+        ok_wcag = set(df["id_version"])
+        ok_niveles = set(df["id_nivel"])
 
-                # Tipo entidad
-                html.Div([
+        # Construir opciones con los nombres de store-data
+        principios_options = [
+            {
+                "label": p["nombre"],
+                "value": p["id"],
+                "disabled": p["id"] not in ok_principios
+            }
+            for p in data["principios"]
+        ]
 
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
-                        className="filtros-label"
-                    ),
+        wcag_options = [
+            {
+                "label": w["version"],
+                "value": w["id"],
+                "disabled": w["id"] not in ok_wcag
+            }
+            for w in data["tiposWCAG"]
+        ]
 
-                    dcc.Dropdown(
-                        id='tipo-entidad-dropdown',
-                        options=[{'label': e['nombre'], 'value': e['id']} for e in tiposEntidad],
-                        multi=False,
-                        persistence=True,
-                        persistence_type='session',
-                        className="dropdown-pro"
-                    )
+        niveles_options = [
+            {
+                "label": n["nombre"],
+                "value": n["id"],
+                "disabled": n["id"] not in ok_niveles
+            }
+            for n in data["niveles"]
+        ]
 
-                ], className="filtro-card"),
-
-
-                # Fecha
-
-                html.Div([
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
-                        className="filtros-label"
-                    ),
-
-                    dcc.Dropdown(
-                        id='version-auditoria-dropdown',
-                        multi=False,
-                        persistence=True,
-                        persistence_type='session',
-                        className="dropdown-pro"
-                    )
-
-                ], className="filtro-card"),
-
-                # Entidades
-                html.Div([
-
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
-                        className="filtros-label"
-                    ),
-
-                    dcc.Dropdown(
-                        id='entidad-dropdown',
-                        options=[
-                            {'label': row['nombre'], 'value': row['id']}
-                            for _, row in entidades.drop_duplicates('id').iterrows()
-                        ],
-                        multi=True,
-                        searchable=True,
-                        persistence=True,
-                        persistence_type='session',
-                        className="dropdown-pro"
-                    )
-
-                ], className="filtro-card"),
-
-                # Principios
-                html.Div([
-
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
-                        className="filtros-label"
-                    ),
-
-                    dcc.Checklist(
-                        id='principios-checklist',
-                        options=[
-                            {'label': row['nombre'], 'value': row['id']}
-                            for _, row in principios.drop_duplicates('id').iterrows()
-                        ],
-                        value=principios['id'].drop_duplicates().tolist(),
-                        persistence=True,
-                        persistence_type='session',
-                        className="checklist-pro",
-                    )
-
-                ], className="filtro-card"),
-
-                # WCAG
-                html.Div([
-
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "filtros", "version"),
-                        className="filtros-label"
-                    ),
-
-                    dcc.Checklist(
-                        id='wcag-version-checklist',
-                        options=[
-                            {'label': row['version'], 'value': row['id']}
-                            for _, row in versionesWCAG.drop_duplicates('id').iterrows()
-                        ],
-                        value=versionesWCAG["id"].unique().tolist(),
-                        persistence=True,
-                        persistence_type='session',
-                        className="checklist-pro",
-                    )
-
-                ], className="filtro-card"),
-
-                # Nivel
-                html.Div([
-
-                    html.Label(
-                        qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
-                        className="filtros-label"
-                    ),
-
-                    dcc.Checklist(
-                        id='nivel-checklist',
-                        options=[
-                            {'label': row['nombre'], 'value': row['id']}
-                            for _, row in niveles.iterrows()
-                        ],
-                        value=niveles['id'].drop_duplicates().tolist(),
-                        persistence=True,
-                        persistence_type='session',
-                        className="checklist-pro",
-                    )
-
-                ], className="filtro-card"),
-
-            ], className="filtros-grid"),
-
-            # BOTÓN
-            html.Div([
-                html.Button(
-                    qr.obtener_textos_interfaz(idioma, "filtros", "actualizar"),
-                    id="boton-actualizar",
-                    n_clicks=0,
-                    className="btn-pro"
-                )
-            ], className="filtros-actions")
-
-        ])
-
+        return (
+            principios_options,
+            wcag_options,
+            niveles_options
+        )
 
     @app.callback(
         Output("version-auditoria-dropdown", "options"),
@@ -317,3 +247,28 @@ def registrar_callbacks_filtros(app):
         ]
 
         return opciones, opciones[0]["value"]
+    
+
+    @app.callback(
+        Output("tipo_entidad", "children"),
+        Output("tipo-entidad-dropdown", "placeholder"),
+        Output("fecha_wcag", "children"),
+        Output("entidades", "children"),
+        Output("principios_wcag", "children"),
+        Output("version_wcag", "children"),
+        Output("nivel", "children"),
+        Output("boton-actualizar", "children"),
+        Input("store-idioma", "data")
+    )
+    def textos_gestion(idioma):
+
+        return (
+            qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
+            qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
+            qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
+            qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
+            qr.obtener_textos_interfaz(idioma, "filtros", "version"),
+            qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
+            qr.obtener_textos_interfaz(idioma, "filtros", "actualizar")
+        )
