@@ -5,7 +5,6 @@ from dash import dash_table
 from flask import session
 import plotly.express as px
 import pandas as pd
-from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_filtros_posibles, cargar_tipo_entidades
 import data.querys as qr
 
 
@@ -14,63 +13,77 @@ from dash.exceptions import PreventUpdate
 
 def registrar_callbacks_datos(app):
     from dash import no_update
-
-    @app.callback(
-        Output('store-data', 'data', allow_duplicate=True),
-        Output('store-filtros-posibles', 'data'),
-        Output('init-done', 'data'),
-        Output('init-trigger', 'disabled'),
-        Input('init-trigger', 'n_intervals'),
-        prevent_initial_call='initial_duplicate'
-    )
-    def actualizar_datos(cargar):
-        if cargar < 2:
-            datos = cargar_datos_inicio()
-            filtros_posibles = cargar_filtros_posibles()
-            return datos, filtros_posibles,  True, False
-        return no_update, no_update, no_update, True
-
     
     @app.callback(
         Output('tipo-entidad-dropdown', 'value', allow_duplicate=True),
-        Input('store-data', 'data'),
+        Input('store-tipo-entidad', 'data'),
         State('tipo-entidad-dropdown', 'value'),
         prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos(datos, tipoEntidad):
-        if tipoEntidad is None and datos is not None:
-            return datos["tiposEntidad"][0]['id']
+    def actualizar_datos(tipoEntidad):
+        tipos = pd.DataFrame(qr.obtener_tipos_entidad()).to_dict('records')
+        if tipoEntidad is None:
+            return tipos[0]['id']
         return no_update
         
-
-    @app.callback(
-        Output('store-data', 'data', allow_duplicate=True),
-        Input('boton-actualizar', 'n_clicks'),
-        State('entidad-dropdown', 'value'),
-        State('principios-checklist', 'value'),
-        State('wcag-version-checklist', 'value'),
-        State('nivel-checklist', 'value'),
-        State('version-auditoria-dropdown', 'value'),
-        prevent_initial_call='initial_duplicate'
-    )
-    def actualizar_datos_filtros(nact, entidades, principios, versiones, niveles, version_aud):
-        if nact > 0:
-            return cargar_datos(entidades, principios, versiones, niveles, version_aud)
-        return no_update
-
     @app.callback(
         Output("tabla-datos", "data"),
         Output("tabla-datos", "columns"),
         Output("tabla-datos", "dropdown_conditional"),
-        Input("store-data", "data"),
-        Input("store-idioma", "data")
+        Input("url", "pathname"),
+        Input("store-idioma", "data"),
+        State("store-entidad", "data"),
+        State("store-principios", "data"),
+        State("store-versiones", "data"),
+        State("store-niveles", "data"),
+        State("store-fecha", "data"),
+        State("store-tipo-entidad", "data")
     )
-    def cargar_tabla_datos(data, idioma):
+    def cargar_tabla_datos(pathname, idioma, entidades_sql, principios_sql, versiones_sql, niveles_sql, version_aud, tipo_aud):
+        if pathname != "/dash/datos":
+            raise PreventUpdate
+        
+        if not entidades_sql:
+            ent_sel = None
+        else:
+            ent_sel = f"({','.join(map(str, entidades_sql))})"
 
-        if not data:
-            return [], [], []
+        if not principios_sql:
+            princ_sel = None
+        else:
+            princ_sel = f"({','.join(map(str, principios_sql))})"
+        
+        if not versiones_sql:
+            ver_sel = None
+        else:
+            ver_sel = f"({','.join(map(str, versiones_sql))})"
+        
+        if not niveles_sql:
+            niv_sel = None
+        else:
+            niv_sel = f"({','.join(map(str, niveles_sql))})" 
 
-        df = pd.DataFrame(data["df_datos"])
+        if not version_aud:
+            version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
+
+        datos = pd.DataFrame(
+        qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
+        columns=[
+            "id_medicion","id_principio","principio","id_entidad","entidad",
+            "id_criterio","criterio","id_descripcion","descripcion",
+            "observaciones","version"
+        ]
+    )
+
+        df_datos = pd.DataFrame({
+            "Id":datos["id_medicion"],
+            "Criterios": datos["criterio"],
+            "Valores": datos["id_descripcion"],
+            "Entidades": datos["entidad"],
+        })
+
+        df_datos["Entidades"] = df_datos["Entidades"].astype(str)
+        df = df_datos.to_dict('records')
 
         columnas = [
             {
@@ -104,7 +117,7 @@ def registrar_callbacks_datos(app):
             }
         ]
 
-        return df.to_dict("records"), columnas, dropdown
+        return df, columnas, dropdown
 
     @app.callback(
         Output("btn-guardar-tabla", "children"),
@@ -130,15 +143,61 @@ def registrar_callbacks_datos(app):
         Output("store-data", "data", allow_duplicate=True),
         Output("mensaje-guardar", "children"),
         Input("btn-guardar-tabla", "n_clicks"),
-        State("store-data", "data"),
         State("tabla-actual-store", "data"),
         State("store-idioma", "data"),
+        State('entidad-dropdown', 'value'),
+        State('principios-checklist', 'value'),
+        State('wcag-version-checklist', 'value'),
+        State('nivel-checklist', 'value'),
+        State('version-auditoria-dropdown', 'value'),
+        State("store-tipo-entidad", "data"),
         prevent_initial_call=True
     )
-    def guardar_datos_tabla(n_clicks, data, datosn, idioma):
+    def guardar_datos_tabla(n_clicks, datosn, idioma, entidades_sql, principios_sql, versiones_sql, niveles_sql, version_aud, tipo_aud):
         if n_clicks > 0:
 
-            datos_antiguos = pd.DataFrame(data["df_datos"])
+            if not entidades_sql:
+                ent_sel = None
+            else:
+                ent_sel = f"({','.join(map(str, entidades_sql))})"
+
+            if not principios_sql:
+                princ_sel = None
+            else:
+                princ_sel = f"({','.join(map(str, principios_sql))})"
+            
+            if not versiones_sql:
+                ver_sel = None
+            else:
+                ver_sel = f"({','.join(map(str, versiones_sql))})"
+            
+            if not niveles_sql:
+                niv_sel = None
+            else:
+                niv_sel = f"({','.join(map(str, niveles_sql))})" 
+
+            if not version_aud:
+                version_aud = qr.obtener_versiones_auditoria(tipo_aud)
+
+            datos = pd.DataFrame(
+                qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
+                columns=[
+                    "id_medicion","id_principio","principio","id_entidad","entidad",
+                    "id_criterio","criterio","id_descripcion","descripcion",
+                    "observaciones","version"
+                ]
+            )
+
+            df_datos = pd.DataFrame({
+                "Id":datos["id_medicion"],
+                "Criterios": datos["criterio"],
+                "Valores": datos["id_descripcion"],
+                "Entidades": datos["entidad"],
+            })
+
+            df_datos["Entidades"] = df_datos["Entidades"].astype(str)
+        
+            datos_antiguos = df_datos
             datos_nuevos = pd.DataFrame(datosn)
 
             df = datos_nuevos.merge(

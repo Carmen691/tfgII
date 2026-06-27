@@ -9,15 +9,14 @@ def registrar_callbacks_filtros(app):
     @app.callback(
         Output("tipo-entidad-dropdown", "options"),
         Output("tipo-entidad-dropdown", "value"),
-        Input("store-data", "data"),
+        Input('url', 'pathname'),
         State("store-tipo-entidad", "data"),
     )
-    def cargar_tipos_entidad(data, tipo_guardado):
-
-        if not data:
+    def cargar_tipos_entidad(pathname, tipo_guardado):
+        if pathname != "/dash/filtros":
             raise PreventUpdate
 
-        tipos = data.get("tiposEntidad", [])
+        tipos = pd.DataFrame(qr.obtener_tipos_entidad()).to_dict('records')
 
         options = [
             {
@@ -42,14 +41,13 @@ def registrar_callbacks_filtros(app):
     @app.callback(
         Output('entidad-dropdown', 'options'),
         Output('entidad-dropdown', 'value'),
-        Input('init-done', 'data'),
         Input('url', 'pathname'),                
         Input('tipo-entidad-dropdown', 'value'),  
         State('store-tipo-entidad', 'data'),
         State('store-entidad', 'data')
     )
-    def inicializar_o_actualizar_dropdowns(cargar, pathname, tipo_cambiado, store_tipo, store_entidades):
-        if not cargar or pathname != "/dash/filtros":
+    def inicializar_o_actualizar_dropdowns(pathname, tipo_cambiado, store_tipo, store_entidades):
+        if pathname != "/dash/filtros":
             raise dash.exceptions.PreventUpdate
 
         if store_tipo == tipo_cambiado and store_tipo is not None:
@@ -157,19 +155,16 @@ def registrar_callbacks_filtros(app):
         Output("principios-checklist", "options"),
         Output("wcag-version-checklist", "options"),
         Output("nivel-checklist", "options"),
-        Input("store-filtros-posibles", "data"),
         Input("principios-checklist", "value"),
         Input("wcag-version-checklist", "value"),
-        Input("nivel-checklist", "value"),
-        State("store-data", "data")
+        Input("nivel-checklist", "value")
     )
-    def actualizar_filtros_dependientes(
-            filtros, principios_sel, wcag_sel, nivel_sel, data):
+    def actualizar_filtros_dependientes(principios_sel, wcag_sel, nivel_sel):
+        df = pd.DataFrame(qr.obtener_opciones_filtros())
 
-        if not filtros or not data:
-            raise PreventUpdate
-
-        df = pd.DataFrame(filtros)
+        niveles = pd.DataFrame(qr.obtener_niveles()).to_dict("records")
+        wcag = pd.DataFrame(qr.obtener_tipos_wcag()).to_dict("records")
+        principios = pd.DataFrame(qr.obtener_principios()).to_dict("records")
 
         # Aplicamos los filtros seleccionados
         if principios_sel:
@@ -186,14 +181,13 @@ def registrar_callbacks_filtros(app):
         ok_wcag = set(df["id_version"])
         ok_niveles = set(df["id_nivel"])
 
-        # Construir opciones con los nombres de store-data
         principios_options = [
             {
                 "label": p["nombre"],
                 "value": p["id"],
                 "disabled": p["id"] not in ok_principios
             }
-            for p in data["principios"]
+            for p in principios
         ]
 
         wcag_options = [
@@ -202,7 +196,7 @@ def registrar_callbacks_filtros(app):
                 "value": w["id"],
                 "disabled": w["id"] not in ok_wcag
             }
-            for w in data["tiposWCAG"]
+            for w in wcag
         ]
 
         niveles_options = [
@@ -211,7 +205,7 @@ def registrar_callbacks_filtros(app):
                 "value": n["id"],
                 "disabled": n["id"] not in ok_niveles
             }
-            for n in data["niveles"]
+            for n in niveles
         ]
 
         return (

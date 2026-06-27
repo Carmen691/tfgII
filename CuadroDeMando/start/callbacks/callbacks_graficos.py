@@ -1,6 +1,7 @@
 import dash
 from dash import Input, Output, State
 from dash import html
+from dash.exceptions import PreventUpdate
 import plotly.express as px
 import pandas as pd
 import data.querys as qr
@@ -31,15 +32,19 @@ def registrar_callbacks_graficos(app):
         Output("niveles-div", "children"),
         Output("datos-wcag-div", "children"),
         Output("cumplimiento-div", "children"),
-        Input("store-data", "data"),
+        Input("url", "pathname"),
         State("store-entidad", "data"),
         State("store-principios", "data"),
         State("store-versiones", "data"),
         State("store-niveles", "data"),
         State("store-fecha", "data"),
+        State("store-tipo-entidad", "data"),
         prevent_initial_call=False
     )
-    def actualizar_graficos(data, entidades, principios, versiones, niveles, fecha):
+    def actualizar_graficos(pathname, entidades, principios, versiones, niveles, fecha, tipo_aud):
+        if pathname != "/dash/cuadroMando":
+            raise PreventUpdate
+        
         if entidades:
             entidades_sql = f"({", ".join(map(str, entidades))})"
         else:
@@ -57,7 +62,27 @@ def registrar_callbacks_graficos(app):
         else:
             niveles_sql = None
 
-        df = pd.DataFrame(data["df_datos"])
+        if not fecha:
+            fecha = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
+
+        datos = pd.DataFrame(
+        qr.obtener_datos(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha),
+        columns=[
+            "id_medicion","id_principio","principio","id_entidad","entidad",
+            "id_criterio","criterio","id_descripcion","descripcion",
+            "observaciones","version"
+        ]
+    )
+
+        df_datos = pd.DataFrame({
+            "Id":datos["id_medicion"],
+            "Criterios": datos["criterio"],
+            "Valores": datos["id_descripcion"],
+            "Entidades": datos["entidad"],
+        })
+
+        df_datos["Entidades"] = df_datos["Entidades"].astype(str)
+        df = df_datos.to_dict('records')
 
         porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha), 
                                             columns = ["principio", "num_no_conseguido",
@@ -154,6 +179,7 @@ def registrar_callbacks_graficos(app):
             margin=dict(l=20, r=20, t=50, b=20)
         )
 
+        df = pd.DataFrame(df)
         df_total = (
             df[df["Valores"] != 3]
             .groupby("Entidades")

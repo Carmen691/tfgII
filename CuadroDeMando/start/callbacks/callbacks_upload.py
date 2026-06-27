@@ -1,5 +1,6 @@
 import dash
 from dash import Output, Input, State, html, dash_table, no_update
+from dash.exceptions import PreventUpdate
 from flask import app, session
 import pandas as pd
 import base64
@@ -150,15 +151,14 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output("dropdown-wcag", "options"),
-        Input("store-data", "data"),
+        Input('url', 'pathname'),   
         State("store-idioma", "data")
     )
-    def dropdown_wcag(data, idioma):
+    def dropdown_wcag(pathname):
+        if pathname != "/dash/importar":
+            raise PreventUpdate
 
-        if not data:
-            return []
-
-        wcag = pd.DataFrame(data["tiposWCAG"])
+        wcag = qr.obtener_tipos_wcag()
 
         opciones_wcag = [
             {"label": row["version"], "value": row["id"]}
@@ -170,15 +170,14 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output("dropdown-escala", "options"),
-        Input("store-data", "data"),
-        State("store-idioma", "data")
+        Input('url', 'pathname')
     )
-    def dropdown_escala(data, idioma):
+    def dropdown_escala(pathname):
+        if pathname != "/dash/importar":
+            raise PreventUpdate
 
-        if not data:
-            return []
-
-        escala = pd.DataFrame(data["escalas"])
+        escalas = pd.DataFrame(qr.obtener_escalas())
+        escala = pd.DataFrame(escalas.to_dict('records'))
 
         opciones_escala = [
             {"label": row["descripcion"], "value": row["id"]}

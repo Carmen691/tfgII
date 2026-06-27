@@ -265,13 +265,13 @@ def registrar_callbacks_admin(app):
 
     @app.callback(
         Output("usuarios-dropdown", "options", allow_duplicate=True),
-        Input("store-data", "data"),
+        Input("url", "pathname"),
         prevent_initial_call='initial_duplicate'
     )
-    def cargar_usuarios(data):
+    def cargar_usuarios(pathname):
 
-        if not data:
-            return []
+        if pathname != "/dash/administracion/usuarios":
+            raise PreventUpdate
 
         usuarios = qr.obtener_usuarios()
 
@@ -363,14 +363,13 @@ def registrar_callbacks_admin(app):
     
     @app.callback(
         Output("auditorias-dropdown", "options", allow_duplicate=True),
-        Input("store-data", "data"),
+        Input("url", "pathname"),
         prevent_initial_call='initial_duplicate'
     )
-    def cargar_auditorias(data):
-
-        if not data:
-            return []
-
+    def cargar_auditorias(pathname):
+        if pathname != "/dash/administracion/auditorias":
+            raise PreventUpdate
+        
         auditorias = qr.obtener_auditorias()
 
         df = pd.DataFrame(

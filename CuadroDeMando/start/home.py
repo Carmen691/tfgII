@@ -3,7 +3,6 @@ import dash_bootstrap_components as dbc
 
 from start.callbacks.callbacks_datos import registrar_callbacks_datos
 from dashboard.layout import crear_layout
-from start.callbacks.services.data_services import cargar_datos
 from start.callbacks.callbacks_filtros import registrar_callbacks_filtros
 from start.callbacks.callbacks_graficos import registrar_callbacks_graficos
 from start.callbacks.callbacks_admin import registrar_callbacks_admin
