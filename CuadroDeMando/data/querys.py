@@ -15,6 +15,21 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
+def obtener_opciones_filtros():
+    with engine.begin() as conn:
+        result = conn.execute(text("""SELECT DISTINCT
+                p.id AS id_principio,
+                v.id AS id_version,
+                n.id AS id_nivel
+                FROM criterios_wcag c
+                JOIN criterio_version cv ON c.id = cv.id_criterio 
+                JOIN niveles n ON n.id = c.nivel
+                JOIN pautas pa ON pa.id = c.id_pauta
+                JOIN principios p ON p.id = pa.id_principio
+                JOIN versiones_wcag v ON v.id = cv.id_version;"""))
+        datos = result.fetchall()
+        return datos
+
 def registrar_auditoria(usuario, accion, descripcion):
     datos = [{'usuario': usuario, 'accion': accion, 'descripcion': descripcion}]
     with engine.begin() as conn:
@@ -36,19 +51,19 @@ def obtener_entidades():
 
 def obtener_numero_entidades(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(1) FROM entidades where id in ({entidades})"))
+        result = conn.execute(text(f"SELECT count(1) FROM entidades where id in {entidades}"))
         datos = result.fetchall()
         return datos[0][0]
 
 def obtener_numero_mediciones(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(1) FROM dashboard.mediciones_wcag where id_entidad in ({entidades})"))
+        result = conn.execute(text(f"SELECT count(1) FROM dashboard.mediciones_wcag where id_entidad in {entidades}"))
         datos = result.fetchall()
         return datos[0][0]
 
 def obtener_numero_cumplimientos(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in ({entidades}) and medicion in (4,5);"))
+        result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in {entidades} and medicion in (4,5);"))
         datos = result.fetchall()
         return datos[0][0]
 
@@ -162,22 +177,37 @@ def existe_usuario(username):
 
 def obtener_datos(entidades, principios, versiones, niveles, version):
     with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT m.id as id_medicion, p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
+        consulta = """SELECT m.id as id_medicion, p.id AS id_principio, COALESCE(pt.texto, p.nombre) AS principio,
             e.id AS id_entidad, e.nombre AS entidad, c.id AS id_criterio,
             COALESCE(ct.texto, c.nombre) AS criterio, ev.id_descripcion as id_descripcion, ev.descripcion,
             m.observaciones, v.version FROM mediciones_wcag m
-            JOIN entidades e ON m.id_entidad = e.id
-            and e.id in {entidades}
-            JOIN criterios_wcag c ON m.id_criterio = c.id
-            JOIN niveles n ON c.nivel = n.id
-            and n.id in {niveles}
-            JOIN pautas pa ON c.id_pauta = pa.id
-            JOIN principios p ON pa.id_principio = p.id
-            and p.id in {principios}
-            JOIN versiones_wcag v ON m.id_version = v.id
-            and v.id in {versiones}
-            JOIN versiones ver ON ver.id = {version}
-            JOIN escala_valores ev ON ev.id_escala = ver.id_escala
+            JOIN entidades e ON m.id_entidad = e.id"""
+            
+        if entidades:
+            consulta += f""" and e.id in {entidades}"""
+
+        consulta += """ JOIN criterios_wcag c ON m.id_criterio = c.id
+            JOIN niveles n ON c.nivel = n.id"""
+        
+        if niveles:
+            consulta += f""" and n.id in {niveles}"""
+            
+        consulta += """ JOIN pautas pa ON c.id_pauta = pa.id
+            JOIN principios p ON pa.id_principio = p.id"""
+            
+        if principios:
+            consulta += f""" and p.id in {principios}"""
+            
+        consulta += """ JOIN versiones ver on ver.id = e.id_version
+                    JOIN versiones_wcag v on v.id = ver.id_version"""
+            
+        if versiones:
+            consulta += f""" and v.id in {versiones}"""
+        
+        if version:
+            consulta += f""" and ver.id = {version}"""
+            
+        consulta += """ JOIN escala_valores ev ON ev.id_escala = ver.id_escala
             AND ev.id_descripcion = m.medicion
             LEFT JOIN traducciones pt ON p.id = pt.id_elemento 
             AND pt.tabla = 'principios' AND pt.campo = 'nombre' 
@@ -185,13 +215,13 @@ def obtener_datos(entidades, principios, versiones, niveles, version):
             LEFT JOIN traducciones ct ON c.id = ct.id_elemento 
             AND ct.tabla = 'criterios_wcag' AND ct.campo = 'nombre' 
             AND ct.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
-            ORDER BY p.id, e.id, c.id;"""))
+            ORDER BY p.id, e.id, c.id;"""
+        result = conn.execute(text(consulta))
         datos = result.fetchall()
         return datos
 
 def obtener_suma_cumplimiento(entidades, principios, versiones, niveles):
-    with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT 
+    sql = """SELECT 
                 p.nombre AS principio,
                 SUM(CASE WHEN m.medicion = 1 THEN 1 ELSE 0 END) AS num_no_conseguido,
                 SUM(CASE WHEN m.medicion = 2 THEN 1 ELSE 0 END) AS num_parcialmente_conseguido,
@@ -200,20 +230,37 @@ def obtener_suma_cumplimiento(entidades, principios, versiones, niveles):
                 SUM(CASE WHEN m.medicion = 5 THEN 1 ELSE 0 END) AS num_totalmente_conseguido
                 FROM 
                 mediciones_wcag m
-                JOIN entidades ent on ent.id = m.id_entidad
-                and ent.id in ({entidades})
-                JOIN versiones_wcag v on v.id = m.id_version
-                and v.id in ({versiones})
-                JOIN criterios_wcag c ON m.id_criterio = c.id
-				JOIN niveles n on n.id = c.nivel
-                and n.id in ({niveles})
-                JOIN pautas pa ON c.id_pauta = pa.id
-                JOIN principios p ON pa.id_principio = p.id
-                and p.id in ({principios})
-                GROUP BY 
+                JOIN entidades ent on ent.id = m.id_entidad"""
+    
+    if entidades:
+        sql += f" and ent.id in {entidades}"
+    
+    sql += """ JOIN versiones ver on ver.id = ent.id_version
+            JOIN versiones_wcag v on v.id = ver.id_version"""
+
+    if versiones:
+        sql += f" and v.id in {versiones}"
+
+    sql += """ JOIN criterios_wcag c ON m.id_criterio = c.id
+				JOIN niveles n on n.id = c.nivel"""
+    
+    if niveles:
+        sql += f" and n.id in {niveles}"
+
+    sql += """ JOIN pautas pa ON c.id_pauta = pa.id
+                JOIN principios p ON pa.id_principio = p.id"""
+
+    if principios:
+        sql += f" and p.id in {principios}"
+
+    sql += """ GROUP BY 
                 p.id, p.nombre
                 ORDER BY 
-                p.nombre;"""))
+                p.nombre;"""
+    
+
+    with engine.begin() as conn:
+        result = conn.execute(text(sql))
         datos = result.fetchall()
         return datos
 
@@ -264,6 +311,18 @@ def obtener_tipos_entidad():
         result = conn.execute(text("SELECT * FROM tipos_entidad"))
         datos = result.fetchall()
         return datos
+    
+def obtener_tipos_entidad_por_id(id):
+    with engine.begin() as conn:
+        result = conn.execute(text(f"SELECT nombre FROM tipos_entidad where id = {id}"))
+        datos = result.fetchall()
+        return datos
+    
+def obtener_version_por_id_entidad(id):
+    with engine.begin() as conn:
+        result = conn.execute(text(f"SELECT version FROM versiones_wcag where id = (Select id_version from versiones where id_tipo_entidad = {id})"))
+        datos = result.fetchall()
+        return datos
 
 def obtener_tipos_wcag():
     with engine.begin() as conn:
@@ -278,47 +337,77 @@ def obtener_principios():
         return datos
 
 def obtener_cumplimiento_principios(entidades, principios, versiones, niveles):
-    with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT 
+    sql = """SELECT 
             pri.nombre,
             SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
             / SUM(med.medicion) * 100 AS porcentaje
-            FROM mediciones_wcag med
-            JOIN versiones_wcag v on v.id = med.id_version
-            and v.id in ({versiones})
-            INNER JOIN entidades ent ON med.id_entidad = ent.id
-            INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
-            and ent.id in ({entidades})
-            INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
-            INNER JOIN niveles niv ON cri.nivel = niv.id
-            and niv.id in ({niveles})
-            INNER JOIN pautas pau ON cri.id_pauta = pau.id
-            INNER JOIN principios pri ON pau.id_principio = pri.id
-            and pri.id in ({principios})
-            GROUP BY pri.nombre;"""))
+            FROM mediciones_wcag med"""
+
+
+    sql += """ INNER JOIN entidades ent ON med.id_entidad = ent.id
+            INNER JOIN versiones ver ON ent.id_version = ver.id
+            INNER JOIN tipos_entidad ten ON ver.id_tipo_entidad = ten.id
+            JOIN versiones_wcag v on v.id = ver.id_version """
+    
+    if versiones:
+        sql += f" and v.id in {versiones}"
+    
+    if entidades:
+        sql += f" and ent.id in {entidades}"
+
+    sql += """ INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
+            INNER JOIN niveles niv ON cri.nivel = niv.id"""
+    
+    if niveles:
+        sql += f" and niv.id in {niveles}"
+
+    sql += """ INNER JOIN pautas pau ON cri.id_pauta = pau.id
+            INNER JOIN principios pri ON pau.id_principio = pri.id"""
+
+    if principios:
+        sql += f" and pri.id in {principios}"
+
+    sql += " GROUP BY pri.nombre;"
+
+    with engine.begin() as conn:
+        result = conn.execute(text(sql))
         datos = result.fetchall()
         return datos
 
 
 def obtener_cumplimiento_niveles(entidades, principios, versiones, niveles):
-    with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT 
+    sql = """SELECT 
             niv.nombre,
             SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
             / SUM(med.medicion) * 100 AS porcentaje
             FROM mediciones_wcag med
             INNER JOIN entidades ent ON med.id_entidad = ent.id
-            INNER JOIN tipos_entidad ten ON ent.id_tipo = ten.id
-            and ent.id in ({entidades})
-            JOIN versiones_wcag v on v.id = med.id_version
-            and v.id in ({versiones})
-            INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
-            INNER JOIN niveles niv ON cri.nivel = niv.id
-            and niv.id in ({niveles})
-            INNER JOIN pautas pau ON cri.id_pauta = pau.id
-            INNER JOIN principios pri ON pau.id_principio = pri.id
-            and pri.id in ({principios})
-            GROUP BY niv.nombre;"""))
+            INNER JOIN versiones ver ON ent.id_version = ver.id
+            INNER JOIN tipos_entidad ten ON ver.id_tipo_entidad = ten.id"""
+    if entidades:
+        sql += f""" and ent.id in {entidades}"""
+    
+    sql += """ JOIN versiones_wcag v on v.id = ver.id_version"""
+
+    if versiones:
+        sql += f""" and v.id in {versiones}"""
+    
+    sql += """ INNER JOIN criterios_wcag cri ON med.id_criterio = cri.id
+            INNER JOIN niveles niv ON cri.nivel = niv.id"""
+    
+    if niveles:
+        sql += f""" and niv.id in {niveles}"""
+
+    sql += """ INNER JOIN pautas pau ON cri.id_pauta = pau.id
+            INNER JOIN principios pri ON pau.id_principio = pri.id"""
+    
+    if principios:
+        sql += f""" and pri.id in {principios}"""
+
+    sql += """ GROUP BY niv.nombre;"""
+
+    with engine.begin() as conn:
+        result = conn.execute(text(sql))
         datos = result.fetchall()
         return datos
 

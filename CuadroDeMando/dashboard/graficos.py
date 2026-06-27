@@ -1,5 +1,5 @@
 from dash import html, dcc
-import data.querys as dq
+import data.querys as qr
 
 def layout_graficos():
     return dcc.Loading(
@@ -10,13 +10,13 @@ def layout_graficos():
 
             html.Div(
                 children=[
-                    html.Div("Medición: Ayuntamientos", style={
+                    html.Div(id="nombre_medicion", style={
                         "background": "#eef2ff",
                         "padding": "6px 14px",
                         "border-radius": "10px",
                         "font-size": "14px"
                     }),
-                    html.Div("Versión WCAG: 2.0", style={
+                    html.Div(id="version_medicion", style={
                         "background": "#ecfeff",
                         "padding": "6px 14px",
                         "border-radius": "10px",

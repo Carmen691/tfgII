@@ -172,7 +172,7 @@ def registrar_callbacks_filtros(app):
 
                 html.Div([
                     html.Label(
-                        "Fecha auditoría",
+                        qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
                         className="filtros-label"
                     ),
 

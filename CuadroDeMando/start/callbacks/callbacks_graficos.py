@@ -10,6 +10,21 @@ import data.querys as qr
 def registrar_callbacks_graficos(app):
 
     @app.callback(
+        Output("nombre_medicion", "children"),
+        Output("version_medicion", "children"),
+        Input("store-tipo-entidad", "data"),
+        Input("store-idioma", "data")
+    )
+    def cargar_tabla_datos(data, idioma):
+        nombre = qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando") + ": " + qr.obtener_tipos_entidad_por_id(data)[0][0]
+        version = qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag") + ": " + qr.obtener_version_por_id_entidad(data)[0][0]
+
+        return nombre, version
+
+
+
+
+    @app.callback(
         Output('grafico-porcentaje', 'figure'),
         Output('grafico-principios', 'figure'),
         Output('grafico-niveles', 'figure'),
@@ -24,10 +39,22 @@ def registrar_callbacks_graficos(app):
         prevent_initial_call=False
     )
     def actualizar_graficos(data, entidades, principios, versiones, niveles):
-        entidades_sql = ", ".join(map(str, entidades))
-        principios_sql = ", ".join(map(str, principios))
-        versiones_sql = ", ".join(map(str, versiones))
-        niveles_sql = ", ".join(map(str, niveles))
+        if entidades:
+            entidades_sql = f"({", ".join(map(str, entidades))})"
+        else:
+            entidades_sql = None
+        if principios:
+            principios_sql = f"({','.join(map(str, principios))})"
+        else:
+            principios_sql = None
+        if versiones:
+            versiones_sql = f"({", ".join(map(str, versiones))})"
+        else:
+            versiones_sql = None
+        if niveles:
+            niveles_sql = f"({", ".join(map(str, niveles))})"
+        else:
+            niveles_sql = None
 
         df = pd.DataFrame(data["df_datos"])
 

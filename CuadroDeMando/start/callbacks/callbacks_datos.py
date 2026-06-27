@@ -5,7 +5,7 @@ from dash import dash_table
 from flask import session
 import plotly.express as px
 import pandas as pd
-from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_tipo_entidades
+from start.callbacks.services.data_services import cargar_datos, cargar_datos_inicio, cargar_filtros_posibles, cargar_tipo_entidades
 import data.querys as qr
 
 
@@ -17,6 +17,7 @@ def registrar_callbacks_datos(app):
 
     @app.callback(
         Output('store-data', 'data', allow_duplicate=True),
+        Output('store-filtros-posibles', 'data'),
         Output('init-done', 'data'),
         Output('init-trigger', 'disabled'),
         Input('init-trigger', 'n_intervals'),
@@ -25,8 +26,9 @@ def registrar_callbacks_datos(app):
     def actualizar_datos(cargar):
         if cargar < 2:
             datos = cargar_datos_inicio()
-            return datos, True, False
-        return no_update, no_update, True
+            filtros_posibles = cargar_filtros_posibles()
+            return datos, filtros_posibles,  True, False
+        return no_update, no_update, no_update, True
 
     
     @app.callback(

@@ -19,6 +19,7 @@ def crear_layout():
         dcc.Store(id='init-done', data=False),
         dcc.Store(id="app-initialized", data=False),
         dcc.Store(id='store-data', storage_type='session'),
+        dcc.Store(id='store-filtros-posibles', storage_type='session'),
         dcc.Store(id='store-tipo-entidad', storage_type='session'),
         dcc.Store(id='store-principios', storage_type='session'),
         dcc.Store(id='store-versiones', storage_type='session'),

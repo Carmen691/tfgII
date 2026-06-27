@@ -12,12 +12,28 @@ def cargar_datos(entidades_sel, principios_sel, versiones_sel, niveles_sel, vers
     escalas = pd.DataFrame(qr.obtener_escalas())
     principios = pd.DataFrame(qr.obtener_principios())
     niveles = pd.DataFrame(qr.obtener_niveles())
-    versiones = pd.DataFrame(qr.obtener_versiones())
 
-    ent_sel = tuple(entidades_sel)
-    princ_sel = tuple(principios_sel)
-    ver_sel = tuple(versiones_sel)
-    niv_sel = tuple(niveles_sel)
+
+    if not entidades_sel:
+        ent_sel = None
+    else:
+        ent_sel = f"({','.join(map(str, entidades_sel))})"
+
+    if not principios_sel:
+        princ_sel = None
+    else:
+        princ_sel = f"({','.join(map(str, principios_sel))})"
+    
+    if not versiones_sel:
+        ver_sel = None
+    else:
+        ver_sel = f"({','.join(map(str, versiones_sel))})"
+    
+    if not niveles_sel:
+        niv_sel = None
+    else:
+        niv_sel = f"({','.join(map(str, niveles_sel))})"    
+    
     datos = pd.DataFrame(
         qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
         columns=[
@@ -55,6 +71,8 @@ def cargar_tipo_entidades():
     tipos_entidad = pd.DataFrame(qr.obtener_tipos_entidad())
     return tipos_entidad.to_dict(orient="records"),
 
+def cargar_filtros_posibles():
+    return qr.obtener_opciones_filtros()
 
 def cargar_datos_inicio():
     idioma = pd.DataFrame(qr.obtener_idioma(), columns=["id", "codigo", "nombre"])
