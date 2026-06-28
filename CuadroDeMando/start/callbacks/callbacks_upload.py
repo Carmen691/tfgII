@@ -151,8 +151,7 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output("dropdown-wcag", "options"),
-        Input('url', 'pathname'),   
-        State("store-idioma", "data")
+        Input('url', 'pathname')
     )
     def dropdown_wcag(pathname):
         if pathname != "/dash/importar":
@@ -161,8 +160,8 @@ def registrar_callbacks_upload(app):
         wcag = qr.obtener_tipos_wcag()
 
         opciones_wcag = [
-            {"label": row["version"], "value": row["id"]}
-            for _, row in wcag.iterrows()
+            {"label": version, "value": id_}
+            for id_, version in wcag
         ]
 
         return opciones_wcag
@@ -199,13 +198,13 @@ def procesar_y_guardar_archivo(content, valor_dropdown, valor_wcag, valor_escala
             col for col in df.columns if not col.startswith('Unnamed')
         ]
         with qr.engine.begin() as conn:
-            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown, valor_escala, fecha)
+            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown, valor_escala, fecha, valor_wcag)
 
             if tipo == 0:
                 return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "tipo_entidad_ko"), estilo
             else:
                 if qr.guardar_entidades(conn, tipo, columnas_limpias) > 0:
-                    if qr.guardar_valores(conn, tipo, valor_wcag, df) > 0:
+                    if qr.guardar_valores(conn, tipo, df) > 0:
                         estilo = {"color": "green", "marginTop": "10px"}
                         return '✅' + qr.obtener_textos_interfaz(idioma, "importar", "imp_auditoria_ok"), estilo
                     else:

@@ -140,16 +140,15 @@ def registrar_callbacks_datos(app):
 
     
     @app.callback(
-        Output("store-data", "data", allow_duplicate=True),
         Output("mensaje-guardar", "children"),
         Input("btn-guardar-tabla", "n_clicks"),
         State("tabla-actual-store", "data"),
         State("store-idioma", "data"),
-        State('entidad-dropdown', 'value'),
-        State('principios-checklist', 'value'),
-        State('wcag-version-checklist', 'value'),
-        State('nivel-checklist', 'value'),
-        State('version-auditoria-dropdown', 'value'),
+        State("store-entidad", "data"),
+        State("store-principios", "data"),
+        State("store-versiones", "data"),
+        State("store-niveles", "data"),
+        State("store-fecha", "data"),
         State("store-tipo-entidad", "data"),
         prevent_initial_call=True
     )
@@ -219,10 +218,8 @@ def registrar_callbacks_datos(app):
             result = qr.actualizar_datos_mediciones(tuplas_update)
 
             if result > 0:
-                data["df_datos"]=datosn
                 qr.registrar_auditoria(session.get('user'), 'GUARDAR_DATOS', 'Se han guardado los datos correctamente')
-                return data, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok")
+                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok")
             else:
-                return no_update, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko")
-            return data
+                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko")
         return no_update

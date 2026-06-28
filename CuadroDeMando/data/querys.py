@@ -458,7 +458,7 @@ def obtener_versiones():
         datos = result.fetchall()
         return datos
 
-def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha):
+def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha, version):
     result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
     fila = result.fetchone()
     if fila:
@@ -468,7 +468,7 @@ def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha):
         if result.rowcount > 0:
             return 0
         else: 
-            result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala) VALUES (:id_tipo, :fecha, :escala)"""), {"id_tipo": id_tipo, "fecha": fecha, "escala": valor_escala})
+            result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala, id_version) VALUES (:id_tipo, :fecha, :escala, :version)"""), {"id_tipo": id_tipo, "fecha": fecha, "escala": valor_escala, "version":version})
             return result.lastrowid
     else:
         result = conn.execute(text(f"INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
@@ -498,7 +498,7 @@ def obtener_entidades_por_nombre(id_tipo):
         return datos
 
 
-def guardar_valores(conn, id_version, id_wcag, df):
+def guardar_valores(conn, id_version, df):
 
     result = conn.execute(text(f"SELECT * FROM entidades where id_version = {id_version}"))
     entidades = result.fetchall()
@@ -538,7 +538,6 @@ def guardar_valores(conn, id_version, id_wcag, df):
                     datos.append({
                         "id_entidad": entidades[j][0],
                         "id_criterio": id_criterio,
-                        "id_version": id_wcag,
                         "medicion": dato
                     })
                     j = j+1
@@ -553,13 +552,11 @@ def guardar_valores(conn, id_version, id_wcag, df):
         INSERT INTO mediciones_wcag (
             id_entidad,
             id_criterio,
-            id_version,
             medicion
         )
         VALUES (
             :id_entidad,
             :id_criterio,
-            :id_version,
             :medicion
         )
     """)
