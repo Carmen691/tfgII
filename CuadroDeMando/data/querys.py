@@ -106,6 +106,17 @@ def obtener_versiones_auditoria(auditoria):
         datos = result.fetchall()
         return datos
         
+def obtener_escala_tipo_auditoria(auditoria):
+    with engine.begin() as conn:
+        result = conn.execute(text(f"""SELECT
+                id_escala
+                FROM versiones
+                WHERE id_tipo_entidad = {auditoria}
+            ORDER BY fecha DESC
+        """))
+        datos = result.fetchall()
+        return datos
+        
 
 def eliminar_auditoria(auditoria, version):
     with engine.begin() as conn:
@@ -304,9 +315,9 @@ def obtener_mapa_calor():
         datos = result.fetchall()
         return datos
 
-def obtener_opciones_cumplimiento(idioma):
+def obtener_opciones_cumplimiento(idioma, id):
     with engine.begin() as conn:
-        result = conn.execute(text("""SELECT id_descripcion, descripcion FROM dashboard.escala_valores;"""))
+        result = conn.execute(text(f"""SELECT id_descripcion, descripcion FROM dashboard.escala_valores where id_escala = {id};"""))
         datos = result.fetchall()
         return datos
 

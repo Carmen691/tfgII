@@ -66,6 +66,9 @@ def registrar_callbacks_datos(app):
         if not version_aud:
             version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
 
+        
+        id = qr.obtener_escala_tipo_auditoria(tipo_aud)[0][0]
+
         datos = pd.DataFrame(
         qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
         columns=[
@@ -111,7 +114,7 @@ def registrar_callbacks_datos(app):
                         "value": row["id_descripcion"]
                     }
                     for _, row in pd.DataFrame(
-                        qr.obtener_opciones_cumplimiento(idioma)
+                        qr.obtener_opciones_cumplimiento(idioma, id)
                     ).iterrows()
                 ]
             }
@@ -176,7 +179,7 @@ def registrar_callbacks_datos(app):
                 niv_sel = f"({','.join(map(str, niveles_sql))})" 
 
             if not version_aud:
-                version_aud = qr.obtener_versiones_auditoria(tipo_aud)
+                version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
 
             datos = pd.DataFrame(
                 qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
