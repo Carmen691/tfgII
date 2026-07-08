@@ -1,13 +1,11 @@
-import dash
-from dash import Output, Input, State, html, dash_table, no_update
+from dash import Output, Input, State, html, no_update
 from dash.exceptions import PreventUpdate
-from flask import app, session
+from flask import session
 import pandas as pd
 import base64
 import io
-import datetime
+from dash import html
 
-from sqlalchemy import engine
 import data.querys as qr
 
 
@@ -19,21 +17,21 @@ def registrar_callbacks_upload(app):
         State('upload-data', 'filename'),
         State('upload-data', 'last_modified')
     )
-    def update_output(list_of_contents, list_of_names, list_of_dates):
+    def update_output(contents, filename, date):
 
-        if list_of_contents is not None:
+        if contents is not None:
 
-            children = [
-                parse_contents(c, n, d)
-                for c, n, d in zip(list_of_contents, list_of_names, list_of_dates)
-            ]
+            return parse_contents(
+                contents,
+                filename,
+                date
+            )
 
-            return children
+        return None
 
 
     @app.callback(
         Output('file-upload-info', 'children'),
-        Output('upload-data', 'style'),
         Input('upload-data', 'filename'),
         Input('upload-data', 'contents'),
     )
@@ -41,49 +39,22 @@ def registrar_callbacks_upload(app):
 
         if filename is not None and content is not None:
 
-            return (
-                html.Div([
+            return html.Div(
+                [
                     html.Img(
                         src='https://img.icons8.com/color/48/microsoft-excel-2019--v1.png',
-                        style={
-                            'height': '40px',
-                            'marginBottom': '10px'
-                        }
+                        className="excel-icon"
                     ),
-                    html.Div(
+
+                    html.Span(
                         filename,
-                        style={'wordWrap': 'break-word'}
+                        className="file-name"
                     )
-                ]),
-                "",
-                {
-                    'width': '100%',
-                    'height': 'auto',
-                    'lineHeight': '60px',
-                    'borderWidth': '0px',
-                    'borderRadius': '10px',
-                    'textAlign': 'center',
-                    'margin': '10px',
-                    'cursor': 'pointer',
-                    'padding': '10px'
-                }
+                ],
+                className="file-selected"
             )
 
-        return (
-            "",
-            {
-                'width': '100%',
-                'height': '60px',
-                'lineHeight': '60px',
-                'borderWidth': '2px',
-                'borderStyle': 'dashed',
-                'borderRadius': '10px',
-                'textAlign': 'center',
-                'margin': '10px',
-                'cursor': 'pointer',
-                'padding': '10px'
-            }
-        )
+        return ""
 
     @app.callback(
         Output("mensaje-importacion", "children"),
@@ -215,3 +186,67 @@ def procesar_y_guardar_archivo(content, valor_dropdown, valor_wcag, valor_escala
     except Exception as error:
 
         print(error)
+
+
+def parse_contents(contents, filename, date):
+
+    content_type, content_string = contents.split(',')
+
+    decoded = base64.b64decode(content_string)
+
+    try:
+
+        if filename.endswith('.xlsx'):
+
+            df = pd.read_excel(
+                io.BytesIO(decoded),
+                engine="openpyxl"
+            )
+
+        elif filename.endswith('.xls'):
+
+            df = pd.read_excel(
+                io.BytesIO(decoded)
+            )
+
+        else:
+            return html.Div(
+                [
+                    "Formato no soportado: ",
+                    filename
+                ]
+            )
+
+
+    except Exception as e:
+
+        return html.Div(
+            [
+                "Error procesando el fichero: ",
+                str(e)
+            ]
+        )
+
+
+    return html.Div(
+        [
+
+            html.H5(filename),
+
+            html.P(
+                f"Filas: {df.shape[0]} | Columnas: {df.shape[1]}"
+            ),
+
+            html.Hr(),
+
+            html.Pre(
+                df.head().to_string(),
+                style={
+                    "whiteSpace": "pre-wrap",
+                    "maxHeight": "300px",
+                    "overflowY": "auto"
+                }
+            )
+
+        ]
+    )

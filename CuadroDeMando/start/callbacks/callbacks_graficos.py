@@ -32,6 +32,8 @@ def registrar_callbacks_graficos(app):
         Output("niveles-div", "children"),
         Output("datos-wcag-div", "children"),
         Output("cumplimiento-div", "children"),
+        Output("grafico-heat", "figure"),
+        Output("grafico-problematicos", "figure"),
         Input("url", "pathname"),
         State("store-entidad", "data"),
         State("store-principios", "data"),
@@ -79,23 +81,25 @@ def registrar_callbacks_graficos(app):
             "Criterios": datos["criterio"],
             "Valores": datos["id_descripcion"],
             "Entidades": datos["entidad"],
+            "Estado": datos["descripcion"],
+            "Principios": datos["principio"],
         })
 
         df_datos["Entidades"] = df_datos["Entidades"].astype(str)
-        df = df_datos.to_dict('records')
 
-        porcentaje_cumplimiento = pd.DataFrame(qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha), 
-                                            columns = ["principio", "num_no_conseguido",
-                                            "num_parcialmente_conseguido", "num_no_aplicable",
-                                            "num_ampliamente_conseguido", "num_totalmente_conseguido"])
-        df_porcentajes = pd.DataFrame({
-            "Principio": porcentaje_cumplimiento["principio"],
-            "No Conseguido": porcentaje_cumplimiento["num_no_conseguido"],
-            "Parcialmente Conseguido": porcentaje_cumplimiento["num_parcialmente_conseguido"],
-            "No Aplicable": porcentaje_cumplimiento["num_no_aplicable"],
-            "Ampliamente Conseguido": porcentaje_cumplimiento["num_ampliamente_conseguido"],
-            "Totalmente Conseguido": porcentaje_cumplimiento["num_totalmente_conseguido"]
-        })
+        suma_cumplimiento, columnas = qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha)
+        porcentaje_cumplimiento = pd.DataFrame(suma_cumplimiento, 
+                                            columns = columnas)
+        renombrar = {
+            "principio": "Principio",
+            "no_conseguido": "No Conseguido",
+            "parcialmente_conseguido": "Parcialmente Conseguido",
+            "no_aplicable": "No Aplicable",
+            "ampliamente_conseguido": "Ampliamente Conseguido",
+            "totalmente_conseguido": "Totalmente Conseguido"
+        }
+
+        df_porcentajes = porcentaje_cumplimiento.rename(columns=renombrar)
 
         df_melt = df_porcentajes.melt(
             id_vars=["Principio"],
@@ -107,13 +111,7 @@ def registrar_callbacks_graficos(app):
         df_pct["Total"] = df_pct.groupby("Principio")["Valores"].transform("sum")
         df_pct["Porcentaje"] = (df_pct["Valores"] / df_pct["Total"] * 100)
 
-        orden_estados = [
-            "No Conseguido",
-            "Parcialmente Conseguido",
-            "No Aplicable",
-            "Ampliamente Conseguido",
-            "Totalmente Conseguido"
-        ]
+        orden_estados = [col for col in df_porcentajes.columns if col != "Principio"]
 
         df_pct["Estado"] = pd.Categorical(
             df_pct["Estado"],
@@ -179,42 +177,18 @@ def registrar_callbacks_graficos(app):
             margin=dict(l=20, r=20, t=50, b=20)
         )
 
-        df = pd.DataFrame(df)
-        df_total = (
-            df[df["Valores"] != 3]
-            .groupby("Entidades")
-            .size()
-            .reset_index(name="Total")
-        )
+        df_ent = pd.DataFrame(df_datos)
 
-        df_ok = (
-            df[df["Valores"].isin([4, 5])]
-            .groupby("Entidades")
-            .size()
-            .reset_index(name="Cumplen")
-        )
 
-        df_entidades = df_total.merge(
-            df_ok,
-            on="Entidades",
-            how="left"
-        )
+        # -------- datasets ----------
+        df_top = preparar_df(df_ent, "top", 10)
+        df_bottom = preparar_df(df_ent, "bottom", 10)
+        df_all = preparar_df(df_ent, "all", 9999)
 
-        df_entidades["Cumplen"] = df_entidades["Cumplen"].fillna(0)
 
-        df_entidades["Porcentaje"] = (
-            df_entidades["Cumplen"]
-            / df_entidades["Total"]
-            * 100
-        )
-
-        df_entidades = df_entidades.sort_values(
-            "Porcentaje",
-            ascending=True
-        )
-
+        # -------- figura ----------
         fig3 = px.bar(
-            df_entidades,
+            df_top,
             x="Porcentaje",
             y="Entidades",
             orientation="h",
@@ -231,7 +205,62 @@ def registrar_callbacks_graficos(app):
             xaxis_title="% Cumplimiento",
             yaxis_title="",
             xaxis_range=[0, 100],
-            height=450
+            yaxis=dict(autorange="reversed"),
+            updatemenus=[
+                dict(
+                    type="dropdown",
+                    direction="down",
+                    showactive=True,
+                    x=1.15,          # derecha del gráfico
+                    y=1,             # arriba
+                    xanchor="left",
+                    yanchor="top",
+                    buttons=[
+                        dict(
+                            label="Top 10",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_top["Porcentaje"]],
+                                    "y": [df_top["Entidades"]],
+                                    "text": [df_top["Porcentaje"]]
+                                },
+                                {
+                                    "height": min(max(450, len(df_top) * 22), 900)
+                                }
+                            ]
+                        ),
+                        dict(
+                            label="Bottom 10",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_bottom["Porcentaje"]],
+                                    "y": [df_bottom["Entidades"]],
+                                    "text": [df_bottom["Porcentaje"]]
+                                },
+                                {
+                                    "height": min(max(450, len(df_bottom) * 22), 900)
+                                }
+                            ]
+                        ),
+                        dict(
+                            label="Todos",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_all["Porcentaje"]],
+                                    "y": [df_all["Entidades"]],
+                                    "text": [df_all["Porcentaje"]]
+                                },
+                                {
+                                    "height": min(max(450, len(df_all) * 22), 900)
+                                }
+                            ]
+                        )
+                    ]
+                )
+            ]
         )
 
         datos_niveles =  {fila[0]: fila[1] for fila in datos_por_niveles}
@@ -266,5 +295,191 @@ def registrar_callbacks_graficos(app):
             html.P(f"Perceptible: {round(datos_principios.get('Perceivable', 0), 2)}%"),
         ]
 
-        return fig1, fig2, fig3, est, datos_wcag, cumplimiento
+
+        df_heat = pd.DataFrame(df_datos)
+        df_heat_top = preparar_heatmap(df_heat, "top", 10)
+        df_heat_bottom = preparar_heatmap(df_heat, "bottom", 10)
+        df_heat_all = preparar_heatmap(df_heat, "all")
+
+        fig_heat = px.density_heatmap(
+            df_heat_all,
+            x="Principios",
+            y="Entidades",
+            z="Porcentaje",
+            color_continuous_scale="Blues",
+            title="Heatmap de cumplimiento (Entidad vs Principio)"
+        )
+
+        fig_heat.update_layout(
+            height=600,
+
+            updatemenus=[
+                dict(
+                    type="dropdown",
+                    direction="down",
+                    showactive=True,
+                    x=1.15,
+                    y=1,
+                    xanchor="left",
+                    yanchor="top",
+
+                    buttons=[
+                        dict(
+                            label="Top 10",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_heat_top["Criterios"]],
+                                    "y": [df_heat_top["Entidades"]],
+                                    "z": [df_heat_top["Porcentaje"]]
+                                }
+                            ]
+                        ),
+
+                        dict(
+                            label="Bottom 10",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_heat_bottom["Criterios"]],
+                                    "y": [df_heat_bottom["Entidades"]],
+                                    "z": [df_heat_bottom["Porcentaje"]]
+                                }
+                            ]
+                        ),
+
+                        dict(
+                            label="Todos",
+                            method="update",
+                            args=[
+                                {
+                                    "x": [df_heat_all["Criterios"]],
+                                    "y": [df_heat_all["Entidades"]],
+                                    "z": [df_heat_all["Porcentaje"]]
+                                }
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+
+       # Fig 4
+
+        df_estados = (
+            df_datos.groupby("Estado")
+            .size()
+            .reset_index(name="Cantidad")
+        )
+        
+        df_estados["Porcentaje"] = (
+            df_estados["Cantidad"] /
+            df_estados["Cantidad"].sum()
+            * 100
+        )
+
+        fig4 = px.bar(
+            df_estados,
+            x="Porcentaje",
+            y="Estado",
+            orientation="h",
+            text="Porcentaje",
+            color="Estado",
+            title="Distribución de estados"
+        )
+
+        fig4.update_traces(
+            texttemplate="%{text:.1f}%",
+            textposition="outside"
+        )
+
+        fig4.update_layout(
+            showlegend=False,
+            xaxis_range=[0, 100],
+            xaxis_title="% del total",
+            yaxis_title="",
+            height=400
+        )
+
+        return fig1, fig2, fig3, est, datos_wcag, cumplimiento, fig_heat, fig4
     
+    
+def preparar_df(df, modo, n=10):
+
+    df_total = (
+        df[df["Estado"] != "No aplicable"]
+        .groupby("Entidades")
+        .size()
+        .reset_index(name="Total")
+    )
+
+    estados_cumplen = ["Ampliamente conseguido", "Totalmente conseguido"]
+
+    df_ok = (
+        df[df["Estado"].isin(estados_cumplen)]
+        .groupby("Entidades")
+        .size()
+        .reset_index(name="Cumplen")
+    )
+
+    df_entidades = df_total.merge(df_ok, on="Entidades", how="left")
+    df_entidades["Cumplen"] = df_entidades["Cumplen"].fillna(0)
+
+    df_entidades["Porcentaje"] = (
+        df_entidades["Cumplen"] / df_entidades["Total"] * 100
+    )
+
+    if modo == "top":
+        df_entidades = df_entidades.sort_values("Porcentaje", ascending=False).head(n)
+
+    elif modo == "bottom":
+        df_entidades = df_entidades.sort_values("Porcentaje", ascending=True).head(n)
+
+    return df_entidades
+
+
+def preparar_heatmap(df, modo="top", n=10):
+
+    estados_cumplen = [
+        "Ampliamente conseguido",
+        "Totalmente conseguido"
+    ]
+
+    df["Cumple"] = (
+        df["Estado"]
+        .isin(estados_cumplen)
+        .astype(int)
+    )
+
+    # porcentaje de cumplimiento por entidad y criterio
+    df = (
+        df
+        .groupby(["Entidades", "Principios", "Criterios"])["Cumple"]
+        .mean()
+        .reset_index()
+    )
+
+    df["Porcentaje"] = df["Cumple"] * 100
+
+    if modo == "top":
+        entidades = (
+            df.groupby("Entidades")["Porcentaje"]
+            .mean()
+            .sort_values(ascending=False)
+            .head(n)
+            .index
+        )
+
+    elif modo == "bottom":
+        entidades = (
+            df.groupby("Entidades")["Porcentaje"]
+            .mean()
+            .sort_values(ascending=True)
+            .head(n)
+            .index
+        )
+
+    else:
+        entidades = df["Entidades"].unique()
+
+    return df[df["Entidades"].isin(entidades)]

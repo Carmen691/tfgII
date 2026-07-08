@@ -63,7 +63,18 @@ def obtener_numero_mediciones(entidades):
 
 def obtener_numero_cumplimientos(entidades):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT count(id) FROM dashboard.mediciones_wcag where id_entidad in {entidades} and medicion in (4,5);"))
+        result = conn.execute(text(f"""
+                SELECT COUNT(m.id)
+                FROM dashboard.mediciones_wcag m
+                JOIN entidades ent
+                    ON ent.id = m.id_entidad
+                JOIN versiones ver
+                    ON ver.id = ent.id_version
+                JOIN escala_valores ev
+                    ON ev.id_escala = ver.id_escala
+                AND ev.id_descripcion = m.medicion
+                WHERE ent.id IN {entidades}
+                AND ev.descripcion IN ('Ampliamente conseguido', 'Totalmente conseguido');"""))
         datos = result.fetchall()
         return datos[0][0]
 
@@ -233,59 +244,102 @@ def obtener_datos(entidades, principios, versiones, niveles, version):
         datos = result.fetchall()
         return datos
 
-def obtener_suma_cumplimiento(entidades, principios, versiones, niveles, version):
-    consulta = """SELECT 
-                p.nombre AS principio,
-                SUM(CASE WHEN m.medicion = 1 THEN 1 ELSE 0 END) AS num_no_conseguido,
-                SUM(CASE WHEN m.medicion = 2 THEN 1 ELSE 0 END) AS num_parcialmente_conseguido,
-                SUM(CASE WHEN m.medicion = 3 THEN 1 ELSE 0 END) AS num_no_aplicable,
-                SUM(CASE WHEN m.medicion = 4 THEN 1 ELSE 0 END) AS num_ampliamente_conseguido,
-                SUM(CASE WHEN m.medicion = 5 THEN 1 ELSE 0 END) AS num_totalmente_conseguido
-                FROM 
-                mediciones_wcag m
-                JOIN entidades ent on ent.id = m.id_entidad"""
-    
-    if entidades:
-        consulta += f""" and ent.id in {entidades}"""
 
-    consulta += """ JOIN criterios_wcag c ON m.id_criterio = c.id
-        JOIN niveles n ON c.nivel = n.id"""
-    
-    if niveles:
-        consulta += f""" and n.id in {niveles}"""
-        
-    consulta += """ JOIN pautas pa ON c.id_pauta = pa.id
-        JOIN principios p ON pa.id_principio = p.id"""
-        
-    if principios:
-        consulta += f""" and p.id in {principios}"""
-        
-    consulta += """ JOIN versiones ver 
-                on ver.id = ent.id_version
-                JOIN criterio_version cv on c.id = cv.id_criterio
-                JOIN versiones_wcag v on v.id = cv.id_version"""
-        
-    if versiones:
-        consulta += f""" and v.id in {versiones}"""
-    
-    if version:
-        consulta += f""" and ver.id = {version}"""
-        
-    consulta += """ JOIN escala_valores ev ON ev.id_escala = ver.id_escala
-        AND ev.id_descripcion = m.medicion
-        LEFT JOIN traducciones pt ON p.id = pt.id_elemento 
-        AND pt.tabla = 'principios' AND pt.campo = 'nombre' 
-        AND pt.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
-        LEFT JOIN traducciones ct ON c.id = ct.id_elemento 
-        AND ct.tabla = 'criterios_wcag' AND ct.campo = 'nombre' 
-        AND ct.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
-        ORDER BY p.nombre;"""
-    
+def obtener_suma_cumplimiento(entidades, principios, versiones, niveles, version):
     with engine.begin() as conn:
+
+        # Obtener la escala de la versión
+        id_escala = conn.execute(
+            text("SELECT id_escala FROM versiones WHERE id = :version"),
+            {"version": version}
+        ).scalar()
+
+        # Obtener los valores de esa escala
+        valores = conn.execute(
+            text("""
+                SELECT id_descripcion, descripcion
+                FROM escala_valores
+                WHERE id_escala = :id_escala
+                ORDER BY id_descripcion
+            """),
+            {"id_escala": id_escala}
+        ).fetchall()
+
+        columnas = []
+
+        for id_desc, descripcion in valores:
+            alias = (
+                descripcion.lower()
+                .replace(" ", "_")
+                .replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+            )
+
+            columnas.append(
+                f"SUM(CASE WHEN m.medicion = {id_desc} THEN 1 ELSE 0 END) AS {alias}"
+            )
+
+        consulta = f"""
+        SELECT
+            p.nombre AS principio,
+            {', '.join(columnas)}
+        FROM mediciones_wcag m
+        JOIN entidades ent ON ent.id = m.id_entidad
+        """
+
+        if entidades:
+            consulta += f" AND ent.id IN {entidades}"
+
+        consulta += """
+        JOIN criterios_wcag c ON m.id_criterio = c.id
+        JOIN niveles n ON c.nivel = n.id
+        """
+
+        if niveles:
+            consulta += f" AND n.id IN {niveles}"
+
+        consulta += """
+        JOIN pautas pa ON c.id_pauta = pa.id
+        JOIN principios p ON pa.id_principio = p.id
+        """
+
+        if principios:
+            consulta += f" AND p.id IN {principios}"
+
+        consulta += """
+        JOIN versiones ver ON ver.id = ent.id_version
+        JOIN criterio_version cv ON c.id = cv.id_criterio
+        JOIN versiones_wcag v ON v.id = cv.id_version
+        """
+
+        if versiones:
+            consulta += f" AND v.id IN {versiones}"
+
+        if version:
+            consulta += f" AND ver.id = {version}"
+
+        consulta += """
+        JOIN escala_valores ev
+            ON ev.id_escala = ver.id_escala
+           AND ev.id_descripcion = m.medicion
+        LEFT JOIN traducciones pt
+            ON p.id = pt.id_elemento
+           AND pt.tabla = 'principios'
+           AND pt.campo = 'nombre'
+           AND pt.id_idioma = (
+                SELECT id
+                FROM idiomas
+                WHERE codigo = 'ES'
+           )
+        GROUP BY p.nombre
+        ORDER BY p.nombre
+        """
+
         result = conn.execute(text(consulta))
-        datos = result.fetchall()
-        return datos
-    
+        return result.fetchall(), result.keys()
 
 def obtener_mapa_calor():
     with engine.begin() as conn:
@@ -361,7 +415,9 @@ def obtener_principios():
 def obtener_cumplimiento_principios(entidades, principios, versiones, niveles, version):
         
     sql = """SELECT p.nombre,
-            SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
+            SUM(CASE
+                WHEN ev.descripcion IN ('Ampliamente conseguido', 'Totalmente conseguido')
+                THEN med.medicion ELSE 0 END) * 1.0
             / SUM(med.medicion) * 100 AS porcentaje
             FROM mediciones_wcag med INNER JOIN entidades ent ON med.id_entidad = ent.id"""
 
@@ -411,7 +467,9 @@ def obtener_cumplimiento_niveles(entidades, principios, versiones, niveles, vers
                 
     sql = """SELECT 
             n.nombre,
-            SUM(CASE WHEN med.medicion IN (4, 5) THEN med.medicion ELSE 0 END) * 1.0
+            SUM(CASE
+                WHEN ev.descripcion IN ('Ampliamente conseguido', 'Totalmente conseguido')
+                THEN med.medicion ELSE 0 END) * 1.0
             / SUM(med.medicion) * 100 AS porcentaje
             FROM mediciones_wcag med
             INNER JOIN entidades ent ON med.id_entidad = ent.id"""

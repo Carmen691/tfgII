@@ -167,19 +167,34 @@ def registrar_callbacks_filtros(app):
         principios = pd.DataFrame(qr.obtener_principios()).to_dict("records")
 
         # Aplicamos los filtros seleccionados
-        if principios_sel:
-            df = df[df["id_principio"].isin(principios_sel)]
-
+        df_principios = df.copy()
         if wcag_sel:
-            df = df[df["id_version"].isin(wcag_sel)]
+            df_principios = df_principios[df_principios["id_version"].isin(wcag_sel)]
 
         if nivel_sel:
-            df = df[df["id_nivel"].isin(nivel_sel)]
+            df_principios = df_principios[df_principios["id_nivel"].isin(nivel_sel)]
 
-        # Qué valores siguen siendo válidos
-        ok_principios = set(df["id_principio"])
-        ok_wcag = set(df["id_version"])
-        ok_niveles = set(df["id_nivel"])
+        ok_principios = set(df_principios["id_principio"])
+
+        df_wcag = df.copy()
+
+        if principios_sel:
+            df_wcag = df_wcag[df_wcag["id_principio"].isin(principios_sel)]
+
+        if nivel_sel:
+            df_wcag = df_wcag[df_wcag["id_nivel"].isin(nivel_sel)]
+
+        ok_wcag = set(df_wcag["id_version"])
+
+        df_niveles = df.copy()
+
+        if principios_sel:
+            df_niveles = df_niveles[df_niveles["id_principio"].isin(principios_sel)]
+
+        if wcag_sel:
+            df_niveles = df_niveles[df_niveles["id_version"].isin(wcag_sel)]
+
+        ok_niveles = set(df_niveles["id_nivel"])
 
         principios_options = [
             {

@@ -28,13 +28,26 @@ def layout_usuarios():
 
                     dcc.Dropdown(
                         id='usuarios-dropdown',
-                        style={"width": "300px"}
+                        className="usuarios-dropdown"
                     ),
 
-                    html.Button(
-                        id='borrar-usuario-button',
-                        n_clicks=0,
+                    html.Div(
+                        [
+
+                            html.Button(
+                                id='borrar-usuario-button',
+                                n_clicks=0,
+                            ),
+
+                            html.Div(
+                                id="mensaje-usuario-eliminar",
+                                className="mensaje"
+                            ),
+
+                        ],
+                        className="boton-con-mensaje"
                     ),
+
 
                     dbc.Modal([
 
@@ -67,16 +80,13 @@ def layout_usuarios():
                         is_open=False
                     ),
 
-                    html.Div(
-                        id="mensaje-usuario-eliminar",
-                        className="mensaje"
-                    ),
-
                 ],
                     className="fila-usuarios"
                 ),
 
-            ], id="admin-eliminar-wrapper"),
+            ],
+            id="admin-eliminar-wrapper"),
+
 
 
             # ---------------- AÑADIR USUARIO ----------------
@@ -95,19 +105,25 @@ def layout_usuarios():
                         className="input-style"
                     ),
 
+
                     html.Div([
+                        
                         dcc.Input(
                             id='input-passwd',
                             type='password',
                             className="input-style"
                         ),
+
                         html.Button(
                             "👁",
                             id="ver-password-alta",
                             n_clicks=0,
                             className="ojo-password"
                         )
-                    ], className="password-container"),
+
+                    ],
+                    className="password-container"),
+
 
                     dbc.Checkbox(
                         id="check-admin",
@@ -115,11 +131,25 @@ def layout_usuarios():
                         className="check-style"
                     ),
 
-                    html.Button(
-                        id='add-usuario-button',
-                        n_clicks=0,
-                        className="btn btn-success"
+
+                    html.Div(
+                        [
+
+                            html.Button(
+                                id='add-usuario-button',
+                                n_clicks=0,
+                            ),
+
+                            html.Div(
+                                id="mensaje-usuario-anadir",
+                                className="mensaje"
+                            ),
+
+                        ],
+                        className="boton-con-mensaje"
                     ),
+
+
 
                     dbc.Modal([
 
@@ -146,26 +176,26 @@ def layout_usuarios():
                                 n_clicks=0
                             ),
 
-                        ]),
+                        ])
 
                     ],
                         id="modal-confirmacion-anadir",
                         is_open=False
                     ),
 
-                    html.Div(
-                        id="mensaje-usuario-anadir",
-                        className="mensaje"
-                    ),
 
                 ],
                     className="fila-usuarios"
                 ),
 
-            ], id="admin-anadir-wrapper"),
+            ],
+            id="admin-anadir-wrapper"),
+
+
 
 
             # ---------------- CAMBIAR PASSWORD ----------------
+
 
             html.Div([
 
@@ -173,12 +203,16 @@ def layout_usuarios():
                     id="titulo-cambiar-password"
                 ),
 
+
                 html.Div([
+
+
                     html.Div([
+
                         dcc.Input(
-                        id='input-password-actual',
-                        type='password',
-                        className="input-style"
+                            id='input-password-actual',
+                            type='password',
+                            className="input-style"
                         ),
 
                         html.Button(
@@ -187,10 +221,14 @@ def layout_usuarios():
                             n_clicks=0,
                             className="ojo-password"
                         )
+
                     ],
                     className="password-container"),
 
+
+
                     html.Div([
+
                         dcc.Input(
                             id='input-password-nueva',
                             type='password',
@@ -203,14 +241,18 @@ def layout_usuarios():
                             n_clicks=0,
                             className="ojo-password"
                         )
+
                     ],
                     className="password-container"),
 
+
+
                     html.Div([
+
                         dcc.Input(
-                        id='input-password-confirmar',
-                        type='password',
-                        className="input-style"
+                            id='input-password-confirmar',
+                            type='password',
+                            className="input-style"
                         ),
 
                         html.Button(
@@ -219,14 +261,32 @@ def layout_usuarios():
                             n_clicks=0,
                             className="ojo-password"
                         )
+
                     ],
                     className="password-container"),
 
-                    html.Button(
-                        id='cambiar-password-button',
-                        n_clicks=0,
-                        className="btn btn-success"
+
+
+                    html.Div(
+                        [
+
+                            html.Button(
+                                id='cambiar-password-button',
+                                n_clicks=0,
+                            ),
+
+
+                            html.Div(
+                                id="mensaje-password",
+                                className="mensaje"
+                            ),
+
+                        ],
+                        className="boton-con-mensaje"
                     ),
+
+
+
 
                     dbc.Modal([
 
@@ -258,18 +318,15 @@ def layout_usuarios():
                         is_open=False
                     ),
 
-                    html.Div(
-                        id="mensaje-password",
-                        className="mensaje"
-                    ),
 
                 ],
-                    className="fila-usuarios"
+                className="fila-usuarios"
                 ),
 
-            ], id="password-wrapper"),
+            ],
+            id="password-wrapper"),
+
 
         ],
-            className="main-card"
-        )
+        className="main-card")
     )

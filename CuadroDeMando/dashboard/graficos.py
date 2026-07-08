@@ -51,7 +51,7 @@ def layout_graficos():
                 html.Div(
                     id="niveles-div",
                     style=card_style
-                )
+                ),
 
             ], style={
                 "display": "flex",
@@ -62,6 +62,8 @@ def layout_graficos():
             dcc.Graph(id='grafico-porcentaje'),
             dcc.Graph(id='grafico-principios'),
             dcc.Graph(id='grafico-niveles'),
+            dcc.Graph(id='grafico-heat'),
+            dcc.Graph(id='grafico-problematicos'),
 
         ])
     )

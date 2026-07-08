@@ -384,7 +384,14 @@ def registrar_callbacks_admin(app):
 
         return opciones_auditorias
     
-
+    @app.callback(
+        Output("versiones-dropdown", "disabled"),
+        Input("auditorias-dropdown", "value")
+    )
+    def activar_versiones(auditoria_seleccionada):
+        if auditoria_seleccionada:
+            return False
+        return True
     
     @app.callback(
         Output("versiones-dropdown", "options", allow_duplicate=True),
