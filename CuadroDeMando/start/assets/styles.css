@@ -22,11 +22,6 @@
     MENU IZQUIERDA
 ========================================================= */
 
-/* COLAPSADO */
-.sidebar.collapsed {
-    width: 70px;
-}
-
 /* =========================
    MAIN CONTENT
 ========================= */
@@ -70,33 +65,6 @@
     gap: 6px;
 }
 
-/* HOVER */
-.sidebar-link:hover {
-    background: var(--hover);
-    color: white !important;
-    transform: translateX(3px);
-}
-
-/* =========================
-   SUBMENU
-========================= */
-.sidebar-sublink {
-    display: block;
-
-    padding: 10px 14px;
-    margin-left: 14px;
-
-    color: var(--muted) !important;
-    text-decoration: none !important;
-
-    border-left: 2px solid transparent;
-}
-
-.sidebar-sublink:hover {
-    color: white !important;
-    border-left: 2px solid var(--primary);
-}
-
 /* =========================
    SECCIÓN ADMIN
 ========================= */
@@ -104,19 +72,6 @@
     margin-top: 10px;
     font-weight: 600;
     cursor: pointer;
-}
-
-/* =========================
-   COLAPSADO (SOLO ICONOS)
-========================= */
-.sidebar.collapsed .menu-text {
-    display: none;
-}
-
-/* centrar iconos */
-.sidebar.collapsed .sidebar-link {
-    justify-content: center;
-    gap: 0;
 }
 
 /* =========================
@@ -353,17 +308,6 @@ body {
     color: #94a3b8;
 }
 
-.input-style:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
-}
-
-/* dropdown */
-#usuarios-dropdown {
-    min-width: 300px;
-}
-
 /* botón eliminar */
 #borrar-usuario-button {
     background: linear-gradient(135deg, #f87171, #ef4444);
@@ -444,10 +388,6 @@ body {
     #usuarios-dropdown,
     button {
         width: 100% !important;
-    }
-
-    .label-filtro {
-        min-width: auto;
     }
 }
 
@@ -897,12 +837,6 @@ td:first-child {
     font-weight: 600;
 }
 
-/* */
-
-.dash-dropdown {
-    position: relative;
-}
-
 .dash-dropdown-content {
     z-index: 99999 !important;
 }
@@ -1064,15 +998,6 @@ td:first-child {
         align-items:stretch;
 
     }
-
-
-    .input-style,
-    #usuarios-dropdown {
-
-        width:100% !important;
-
-    }
-
 
     #borrar-usuario-button,
     #add-usuario-button,
