@@ -1,0 +1,257 @@
+/* ==========================================================
+   USUARIOS
+========================================================== */
+
+.usuarios-container{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:48px;
+
+}
+
+
+/* ==========================================================
+   TÍTULOS
+========================================================== */
+
+.usuarios-titulo{
+
+    font-size:28px;
+
+    font-weight:600;
+
+    color:#334155;
+
+    margin:0;
+
+    letter-spacing:-0.02em;
+
+}
+
+
+/* ==========================================================
+   BOTONES
+========================================================== */
+
+.boton-con-mensaje{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+/* ==========================================================
+   BOTONES MANTINE
+========================================================== */
+
+.usuarios-container .mantine-Button-root{
+
+    height:42px;
+
+}
+
+.usuarios-container .mantine-Button-label{
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.usuarios-container .mantine-Button-root{
+
+    transition:transform .18s;
+
+}
+
+.usuarios-container .mantine-Button-root:hover{
+
+    transform:translateY(-1px);
+
+}
+
+/* ==========================================================
+   MENSAJES
+========================================================== */
+
+.usuarios-container .mantine-Select-input,
+.usuarios-container .mantine-TextInput-input,
+.usuarios-container .mantine-PasswordInput-input{
+
+    height:42px;
+
+    font-size:15px;
+
+}
+
+.mensaje{
+
+    min-height:24px;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    border-radius:10px;
+
+    padding:12px 16px;
+
+}
+
+.mensaje:empty{
+
+    display:none;
+
+}
+
+.mensaje[style*="green"]{
+
+    color:#047857!important;
+
+    background:#ecfdf5;
+
+    border:1px solid #a7f3d0;
+
+}
+
+.mensaje[style*="red"]{
+
+    color:#b91c1c!important;
+
+    background:#fef2f2;
+
+    border:1px solid #fecaca;
+
+}
+
+.modal-content{
+
+    border:none;
+
+    border-radius:16px;
+
+}
+
+.modal-header{
+
+    border-bottom:1px solid #eef2f7;
+
+    font-weight:600;
+
+}
+
+.modal-footer{
+
+    border-top:1px solid #eef2f7;
+
+}
+
+
+/* ==========================
+   TITULO
+========================== */
+
+.usuarios-subtitulo{
+
+    font-size:26px;
+
+    font-weight:500;
+
+    color:#456D9B;
+
+    letter-spacing:-0.02em;
+
+    margin-bottom:42px;
+
+}
+
+.usuarios-subtitulo::after{
+
+    display:block;
+
+    width:50px;
+
+    height:3px;
+
+    margin-top:12px;
+
+    border-radius:999px;
+
+    background:#2563eb;
+
+}
+
+/* Bloque de una sección */
+
+.usuarios-bloque{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:24px;
+
+}
+
+
+/* Fila de campos */
+
+.fila-usuarios{
+
+    display:flex;
+
+    gap:24px;
+
+    flex-wrap:wrap;
+
+    align-items:flex-start;
+
+}
+
+
+/* Zona del botón */
+
+.boton-con-mensaje{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:12px;
+
+    margin-top:8px;
+
+}
+
+.usuarios-container{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:56px;
+
+}
+
+
+.checkbox-admin{
+
+    width:300px;
+
+    height:42px;
+
+    display:flex;
+
+    align-items:center;
+
+    padding-top:2px;
+
+}

@@ -1,5 +1,7 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
 external_stylesheets = [
     dbc.themes.BOOTSTRAP
@@ -7,135 +9,287 @@ external_stylesheets = [
 
 
 def crear_layout():
-    return html.Div([
 
-        dcc.Location(id='url', refresh=False),
+    return html.Div(
 
-        # =========================
-        # STORES
-        # =========================
-        dcc.Store(id="menu-collapsed", data=False),
-        dcc.Store(id='store-idioma', data='es'),
-        dcc.Store(id='init-done', data=False),
-        dcc.Store(id="app-initialized", data=False),
-        dcc.Store(id='store-tipo-entidad', storage_type='session'),
-        dcc.Store(id='store-principios', storage_type='session'),
-        dcc.Store(id='store-versiones', storage_type='session'),
-        dcc.Store(id='store-niveles', storage_type='session'),
-        dcc.Store(id='store-entidad', storage_type='session'),
-        dcc.Store(id="store-fecha", storage_type='session'),
-        dcc.Store(id="tabla-actual-store", storage_type='session'),
-        #dcc.Interval(id='session-check', interval=60*1000, n_intervals=0),
+        [
 
-        # =========================
-        # INIT
-        # =========================
-        dcc.Interval(
-            id='init-trigger',
-            interval=1,
-            n_intervals=0,
-            max_intervals=1
-        ),
+            dcc.Location(id="url", refresh=False),
 
-        # =========================
-        # TOP BAR
-        # =========================
-        html.Div([
+            # =====================================================
+            # STORES
+            # =====================================================
 
-            html.Button(
-                html.Span("▦", className="icon-panel"),
-                id="toggle-menu",
-                className="menu-toggle"
-            ),
+            dcc.Store(id="menu-collapsed", data=False),
 
-            html.Div(
-                dcc.Dropdown(
-                    id='idioma-dropdown',
-                    options=[
-                        {'label': 'Español', 'value': 'es'},
-                        {'label': 'English', 'value': 'en'}
-                    ],
-                    value='es',
-                    clearable=False,
-                    className="lang-dropdown"
-                ),
-                className="topbar-right"
-            )
+            dcc.Store(id="store-idioma", data="es"),
 
-        ], className="topbar"),
+            dcc.Store(id="init-done", data=False),
 
-        # =========================
-        # SIDEBAR
-        # =========================
-        html.Div([
+            dcc.Store(id="app-initialized", data=False),
 
-            html.Div([
+            dcc.Store(id="store-tipo-entidad", storage_type="session"),
 
-                dcc.Link([
-                    html.Span("📊", className="icon"),
-                ], href="/dash/filtros", className="sidebar-link", id="link-filtros"),
+            dcc.Store(id="store-principios", storage_type="session"),
 
-                dcc.Link([
-                    html.Span("📈", className="icon"),
-                ], href="/dash/cuadroMando", className="sidebar-link", id="link-cuadro"),
+            dcc.Store(id="store-versiones", storage_type="session"),
 
-                dcc.Link([
-                    html.Span("📋", className="icon"),
-                ], href="/dash/datos", className="sidebar-link", id="link-datos"),
+            dcc.Store(id="store-niveles", storage_type="session"),
 
-                dcc.Link([
-                    html.Span("📥", className="icon"),
-                ], href="/dash/importar", className="sidebar-link", id="link-importar"),
+            dcc.Store(id="store-entidad", storage_type="session"),
 
-                html.Div([
-                    html.Span("⚙️", className="icon"),
-                ],
-                id="admin-toggle",
-                className="sidebar-link sidebar-section"
-                ),
+            dcc.Store(id="store-fecha", storage_type="session"),
 
-                dbc.Collapse([
-
-                    dcc.Link([
-                        html.Span("👤", className="icon"),
-                    ], href="/dash/administracion/usuarios", className="sidebar-sublink", id="link-usuarios"),
-
-                    dcc.Link([
-                        html.Span("📑", className="icon"),
-                    ], href="/dash/administracion/auditorias", className="sidebar-sublink", id="link-auditorias"),
-
-                ], id="admin-collapse", is_open=False),
-
-            ], className="menu-container"),
-
-            html.A(
-                [
-                    html.Span("🚪", className="icon"),
-                ],
-                href="/logout",
-                id="logout-button",
-                className="sidebar-link logout"
-            ),
-
-        ],
-        id="sidebar",
-        className="sidebar"
-        ),
-
-        # =========================
-        # MAIN CONTENT
-        # =========================
-        html.Div([
+            dcc.Store(id="tabla-actual-store", storage_type="session"),
 
             dcc.Store(id="auth-status", storage_type="session"),
 
+            # =====================================================
+            # INIT
+            # =====================================================
+
+            dcc.Interval(
+                id="init-trigger",
+                interval=1,
+                n_intervals=0,
+                max_intervals=1
+            ),
+
+            # =====================================================
+            # TOP BAR
+            # =====================================================
+
+            html.Header(
+
+            [
+
+                html.Div(
+
+                    [
+
+                        html.Button(
+
+                            DashIconify(
+                                icon="tabler:menu-2",
+                                width=22
+                            ),
+
+                            id="toggle-menu",
+
+                            className="menu-toggle"
+
+                        ),
+
+                        html.Div(
+
+                            [
+
+                                DashIconify(
+                                    icon="tabler:shield-check",
+                                    width=32,
+                                    color="#2563eb"
+                                ),
+
+                                html.Div(
+
+                                    [
+
+                                        html.Div(
+                                            "Audit Dashboard",
+                                            className="header-title"
+                                        ),
+
+                                        html.Div(
+                                            "TFG",
+                                            className="header-subtitle"
+                                        )
+
+                                    ],
+
+                                    className="header-brand-text"
+
+                                )
+
+                            ],
+
+                            className="header-brand"
+
+                        ),
+
+                    ],
+
+                    className="header-left"
+
+                ),
+
+                    dmc.Select(
+
+                        id="idioma-dropdown",
+
+                        data=[
+                            {
+                                "label": "Español",
+                                "value": "es"
+                            },
+                            {
+                                "label": "English",
+                                "value": "en"
+                            },
+                        ],
+
+                        value="es",
+
+                        clearable=False,
+
+                        searchable=False,
+
+                        radius="md",
+
+                        size="sm",
+
+                        w=150,
+
+                    )
+
+                ],
+
+                className="topbar"
+
+            ),
+
+            # =====================================================
+            # BODY
+            # =====================================================
+
             html.Div(
-                id='page-content',
-                className="page-content"
+
+                [
+
+                    # =============================================
+                    # SIDEBAR
+                    # =============================================
+
+                    html.Nav(
+
+                        [
+
+                            html.Div(
+
+                                [
+
+                                    dcc.Link(
+                                        [],
+                                        href="/dash/filtros",
+                                        id="link-filtros",
+                                        className="sidebar-link"
+                                    ),
+
+                                    dcc.Link(
+                                        [],
+                                        href="/dash/cuadroMando",
+                                        id="link-cuadro",
+                                        className="sidebar-link"
+                                    ),
+
+                                    dcc.Link(
+                                        [],
+                                        href="/dash/datos",
+                                        id="link-datos",
+                                        className="sidebar-link"
+                                    ),
+
+                                    dcc.Link(
+                                        [],
+                                        href="/dash/importar",
+                                        id="link-importar",
+                                        className="sidebar-link"
+                                    ),
+
+                                    html.Button(
+                                        [],
+                                        id="admin-toggle",
+                                        className="sidebar-link sidebar-section",
+                                        n_clicks=0,
+                                    ),
+
+                                    dbc.Collapse(
+
+                                        [
+
+                                            dcc.Link(
+                                                [],
+                                                href="/dash/administracion/usuarios",
+                                                id="link-usuarios",
+                                                className="sidebar-sublink"
+                                            ),
+
+                                            dcc.Link(
+                                                [],
+                                                href="/dash/administracion/auditorias",
+                                                id="link-auditorias",
+                                                className="sidebar-sublink"
+                                            ),
+
+                                        ],
+
+                                        id="admin-collapse",
+
+                                        is_open=False
+
+                                    )
+
+                                ],
+
+                                className="menu-container"
+
+                            ),
+
+                            html.A(
+
+                                [],
+
+                                href="/logout",
+
+                                id="logout-button",
+
+                                className="sidebar-link logout"
+
+                            )
+
+                        ],
+
+                        id="sidebar",
+
+                        className="sidebar"
+
+                    ),
+
+                    # =============================================
+                    # CONTENT
+                    # =============================================
+
+                    html.Main(
+
+                        html.Div(
+
+                            id="page-content",
+
+                            className="page-content"
+
+                        ),
+
+                        id="main-content",
+
+                        className="main"
+
+                    )
+
+                ],
+
+                className="layout-body"
+
             )
 
-        ],
-        id="main-content",
-        className="main")
+        ]
 
-    ])
+    )

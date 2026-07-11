@@ -8,6 +8,8 @@ from start.callbacks.callbacks_graficos import registrar_callbacks_graficos
 from start.callbacks.callbacks_admin import registrar_callbacks_admin
 from start.callbacks.callbacks_upload import registrar_callbacks_upload
 from start.callbacks.callbacks_routing import registrar_callbacks_routing
+import dash_mantine_components as dmc
+
 
 def crear_dash_app(flask_app):
 
@@ -15,11 +17,15 @@ def crear_dash_app(flask_app):
         __name__,
         server=flask_app,
         url_base_pathname='/dash/',
-        suppress_callback_exceptions=True,
-        external_stylesheets=[dbc.themes.BOOTSTRAP]
+        suppress_callback_exceptions=True
     )
 
-    app.layout = crear_layout()
+    app.layout = dmc.MantineProvider(theme={
+        "primaryColor": "blue",
+        "defaultRadius": "md",
+        "fontFamily": "Inter, sans-serif",
+    },
+    children= crear_layout())
 
     
 

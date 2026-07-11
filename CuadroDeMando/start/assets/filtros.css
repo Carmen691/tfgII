@@ -1,0 +1,135 @@
+/* ==========================================================
+   CHECKBOXS FILTROS
+========================================================== */
+
+.gestion-fila{
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:70px;
+
+    flex-wrap:wrap;
+
+}
+
+.gestion-campo{
+
+    min-width:220px;
+
+    margin-bottom:34px;
+
+}
+
+
+/* ==========================================================
+   CHECKBOX GROUPS
+========================================================== */
+
+#principios-checklist,
+#wcag-version-checklist,
+#nivel-checklist{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+/* ==========================================================
+   CHECKBOX MANTINE
+========================================================== */
+
+.checkbox-item{
+
+    margin-bottom:3px;
+
+    transition:.15s;
+
+}
+
+.checkbox-item:last-child{
+
+    margin-bottom:0;
+
+}
+
+.checkbox-item:hover{
+
+    transform:translateX(3px);
+
+}
+
+.checkbox-item .mantine-Checkbox-label{
+
+    margin-left:8px;
+
+    font-size:15px;
+
+    color:#334155;
+
+}
+
+.checkbox-item .mantine-Checkbox-input{
+
+    cursor:pointer;
+
+}
+
+/* ==========================================================
+   MULTISELECT - OPCIÓN SELECCIONADA
+========================================================== */
+
+.mantine-MultiSelect-option[data-checked="true"]{
+
+    background:#e8f1ff !important;
+
+    color:#2563eb !important;
+
+    font-weight:600;
+
+}
+
+.mantine-MultiSelect-option[data-checked="true"]:hover{
+
+    background:#dbeafe !important;
+
+}
+
+/* ==========================================================
+   ACCIONES ENTIDADES
+========================================================== */
+
+.acciones-entidades{
+
+    display:flex;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.accion-entidades{
+
+    margin-left:6px;
+
+    margin-right:8px;
+
+    color:#2563eb;
+
+    font-size:14px;
+
+    cursor:pointer;
+
+    user-select:none;
+
+}
+
+.accion-entidades:hover{
+
+    text-decoration:underline;
+
+}

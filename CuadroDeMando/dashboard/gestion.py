@@ -1,10 +1,14 @@
 from dash import html, dcc
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+
 
 def layout_gestion():
     return dcc.Loading(
         id="loading-gestion",
         type="circle",
         fullscreen=False,
+        className='gestion-filtros',
         children=html.Div(
             className="gestion-container",
             children=[
@@ -14,39 +18,94 @@ def layout_gestion():
                     className="gestion-titulo"
                 ),
 
-                html.Label(
-                    id="label-auditorias",
-                    className="gestion-label"
+                html.Div(
+                    className="gestion-fila",
+                    children=[
+
+                        html.Div(
+                            className="gestion-campo",
+                            children=[
+                                html.Label(
+                                    id="label-auditorias",
+                                    className="gestion-label"
+                                ),
+
+                                dmc.Select(
+                                    id="auditorias-dropdown",
+                                    data=[],
+                                    placeholder="Seleccione una auditoría",
+
+                                    searchable=True,
+                                    clearable=True,
+
+                                    size="md",
+                                    radius="md",
+                                    variant="default",
+                                    w=300,
+                                ),
+                            ],
+                        ),
+
+                        html.Div(
+                            className="gestion-campo",
+                            children=[
+                                html.Label(
+                                    id="label-versiones",
+                                    className="gestion-label"
+                                ),
+
+                                dmc.Select(
+                                    id="versiones-dropdown",
+
+                                    data=[],
+
+                                    placeholder="Seleccione una versión",
+
+                                    searchable=True,
+                                    clearable=True,
+
+                                    disabled=True,
+
+                                    size="md",
+                                    radius="md",
+                                    variant="default",
+
+                                    w=300,
+
+                                    styles={
+                                        "input": {
+                                            "borderColor": "#dbe3ec",
+                                            "backgroundColor": "white",
+                                            "fontSize": "15px",
+                                            "fontWeight": 500,
+                                        }
+                                    },
+                                ),
+                            ],
+                        ),
+
+                    ],
                 ),
 
-                dcc.Dropdown(
-                    id="auditorias-dropdown",
-                    className="gestion-dropdown"
-                ),
-
-                html.Label(
-                    id="label-versiones",
-                    className="gestion-label"
-                ),
-
-                dcc.Dropdown(
-                    id="versiones-dropdown",
-                    className="gestion-dropdown",
-                    disabled=True
-                ),
-
-                html.Br(),
-
-                html.Button(
+                dmc.Button(
                     id="borrar-auditoria-button",
                     n_clicks=0,
-                    className="gestion-boton"
+                    variant="outline",
+                    color="red",
+                    radius="md",
+                    size="md",
+                    w=250,
+                    leftSection=DashIconify(
+                        icon="tabler:trash",
+                        width=18
+                    ),
                 ),
 
                 html.Div(
                     id="mensaje-auditoria",
                     className="gestion-mensaje"
                 ),
+
             ],
         ),
     )

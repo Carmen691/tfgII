@@ -1,0 +1,180 @@
+/* ==========================================
+   SUBIDA DE ARCHIVO
+========================================== */
+
+.upload-fila{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    flex-wrap:wrap;
+
+    margin-top:10px;
+
+}
+
+.upload-wrapper{
+
+    display:inline-flex;
+
+}
+
+
+/* Caja para subir archivo */
+
+.upload-importar{
+
+    width:300px;
+
+    height:60px;
+
+    border:2px dashed #cbd5e1;
+
+    border-radius:10px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    padding:10px;
+
+    transition:.18s;
+
+    box-sizing:border-box;
+
+}
+
+.upload-importar:hover{
+
+    border-color:#2563eb;
+
+    background:#f8fbff;
+
+}
+
+
+/* Información del archivo */
+
+.file-upload-info{
+
+    display:flex;
+
+    align-items:center;
+
+    min-height:60px;
+
+}
+
+
+/* Contenedor icono + nombre */
+
+.file-selected{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+
+/* Icono */
+
+.excel-icon{
+
+    width:28px;
+
+    height:28px;
+
+    flex-shrink:0;
+
+}
+
+
+/* Nombre */
+
+.file-name{
+
+    font-size:14px;
+
+    font-weight:500;
+
+    color:#475569;
+
+    white-space:nowrap;
+
+}
+
+/* ==========================================
+   UPLOAD PREMIUM
+========================================== */
+
+.upload-importar{
+
+    width:300px;
+
+    height:95px;
+
+    border:2px dashed #cbd5e1;
+
+    border-radius:12px;
+
+    background:white;
+
+    transition:all .18s;
+
+}
+
+.upload-importar:hover{
+
+    border-color:#2563eb;
+
+    background:#f8fbff;
+
+    box-shadow:0 6px 18px rgba(37,99,235,.08);
+
+}
+
+.upload-contenido{
+
+    height:100%;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:6px;
+
+    text-align:center;
+
+}
+
+.upload-texto{
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:#334155;
+
+}
+
+.upload-subtexto{
+
+    font-size:13px;
+
+    color:#94a3b8;
+
+}

@@ -1,4 +1,6 @@
 from dash import html, dcc
+from dash_iconify import DashIconify
+import dash_mantine_components as dmc
 
 
 def layout_importar():
@@ -8,128 +10,228 @@ def layout_importar():
         type="circle",
         fullscreen=False,
 
-        children=html.Div([
+        children=html.Div(
 
-            html.H2(
-                id="importar-titulo"
-            ),
+            [
 
-
-            html.Br(),
-
-
-            html.Label(
-                id="entidad-datos"
-            ),
-
-
-            dcc.Store(
-                id='refresh-trigger'
-            ),
-
-
-            dcc.Input(
-                id='input-texto',
-                type='text',
-                debounce=True,
-                className="input-style"
-            ),
-
-
-            html.Br(),
-            html.Br(),
-
-
-            html.Label(
-                id="fecha-audit"
-            ),
-
-
-            dcc.Input(
-                id='input-fecha',
-                type='date',
-                className="input-style"
-            ),
-
-
-            html.Br(),
-            html.Br(),
-
-
-            html.Label(
-                id="version-wcag"
-            ),
-
-
-            dcc.Dropdown(
-                id='dropdown-wcag',
-                className="input-style"
-            ),
-
-
-            html.Br(),
-
-
-            html.Label(
-                id="escala-wcag"
-            ),
-
-
-            dcc.Dropdown(
-                id='dropdown-escala',
-                className="input-style"
-            ),
-
-
-            html.Br(),
-
-
-            dcc.Upload(
-
-                id='upload-data',
-
-                children=html.Div(
-                    id="arrastra-ficheros"
+                html.H2(
+                    id="importar-titulo",
+                    className="gestion-titulo"
                 ),
 
-                className="upload-importar",
+                dcc.Store(id="refresh-trigger"),
 
-                multiple=False,
+                # =====================================================
+                # DATOS
+                # =====================================================
 
-                accept='.xlsx,.xls',
+                html.Div(
 
-            ),
+                    [
 
+                        html.Div(
 
+                            [
 
-            html.Div(
-                id='file-upload-info'
-            ),
+                                html.Label(
+                                    id="entidad-datos",
+                                    className="gestion-label"
+                                ),
 
+                                dmc.TextInput(
+                                    id="input-texto",
+                                    radius="md",
+                                    size="md",
+                                    w=300,
+                                ),
 
+                            ],
 
-            html.Div(
+                            className="gestion-campo"
 
-                [
+                        ),
 
-                    html.Button(
-                        id="btn-importar",
-                        n_clicks=0,
-                        className="btn-success"
-                    ),
+                        html.Div(
 
+                            [
 
-                    html.Div(
-                        id="mensaje-importacion",
-                        className="mensaje"
-                    )
+                                html.Label(
+                                    id="fecha-audit",
+                                    className="gestion-label"
+                                ),
 
-                ],
+                                dmc.DateInput(
+                                    id="input-fecha",
+                                    radius="md",
+                                    size="md",
+                                    w=300,
+                                    valueFormat="YYYY-MM-DD",
+                                ),
 
-                className="boton-con-mensaje"
+                            ],
 
-            )
+                            className="gestion-campo"
 
+                        ),
 
-        ])
+                    ],
+
+                    className="gestion-fila"
+
+                ),
+
+                html.Div(
+
+                    [
+
+                        html.Div(
+
+                            [
+
+                                html.Label(
+                                    id="version-wcag",
+                                    className="gestion-label"
+                                ),
+
+                                dmc.Select(
+                                    id="dropdown-wcag",
+                                    data=[],
+                                    radius="md",
+                                    size="md",
+                                    w=300,
+                                    clearable=True,
+                                ),
+
+                            ],
+
+                            className="gestion-campo"
+
+                        ),
+
+                        html.Div(
+
+                            [
+
+                                html.Label(
+                                    id="escala-wcag",
+                                    className="gestion-label"
+                                ),
+
+                                dmc.Select(
+                                    id="dropdown-escala",
+                                    data=[],
+                                    radius="md",
+                                    size="md",
+                                    w=300,
+                                    clearable=True,
+                                ),
+
+                            ],
+
+                            className="gestion-campo"
+
+                        ),
+
+                    ],
+
+                    className="gestion-fila"
+
+                ),
+
+                # =====================================================
+                # SUBIDA DE FICHERO
+                # =====================================================
+
+                html.Div(
+
+                    [
+
+                        dcc.Upload(
+
+                            id="upload-data",
+
+                            children=html.Div(
+
+                                [
+
+                                    DashIconify(
+                                        icon="tabler:cloud-upload",
+                                        width=34,
+                                        color="#2563eb"
+                                    ),
+
+                                    html.Div(
+                                        id="arrastra-ficheros",
+                                        className="upload-texto"
+                                    ),
+
+                                    html.Div(
+                                        "Excel (.xlsx, .xls)",
+                                        className="upload-subtexto"
+                                    ),
+
+                                ],
+
+                                className="upload-contenido"
+
+                            ),
+
+                            className="upload-importar",
+
+                            multiple=False,
+
+                            accept=".xlsx,.xls",
+
+                        ),
+
+                        html.Div(
+                            id="file-upload-info",
+                            className="file-upload-info"
+                        ),
+
+                    ],
+
+                    className="upload-fila"
+
+                ),
+
+                # =====================================================
+                # BOTÓN
+                # =====================================================
+
+                html.Div(
+
+                    [
+
+                        dmc.Button(
+                            id="btn-importar",
+                            n_clicks=0,
+                            variant="outline",
+                            color="blue",
+                            radius="md",
+                            size="md",
+                            w=250,
+                            leftSection=DashIconify(
+                                icon="tabler:upload",
+                                width=18
+                            ),
+                        ),
+
+                        html.Div(
+                            id="mensaje-importacion",
+                            className="mensaje"
+                        ),
+
+                    ],
+
+                    className="boton-con-mensaje"
+
+                ),
+
+            ],
+
+            className="gestion-container"
+
+        )
+
     )

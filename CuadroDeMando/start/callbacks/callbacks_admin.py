@@ -3,7 +3,9 @@ import re
 import bcrypt
 import dash
 from dash import Output, Input, State, callback_context
+from dash import html
 from dash.exceptions import PreventUpdate
+from dash_iconify import DashIconify
 import pandas as pd
 from flask import session
 import data.querys as qr
@@ -32,15 +34,34 @@ def registrar_callbacks_admin(app):
     # ----------------------------
     @app.callback(
         Output("admin-collapse", "is_open"),
+        Output("sidebar", "className"),
+        Output("main-content", "className"),
+        Output("menu-collapsed", "data"),
         Input("admin-toggle", "n_clicks"),
         State("admin-collapse", "is_open"),
+        State("menu-collapsed", "data"),
+        prevent_initial_call=True
     )
-    def toggle_admin(n, is_open):
+    def toggle_admin(n, is_open, collapsed):
 
-        if n:
-            return not is_open
+        if not n:
+            raise PreventUpdate
 
-        return is_open
+        # Si está plegado, primero desplegar el menú
+        if collapsed:
+            return (
+                True,
+                "sidebar",
+                "main",
+                False
+            )
+
+        return (
+            not is_open,
+            "sidebar",
+            "main",
+            False
+        )
 
 
     @app.callback(
@@ -100,7 +121,7 @@ def registrar_callbacks_admin(app):
     # GESTIONAR USUARIOS
     # ----------------------------
     @app.callback(
-        Output("usuarios-dropdown", "options"),
+        Output("usuarios-dropdown", "data"),
         Output("modal-confirmacion", "is_open"),
         Output("modal-confirmacion-anadir", "is_open"),
         Output("mensaje-usuario-eliminar", "children"),
@@ -157,7 +178,7 @@ def registrar_callbacks_admin(app):
                 )
 
                 opciones = [
-                    {'label': usu, 'value': usu}
+                    {'label': usu, 'value': str(usu)}
                     for usu in usuarios_actualizados["usuario"].unique()
                 ]
 
@@ -226,7 +247,7 @@ def registrar_callbacks_admin(app):
     # ELIMINAR AUDITORIA
     # ----------------------------
     @app.callback(
-        Output("auditorias-dropdown", "options"),
+        Output("auditorias-dropdown", "data"),
         Output("mensaje-auditoria", "children"),
         Output("mensaje-auditoria", "style"),
         Input("borrar-auditoria-button", "n_clicks"),
@@ -264,7 +285,7 @@ def registrar_callbacks_admin(app):
 
 
     @app.callback(
-        Output("usuarios-dropdown", "options", allow_duplicate=True),
+        Output("usuarios-dropdown", "data", allow_duplicate=True),
         Input("url", "pathname"),
         prevent_initial_call='initial_duplicate'
     )
@@ -278,7 +299,7 @@ def registrar_callbacks_admin(app):
         df = pd.DataFrame(usuarios)
 
         return [
-            {"label": row["usuario"], "value": row["id"]}
+            {"label": row["usuario"], "value": str(row["id"])}
             for _, row in df.iterrows()
         ]
     
@@ -295,11 +316,24 @@ def registrar_callbacks_admin(app):
 
         return (
             qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
+
             qr.obtener_textos_interfaz(idioma, "gestion", "auditorias"),
+
             qr.obtener_textos_interfaz(idioma, "gestion", "versiones"),
-            qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
+
+            [
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "gestion",
+                        "eliminar"
+                    )
+                ),
+            ],
+
             qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar")
+
+            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
         )
     
 
@@ -362,7 +396,7 @@ def registrar_callbacks_admin(app):
         )
     
     @app.callback(
-        Output("auditorias-dropdown", "options", allow_duplicate=True),
+        Output("auditorias-dropdown", "data", allow_duplicate=True),
         Input("url", "pathname"),
         prevent_initial_call='initial_duplicate'
     )
@@ -378,7 +412,7 @@ def registrar_callbacks_admin(app):
         )
 
         opciones_auditorias = [
-            {"label": row["nombre"], "value": row["id_tipo"]}
+            {"label": row["nombre"], "value": str(row["id_tipo"])}
             for _, row in df.drop_duplicates(subset=["id_tipo"]).iterrows()
         ]
 
@@ -394,7 +428,7 @@ def registrar_callbacks_admin(app):
         return True
     
     @app.callback(
-        Output("versiones-dropdown", "options", allow_duplicate=True),
+        Output("versiones-dropdown", "data", allow_duplicate=True),
         Input("auditorias-dropdown", "value"),
         prevent_initial_call='initial_duplicate'
     )
@@ -413,7 +447,7 @@ def registrar_callbacks_admin(app):
         opciones_versiones = [
             {
                 "label": row["fecha"].strftime("%d/%m/%Y"),
-                "value": row["id_version"]
+                "value": str(row["id_version"])
             }
             for _, row in df.iterrows()
         ]
@@ -500,42 +534,6 @@ def registrar_callbacks_admin(app):
             "",
             ""
         )
-        
-
-
-    @app.callback(
-        Output("input-password-actual", "type"),
-        Output("input-password-nueva", "type"),
-        Output("input-password-confirmar", "type"),
-        Input("ver-password-actual", "n_clicks"),
-        Input("ver-password-nueva", "n_clicks"),
-        Input("ver-password-confirmar", "n_clicks"),
-        prevent_initial_call=True
-    )
-    def ver_password(actual, nueva, confirmar):
-
-        boton = callback_context.triggered[0]["prop_id"].split(".")[0]
-
-        if boton == "ver-password-actual":
-            return (
-                "text" if actual % 2 else "password",
-                "password",
-                "password"
-            )
-
-        if boton == "ver-password-nueva":
-            return (
-                "password",
-                "text" if nueva % 2 else "password",
-                "password"
-            )
-
-        if boton == "ver-password-confirmar":
-            return (
-                "password",
-                "password",
-                "text" if confirmar % 2 else "password"
-            )
         
     @app.callback(
         Output("input-passwd", "type"),

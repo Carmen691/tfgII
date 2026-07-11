@@ -1,1463 +1,617 @@
-
-:root {
-    /* fondo más elegante (menos “negro puro”) */
-    --bg: #0b1220;
-    --bg-dark: #070b14;
-
-    /* texto más suave */
-    --text: #e6edf7;
-    --muted: #9aa4b2;
-
-    /* azul moderno (más “tech”) */
-    --primary: #5b8cff;
-    --primary-dark: #3b6ff5;
-
-    /* hover más sutil */
-    --hover: rgba(91, 140, 255, 0.12);
-
-    --danger: #ff6b6b;
+/* ESTILOS NUEVOS /*
+/* ********************************** */
+.mantine-Select-input {
+    height: 46px !important;
+    border-radius: 10px !important;
+    transition:border-color .18s, box-shadow .18s;
+    padding-right: 40px !important;
 }
 
-/* =========================================================
-    MENU IZQUIERDA
-========================================================= */
-
-/* =========================
-   MAIN CONTENT
-========================= */
-.main {
-    margin-left: 260px;
-    padding: 20px;
-
-    min-height: 100vh;
-
-    transition: margin-left 0.25s ease;
+.mantine-Select-dropdown {
+    border-radius: 10px !important;
 }
 
-.main.collapsed {
-    margin-left: 70px;
+.mantine-Select-section {
+    right: 12px !important;
 }
 
-/* =========================
+/* ==========================================================
+   LAYOUT GENERAL
+========================================================== */
+
+html,
+body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:"Inter","Segoe UI",sans-serif;
+    background:#f5f7fb;
+}
+
+#react-entry-point,
+#_dash-app-content{
+    width:100%;
+    height:100%;
+}
+
+body *{
+    box-sizing:border-box;
+}
+
+
+/* ==========================================================
    TOPBAR
-========================= */
-.topbar {
-    display: flex;
-    align-items: center;
+========================================================== */
 
-    height: 50px;
-    margin-bottom: 10px;
-
-    background: transparent;
-
-    position: sticky;
-    top: 0;
-
-    z-index: 10;
-}
-
-/* =========================
-   MENU CONTAINER
-========================= */
-.menu-container {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* =========================
-   SECCIÓN ADMIN
-========================= */
-.sidebar-section {
-    margin-top: 10px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-/* =========================
-   SCROLL
-========================= */
-.sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: #1f2937;
-    border-radius: 10px;
-}
-
-/* =========================================================
-   FIN MENU IZQUIERDA
-========================================================= */
-
-/* =========================================================
-   BOTON IDIOMA
-========================================================= */
-
-/* esto empuja todo a la derecha */
-.topbar-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-}
-
-/* dropdown un poco más bonito */
-.lang-dropdown {
-    width: 130px;
-}
-
-/* =========================================================
-   FIN BOTON IDIOMA
-========================================================= */
-
-
-/* =========================
-   BOTÓN TOGGLE
-========================= */
-
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    width: 260px;
-    height: 100vh;
-
-    background: #ffffff;
-
-    border-right: 1px solid #e5e7eb;
-
-    padding: 70px 12px 12px;
-
-    display: flex;
-    flex-direction: column;
-
-    transition: width 0.25s ease;
-
-    color: #111827;
-}
-
-.sidebar.collapsed {
-    width: 70px;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 12px 14px;
-    margin: 4px 0;
-
-    border-radius: 10px;
-
-    color: #374151 !important;
-    text-decoration: none !important;
-
-    transition: all 0.2s ease;
-}
-
-.sidebar-link:hover {
-    background: #f3f4f6;
-    color: #111827 !important;
-
-    transform: translateX(3px);
-}
-
-.icon {
-    font-size: 18px;
-    min-width: 24px;
-    text-align: center;
-}
-
-.sidebar-sublink {
-    display: block;
-
-    padding: 10px 14px;
-    margin-left: 14px;
-
-    color: #6b7280 !important;
-    text-decoration: none !important;
-}
-
-.sidebar-sublink:hover {
-    color: #111827 !important;
-}
-
-.logout {
-    margin-top: auto;
-    color: #ef4444 !important;
-}
-
-.logout:hover {
-    background: #fef2f2;
-}
-
-.sidebar.collapsed .menu-text {
-    display: none;
-}
-
-.sidebar.collapsed .sidebar-link {
-    justify-content: center;
-}
-
-/* =========================
-   FIN BOTÓN TOGGLE
-========================= */
-
-/* =========================
-   ESTILOS FILTROS
-========================= */
-
-body {
-    background-color: #f8fafc;
-    font-family: "Inter", "Segoe UI", sans-serif;
-}
-
-
-/* =========================
-   DROPDOWN
-========================= */
-.Select-control {
-    border-radius: 8px !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: none !important;
-}
-
-.Select-control:hover {
-    border-color: #1d4ed8 !important;
-}
-
-/* Chips (multi-select) */
-.Select--multi .Select-value {
-    background-color: #e9efff !important;
-    color: #1e3a8a !important;
-    border-radius: 999px !important;
-    padding: 3px 10px !important;
-    font-size: 13px !important;
-}
-
-/* Hover chips */
-.Select--multi .Select-value:hover {
-    background-color: #c7dbff !important;
-    transform: scale(1.05);
-}
-
-/* =========================
-   BOTÓN
-========================= */
-
-.btn-pro {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(29,78,216,0.2);
+.topbar{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:64px;
+    background:#ffffff;
+    border-bottom:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 22px;
+    z-index:1000;
 }
 
-.btn-pro:hover {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(29,78,216,0.25);
-}
-
-/* =========================
-   SCROLL 
-========================= */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
 
-@keyframes fadeIn {
-    from {opacity: 0; transform: translateY(5px);}
-    to {opacity: 1;}
+.topbar-right{
+    display:flex;
+    align-items:center;
 }
-
-/* Labels */
-.filtros-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #6b7280;
-    margin-bottom: 10px;
-    display: block;
-}
-
-/* Dropdown con más respiración */
-.dropdown-pro {
-    margin-top: 6px;
-}
-
-/* =========================
-   FIN ESTILOS FILTROS
-========================= */
 
-/* =========================
-   ESTILOS USUARIOS
-========================= */
 
-.input-style::placeholder {
-    color: #94a3b8;
-}
+/* ==========================================================
+   BOTÓN MENÚ
+========================================================== */
 
-/* botón eliminar */
-#borrar-usuario-button {
-    background: linear-gradient(135deg, #f87171, #ef4444);
-    color: white;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
+.menu-toggle{
+    width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f8fafc;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.18s;
 }
 
-#borrar-usuario-button:hover {
-    background: linear-gradient(135deg, #f87171, #ef4444);
-}
 
-/* botón añadir */
-#add-usuario-button {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);;
-    color: white;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
+.menu-toggle:hover{
+    background:#eff6ff;
 }
 
-#add-usuario-button:hover {
-    background: #15803d;
-}
 
-#cambiar-password-button {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);;
-    color: white;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-}
+/* ==========================================================
+   CONTENEDOR PRINCIPAL
+========================================================== */
 
-#cambiar-password-button:hover {
-    background: #15803d;
+.layout-body{
+    display:flex;
+    margin-top:64px;
+    height:calc(100vh - 64px);
 }
 
-/* botón modal */
-.boton-azul {
-    background: #2563eb !important;
-    color: white !important;
-    border: none !important;
-}
 
-/* checkbox */
-.check-style {
-    font-size: 15px;
-    font-weight: 500;
-    color: #475569;
-}
+/* ==========================================================
+   SIDEBAR
+========================================================== */
 
-.mensaje-error {
-    margin-top: 10px;
-    padding: 14px 18px;
-    border-radius: 10px;
-    background: #fff7ed;
-    border: 1px solid #fdba74;
-    color: #c2410c;
-    font-size: 14px;
-    font-weight: 500;
+.sidebar{
+    width:260px;
+    min-width:260px;
+    background:#ffffff;
+    border-right:1px solid #e5e7eb;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    overflow-y:auto;
+    padding:16px 12px;
+    transition:
+        width .25s ease,
+        min-width .25s ease;
 }
 
-/* responsive */
-@media (max-width: 768px) {
-    .fila-usuarios {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .input-style,
-    #usuarios-dropdown,
-    button {
-        width: 100% !important;
-    }
-}
+/* ==========================================================
+   MENÚ
+========================================================== */
 
-/* =========================
-   FIN ESTILOS USUARIOS
-========================= */
-
-/* =========================
-   ESTILOS GESTIÓN
-========================= */
-
-#auditorias-dropdown,
-#versiones-dropdown {
-    width: 300px !important;
-    min-width: 300px;
-    max-width: 300px;
+.menu-container{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
 }
 
-#titulo-gestion {
-    font-size: 26px;
-    font-weight: 600;
-    color: #334155;
-    margin-bottom: 20px;
-    margin-top: 10px;
-    letter-spacing: -0.3px;
-}
 
-#label-auditorias {
-    display: block;
-    font-size: 15px;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 10px;
-}
+/* ==========================================================
+   LINKS
+========================================================== */
 
-#borrar-auditoria-button {
-    background: linear-gradient(135deg, #f87171, #ef4444);
-    color: white;
-    border: none;
-    padding: 12px 22px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
+.sidebar-link{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+    padding:12px 14px;
+    text-decoration:none;
+    border-radius:12px;
+    color:#475569;
+    transition:.18s;
+    font-size:15px;
+    font-weight:500;
 }
 
-#borrar-auditoria-button:hover {
-    background: linear-gradient(135deg, #f87171, #ef4444);
-}
 
-/* bloque visual suave */
-#loading-gestion > div {
-    background: #f8fafc;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    padding: 28px;
-    max-width: 900px;
+.sidebar-link:hover{
+    background:#eff6ff;
+    color:#2563eb;
 }
 
-/* mensaje */
-#mensaje-auditoria {
-    margin-top: 18px !important;
-    padding: 14px 18px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-}
 
-/* ocultar si está vacío */
-#mensaje-auditoria:empty {
-    display: none;
+.sidebar-link.active{
+    position:relative;
+    background:#dbeafe;
+    color:#1d4ed8;
+    font-weight:600;
 }
 
-/* responsive */
-@media (max-width: 768px) {
-    #auditorias-dropdown {
-        width: 100% !important;
-        min-width: unset;
-    }
-
-    #borrar-auditoria-button {
-        width: 100%;
-        margin-top: 12px;
-    }
-
-    #loading-gestion > div {
-        padding: 20px;
-    }
-}
 
-/* =========================
-   FIN ESTILOS GESTIÓN
-========================= */
-
-/* =========================
-   ESTILOS IMPORTAR
-========================= */
-
-#importar-titulo {
-    font-size: 26px;
-    font-weight: 600;
-    color: #334155;
-    margin-bottom: 20px;
-    margin-top: 10px;
-    letter-spacing: -0.3px;
-}
+/* ==========================================================
+   SUBMENÚ
+========================================================== */
 
-/* labels */
-#entidad-datos,
-#fecha-audit,
-#escala-wcag,
-#version-wcag {
-    display: block;
-    font-size: 15px;
-    font-weight: 500;
-    color: #64748b;
-    margin-bottom: 10px;
+.sidebar-sublink{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-left:18px;
+    padding:10px 14px;
+    border-radius:10px;
+    text-decoration:none;
+    color:#64748b;
+    font-size:14px;
+    transition:.18s;
 }
 
-/* botón añadir */
-#add-option-button {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
 
-/* texto upload */
-#arrastra-ficheros {
-    font-size: 14px;
-    font-weight: 500;
-    color: #64748b;
+.sidebar-sublink:hover{
+    background:#f1f5f9;
+    color:#2563eb;
 }
 
-/* info fichero */
-#file-upload-info {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #475569;
-    font-weight: 500;
-}
 
-#file-upload-info:empty {
-    display: none;
-}
+/* ==========================================================
+   ICONOS
+========================================================== */
 
-/* mensaje confirmación */
-#mensaje-confirmacion {
-    margin-top: 14px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #0f766e;
+.sidebar-icon{
+    color:#64748b;
+    flex-shrink:0;
+    transition:.18s;
 }
 
-#mensaje-confirmacion:empty {
-    display: none;
-}
 
-/* botón importar */
-#btn-importar {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    transition: 0.2s ease;
+.sidebar-link:hover .sidebar-icon,
+.sidebar-sublink:hover .sidebar-icon{
+    color:#2563eb;
+    transform:translateY(-1px);
 }
 
-#btn-importar:hover {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-}
 
-/* contenedor botón */
-.fila-botones {
-    margin-top: 28px;
-    display: flex;
-    justify-content: flex-start;
-}
+/* ==========================================================
+   TEXTO
+========================================================== */
 
-/* contenedor general suave */
-#loading-importar > div {
-    background: #f8fafc;
-    border: 1px solid #e8edf5;
-    border-radius: 14px;
-    padding: 28px;
-    max-width: 950px;
+.menu-text{
+    white-space:nowrap;
 }
 
-#add-option-button,
-#btn-importar {
-    width: 100%;
-    margin-top: 10px;
-}
 
-.fila-botones {
-    justify-content: stretch;
-}
+/* ==========================================================
+   LOGOUT
+========================================================== */
 
-#loading-importar > div {
-    padding: 20px;
+.logout{
+    color:#dc2626;
+    margin-top:18px;
+    border-top:1px solid #e5e7eb;
+    padding-top:18px;
 }
-
-
-/* =========================
-   FIN ESTILOS IMPORTAR
-========================= */
-
-/* =========================
-   ESTILOS DATOS
-========================= */
-
 
-/* contenedor principal */
-#loading-datos > div {
-    background: linear-gradient(180deg, #ffffff, #f8fafc);
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 28px;
-    max-width: 1100px;
 
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+.logout:hover{
+    background:#fef2f2;
+    color:#dc2626;
 }
 
 
-/* tabla container */
-#tabla-datos-container {
-    margin-bottom: 24px;
-    overflow-x: auto;
+/* ==========================================================
+   MAIN
+========================================================== */
 
-    border-radius: 14px;
-    background: white;
-    border: 1px solid #e2e8f0;
-
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-}
-
-/* tabla */
-table {
-    border-collapse: separate !important;
-    border-spacing: 0;
-    width: 100%;
-    font-size: 14px;
-    color: #0f172a;
+.main{
+    flex:1;
+    overflow:auto;
+    background:#f5f7fb;
+    transition:all .25s ease;
 }
-
-/* header */
-th {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
-
-    font-weight: 600 !important;
-    font-size: 13px;
 
-    padding: 14px 12px !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-
-    position: sticky;
-    top: 0;
-    z-index: 1;
+.main.collapsed{
+    flex:1;
 }
 
-/* celdas */
-td {
-    padding: 12px !important;
-    border-bottom: 1px solid #f1f5f9 !important;
-    vertical-align: middle;
+.page-content{
+    padding:30px;
+    min-height:100%;
 }
 
-/* hover filas */
-tr:hover td {
-    background: #f8fafc;
-    transition: 0.2s ease;
-}
+/* ==========================================================
+   TARJETAS GENERALES
+========================================================== */
 
-/* primera columna más clara */
-td:first-child {
-    font-weight: 500;
-    color: #0f172a;
+.card{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    padding:24px;
+    box-shadow:0 2px 8px rgba(15,23,42,.04);
 }
-
-
-/* botón guardar */
-#btn-guardar-tabla {
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    color: white;
-
-    border: none;
-    padding: 12px 24px;
-    border-radius: 12px;
 
-    font-size: 14px;
-    font-weight: 600;
 
-    cursor: pointer;
-    transition: 0.25s ease;
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
 
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.18);
+::-webkit-scrollbar{
+    width:10px;
+    height:10px;
 }
-
-#btn-guardar-tabla:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 28px rgba(34, 197, 94, 0.20);
-}
-
-#btn-guardar-tabla:active {
-    transform: scale(0.98);
-}
-
 
-/* mensaje */
-#mensaje-guardar {
-    margin-top: 16px !important;
-
-    font-size: 14px;
-    font-weight: 500;
-
-    color: #0f766e;
-
-    background: rgba(20, 184, 166, 0.08);
-    border: 1px solid rgba(20, 184, 166, 0.2);
-
-    padding: 10px 14px;
-    border-radius: 10px;
+::-webkit-scrollbar-track{
+    background:#f8fafc;
 }
 
-#mensaje-guardar:empty {
-    display: none;
+::-webkit-scrollbar-thumb{
+    background:#cbd5e1;
+    border-radius:20px;
 }
-
 
-/* dash table extra */
-.dash-header {
-    font-weight: 600 !important;
+::-webkit-scrollbar-thumb:hover{
+    background:#94a3b8;
 }
 
 
-/* responsive */
-@media (max-width: 768px) {
-    #btn-guardar-tabla {
-        width: 100%;
-    }
+/* ==========================================================
+   ANIMACIONES
+========================================================== */
 
-    #loading-datos > div {
-        padding: 18px;
-    }
+.sidebar-link,
+.sidebar-sublink,
+.menu-toggle{
+    transition:
+        background .18s,
+        color .18s,
+        transform .18s,
+        box-shadow .18s;
 }
 
-/* =========================
-   FIN ESTILOS DATOS
-========================= */
-
-.ojo-password {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-
-    border: none;
-    background: transparent;
-
-    cursor: pointer;
-    font-size: 18px;
-
-    padding: 0;
-    line-height: 1;
+.sidebar-link:hover{
+    transform:translateX(3px);
 }
 
+.sidebar-sublink:hover{
 
-/* ==========================================
-   TABLA DATOS
-   ========================================== */
+    transform:translateX(5px);
 
-/* Ocultar selector de columnas */
-.show-hide {
-    display: none !important;
 }
 
-/* Dropdowns dentro del DataTable */
-.dash-dropdown {
-    position: relative !important;
-    z-index: 9999 !important;
-}
 
-.Select-menu-outer {
-    display: block !important;
-    z-index: 10000 !important;
-}
-.Select-menu-outer {
-    z-index: 9999 !important;
-}
+/* ==========================================================
+   BOTÓN ADMIN
+========================================================== */
 
+.sidebar-section{
 
+    width:100%;
 
-/* ==========================================
-   AUDITORIAS
-   ========================================== */
+    display:flex;
 
-.gestion-container {
-    width: 100%;
-    padding: 20px 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    box-sizing: border-box;
-}
+    align-items:center;
 
-.gestion-titulo {
-    margin-bottom: 10px;
-    color: #1f2937;
-}
+    gap:14px;
 
-.gestion-label {
-    font-weight: 600;
-    color: #374151;
-}
+    padding:12px 14px;
 
-.gestion-dropdown {
-    width: 300px;   /* cámbialo si lo quieres más ancho */
-}
+    border:none;
 
-.gestion-boton {
-    width: fit-content;
-    padding: 10px 18px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    transition: background 0.2s;
-}
+    background:transparent;
 
-.gestion-boton:hover {
-    background: #bb2d3b;
-}
+    border-radius:12px;
 
-.gestion-mensaje {
-    margin-top: 10px;
-    font-weight: 600;
-}
+    color:#475569;
 
-.dash-dropdown-content {
-    z-index: 99999 !important;
-}
+    font-size:15px;
 
-/* =========================
-   ESTILOS USUARIOS SIN CARDS
-========================= */
+    font-weight:500;
 
+    cursor:pointer;
 
-/* contenedor principal */
-.main-card {
-    max-width: 100%;
-    width: 100%;
+    text-align:left;
 
-    margin: 0;
-    padding: 20px 30px;
+    transition:.18s;
 
-    background: transparent;
-    border: none;
-    box-shadow: none;
 }
 
+.sidebar-section:hover{
 
-/* títulos */
-.main-card h2 {
+    background:#eff6ff;
 
-    font-size: 26px;
-    font-weight: 600;
-
-    color: #334155;
-
-    margin-bottom: 18px;
-    margin-top: 28px;
-
-    letter-spacing: -0.3px;
-}
-
-
-.main-card h2:first-child {
-    margin-top: 0;
 }
-
 
-/* labels */
 
-.label-filtro {
+/* ==========================================================
+   EFECTO ACTIVO
+========================================================== */
 
-    font-size: 15px;
+.sidebar-link.active::before{
 
-    font-weight: 500;
+    content:"";
 
-    color: #64748b;
+    position:absolute;
 
-}
+    left:-12px;
 
+    top:8px;
 
+    bottom:8px;
 
-/* dropdown */
+    width:4px;
 
-#usuarios-dropdown {
+    border-radius:999px;
 
-    width: 300px;
+    background:#2563eb;
 
 }
-
-
 
-/* inputs */
-
-.main-card .input-style,
-#input-texto,
-#input-fecha {
-
-    width: 230px;
-
-    padding: 12px 14px;
-
-    border: 1px solid #dbe3ec;
-
-    border-radius: 10px;
-
-    background: white;
-
-    font-size: 14px;
-
-    color: #334155;
-
-    transition: .2s ease;
-
-}
 
+/* ==========================================================
+   FOCUS ACCESIBILIDAD
+========================================================== */
 
-.input-style:focus {
+.sidebar-link:focus,
+.sidebar-sublink:focus,
+.menu-toggle:focus{
 
     outline:none;
 
-    border-color:#2563eb;
-
-    box-shadow:
-        0 0 0 3px rgba(37,99,235,.08);
+    box-shadow:0 0 0 3px rgba(37,99,235,.18);
 
 }
 
 
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 
-/* botones mantienen tu estilo */
+@media (max-width:900px){
 
-#borrar-usuario-button {
+    .sidebar{
 
-    background: linear-gradient(
-        135deg,
-        #f87171,
-        #ef4444
-    );
+        width:220px;
 
-    color:white;
-
-    border:none;
-
-    padding:12px 22px;
-
-    border-radius:10px;
-
-    font-weight:600;
-
-}
-
-
-
-#add-usuario-button,
-#cambiar-password-button {
-
-    background: linear-gradient(
-        135deg,
-        #22c55e,
-        #3b82f6
-    );
-
-    color:white;
-
-    border:none;
-
-    padding:12px 22px;
-
-    border-radius:10px;
-
-    font-weight:600;
-
-}
-
-/* responsive */
-
-@media(max-width:768px){
-
-    .fila-usuarios {
-
-        flex-direction:column;
-
-        align-items:stretch;
-
-    }
-
-    #borrar-usuario-button,
-    #add-usuario-button,
-    #cambiar-password-button {
-
-        width:100%;
+        min-width:220px;
 
     }
 
 }
 
-/* */
 
-.input-style {
-    width: 280px;
-    height: 44px;
-    padding: 12px 16px;
+@media (max-width:768px){
 
-    border: 1px solid #dbe3ec;
-    border-radius: 10px;
+    .topbar{
 
-    background: white;
+        padding:0 12px;
 
-    font-size: 15px;
-    color: #334155;
+    }
 
-    transition: .2s ease;
-}
+    .sidebar{
 
+        width:80px;
 
-.password-container {
-    position: relative;
-    width: 350px;
-}
+        min-width:80px;
 
+    }
 
-.password-container .input-style {
-    width: 100%;
-    padding-right: 50px;
-}
+    .menu-text{
 
-#borrar-usuario-button,
-#add-usuario-button,
-#cambiar-password-button {
-    width: fit-content !important;
-}
+        display:none;
 
-.mensaje {
-    width: 100%;
-    margin-top: 6px !important;
-}
+    }
 
-.fila-usuarios {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
+    .sidebar-link{
 
-    gap: 18px;
+        justify-content:center;
 
-    padding: 0;
-    margin-bottom: 35px;
+        padding:14px;
 
-    background: transparent;
-    border: none;
-}
+    }
 
-.fila-usuarios > .mensaje {
-    flex-basis: 100%;
-    width: 100%;
-    margin-top: 5px !important;
-}
+    .sidebar-sublink{
 
+        justify-content:center;
 
-#borrar-usuario-button,
-#add-usuario-button,
-#cambiar-password-button {
+        margin-left:0;
 
-    margin-top: 0;
-
-    width: fit-content !important;
-
-    padding: 10px 18px;
-}
-
-
-/* fuerza salto de línea solo antes del botón */
-#borrar-usuario-button::before,
-#add-usuario-button::before,
-#cambiar-password-button::before {
-    content: "";
-}
-
-.boton-con-mensaje {
-    width: 100%;
-    margin-top: 5px;
-}
-
-
-.boton-con-mensaje button {
-    width: fit-content !important;
-
-    padding: 10px 18px;
-
-    border-radius: 6px;
-}
-
-
-.boton-con-mensaje .mensaje {
-    margin-top: 8px !important;
-}
-
-/* =========================
-   ESTILOS IMPORTAR
-========================= */
-
-.campo-importar {
-    width: 300px !important;
-}
-
-
-/* Inputs normales */
-input.campo-importar {
-    height: 38px;
-    box-sizing: border-box;
-}
-
-
-/* Dropdown Dash */
-.campo-importar .Select,
-.campo-importar .Select-control,
-.campo-importar .Select-placeholder,
-.campo-importar .Select-value {
-    width: 300px !important;
-}
-
-
-.campo-importar .Select-control {
-    height: 38px !important;
-    min-height: 38px !important;
-
-    border-radius: 10px !important;
-}
-
-#dropdown-escala {
-    width: 300px !important;
-}
-
-#upload-data {
-    width: 300px !important;
-}
-
-.upload-importar {
-    width: 300px;
-    height: 60px;
-
-    border: 2px dashed #cbd5e1;
-    border-radius: 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    cursor: pointer;
-    padding: 10px;
-    margin: 10px 0;
-
-    box-sizing: border-box;
-}
-
-
-.file-selected {
-    width: 300px;
-    height: 60px;
-
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.upload-importar:hover {
-
-    border-color: #2563eb;
-
-    background: #f8fbff;
-}
-
-
-.excel-icon {
-
-    height: 30px;
-
-    margin-right: 10px;
+    }
 
 }
 
 
+/* ==========================================================
+   MANTINE
+========================================================== */
 
-.file-name {
+.mantine-Select-input:hover{
 
-    word-break: break-word;
+    border-color:#93c5fd !important;
+
+}
+
+.mantine-Select-input:focus{
+
+    border-color:#2563eb !important;
+
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
 
 }
 
 
-/* =========================
-   FILTROS
-========================= */
-.checklist-pro {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    max-width: 650px;
-}
+/* ==========================================================
+   LOADING
+========================================================== */
 
-.checklist-pro label {
-    display: inline-flex;
-    align-items: center;
+._dash-loading{
 
-    padding: 8px 14px;
-
-    border: 1px solid #dbe3ec;
-    border-radius: 10px;
-
-    background: #f8fafc;
-    color: #475569;
-
-    cursor: pointer;
-    transition: .2s;
-}
-
-.checklist-pro label:hover {
-    background: #eef4ff;
-    border-color: #93c5fd;
-}
-
-/* Checkbox */
-.checklist-pro input {
-    accent-color: #3b82f6;
-}
-
-.checklist-pro input {
-    accent-color: #60a5fa; /* azul mucho más suave */
-}
-
-.checklist-pro input {
-    display: none;
-}
-
-.checklist-pro label:has(input:checked) {
-    background: #dbeafe;
-    border-color: #3b82f6;
-    color: #1e40af;
-    font-weight: 600;
-}
-
-#tipo-entidad-dropdown {
-    width: 260px;
-}
-
-#version-auditoria-dropdown {
-    width: 260px;
-}
-
-#entidad-dropdown {
-    width: 450px;
-}
-
-#entidad-dropdown .Select-menu-outer {
-    max-height: 250px;
-}
-
-#entidad-dropdown .VirtualizedSelectOption {
-    padding: 10px 12px;
-}
-
-#entidad-dropdown .VirtualizedSelectFocusedOption {
-    background: #eef4ff !important;
-    color: #1e40af;
-}
-
-#entidad-dropdown .Select-value {
-    background: #eef4ff !important;
-    border: 1px solid #bfdbfe !important;
-    border-radius: 20px !important;
-    color: #1e40af !important;
-}
-
-/* =========================
-   TABLA DATOS MEJORADA
-========================= */
-
-#tabla-datos {
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-
-/* Contenedor */
-.dash-table-container {
-    border-radius: 14px;
-    overflow: hidden;
-
-    border: 1px solid #e2e8f0;
-    background: white;
-
-    box-shadow: 0 8px 20px rgba(15,23,42,.06);
-}
-
-
-/* Cabeceras */
-.dash-spreadsheet-container .dash-spreadsheet-inner th {
-    background: #f8fafc !important;
-    color: #334155 !important;
-
-    text-align: center !important;
-
-    font-weight: 600 !important;
-    font-size: 13px !important;
-
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-
-
-/* Celdas normales */
-.dash-spreadsheet-container .dash-spreadsheet-inner td {
-
-    text-align: left !important;
-
-    padding: 12px 14px !important;
-
-    color: #334155 !important;
-
-    font-size: 14px !important;
-
-    border-bottom: 1px solid #f1f5f9 !important;
-}
-
-
-/* Hover fila */
-.dash-spreadsheet-container tr:hover td {
-    background: #f8fafc !important;
-}
-
-
-/* Celda editable al pulsar */
-.dash-spreadsheet-container td.focused {
-    background: #eff6ff !important;
-
-    box-shadow:
-        inset 0 0 0 2px #93c5fd !important;
-}
-
-
-/* Input solo cuando editas una celda de texto */
-.dash-spreadsheet-container td.focused input {
-
-    border: 1px solid #bfdbfe !important;
-
-    border-radius: 8px !important;
-
-    padding: 8px 10px !important;
-
-    font-size: 14px !important;
-
-    color: #334155 !important;
-
-    background: white !important;
+    backdrop-filter:blur(3px);
 
 }
 
-/* =========================
-   PAGINACIÓN DASH TABLE
-========================= */
 
-.previous-next-container {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    margin-top: 18px !important;
-}
+/* ==========================================================
+   PEQUEÑOS DETALLES
+========================================================== */
 
+h1,h2,h3{
 
-/* Input de página */
-.previous-next-container input[type="number"] {
-
-    width: 38px !important;
-    height: 36px !important;
-
-    box-sizing: border-box !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-
-    text-align: center !important;
-
-    line-height: 36px !important;
-
-    border: 1px solid #dbe3ec !important;
-    border-radius: 10px !important;
-
-    background: white !important;
-
-    color: #334155 !important;
-
-    font-size: 14px !important;
-    font-weight: 600 !important;
-}
-
-
-/* Botones anterior siguiente */
-.previous-next-container button {
-
-    width: 36px !important;
-    height: 36px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    padding: 0 !important;
-    margin: 0 !important;
-
-    border-radius: 10px !important;
-
-    border: 1px solid #dbe3ec !important;
-
-    background: white !important;
-
-    color: #475569 !important;
+    color:#0f172a;
 
 }
 
-.dash-dropdown select {
-    padding: 8px 10px !important;
-    border-radius: 8px !important;
-    border: none !important;
+label{
+
+    user-select:none;
+
 }
 
-/* Dropdowns dentro de DataTable */
-.dash-spreadsheet .dash-dropdown {
+button{
 
-    border: 1px solid #dbe3ec !important;
-    border-radius: 8px !important;
+    font-family:inherit;
 
-    background: white !important;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+.header-brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.header-brand-text{
+    display:flex;
+    flex-direction:column;
+}
+
+.header-title{
+    font-size:24px;
+    font-weight:700;
+    color:#0f172a;
+    line-height:1.1;
+}
+
+.header-subtitle{
+    font-size:13px;
+    color:#94a3b8;
+}
+
+/* ==========================================
+   SIDEBAR COLAPSADO
+========================================== */
+
+
+.sidebar.collapsed{
+
+    width:80px;
+
+    min-width:80px;
+
 }
 
 
-/* Quitar borde interno del selector */
-.dash-spreadsheet .dash-dropdown select {
+/* ocultar textos */
 
-    border: none !important;
+.sidebar.collapsed .menu-text{
 
-    outline: none !important;
+    opacity:0;
 
-    background: transparent !important;
+    width:0;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    transition:.15s;
+
 }
 
-.dash-spreadsheet-container .input-style {
-    all: unset;
+
+/* centrar iconos */
+
+.sidebar.collapsed .sidebar-link,
+.sidebar.collapsed .sidebar-sublink,
+.sidebar.collapsed .sidebar-section{
+
+    justify-content:center;
+
+    padding-left:12px;
+
+    padding-right:12px;
+
+    gap:0;
+
+}
+
+/* quitar sangría */
+
+.sidebar.collapsed .sidebar-sublink{
+
+    margin-left:0;
+
+}
+
+
+/* ocultar submenu */
+
+.sidebar.collapsed #admin-collapse{
+
+    display:none;
+
+}
+
+.mantine-Select-option:hover{
+
+    background:#f1f5f9 !important;
+
+}
+
+.mantine-Select-option[data-checked]{
+
+    background:#dbeafe !important;
+
+    color:#1d4ed8 !important;
+
+    font-weight:600;
+
 }

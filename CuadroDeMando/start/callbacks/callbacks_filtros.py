@@ -3,11 +3,15 @@ import dash
 from dash.exceptions import PreventUpdate
 import pandas as pd
 import data.querys as qr
+import dash_mantine_components as dmc
+from collections import defaultdict
+
+
 
 def registrar_callbacks_filtros(app):
 
     @app.callback(
-        Output("tipo-entidad-dropdown", "options"),
+        Output("tipo-entidad-dropdown", "data"),
         Output("tipo-entidad-dropdown", "value"),
         Input('url', 'pathname'),
         State("store-tipo-entidad", "data"),
@@ -21,16 +25,16 @@ def registrar_callbacks_filtros(app):
         options = [
             {
                 "label": t["nombre"],
-                "value": t["id"]
+                "value": str(t["id"])
             }
             for t in tipos
         ]
 
         # Si había uno guardado y sigue existiendo, lo usamos
-        ids = [t["id"] for t in tipos]
+        ids = [str(t["id"]) for t in tipos]
 
-        if tipo_guardado in ids:
-            value = tipo_guardado
+        if tipo_guardado is not None and str(tipo_guardado) in ids:
+            value = str(tipo_guardado)
         elif ids:
             value = ids[0]
         else:
@@ -38,15 +42,17 @@ def registrar_callbacks_filtros(app):
 
         return options, value
 
+
     @app.callback(
-        Output('entidad-dropdown', 'options'),
+        Output('entidad-dropdown', 'data'),
         Output('entidad-dropdown', 'value'),
-        Input('url', 'pathname'),                
-        Input('tipo-entidad-dropdown', 'value'),  
+        Input('url', 'pathname'),
+        Input('tipo-entidad-dropdown', 'value'),
         State('store-tipo-entidad', 'data'),
         State('store-entidad', 'data')
     )
     def inicializar_o_actualizar_dropdowns(pathname, tipo_cambiado, store_tipo, store_entidades):
+
         if pathname != "/dash/filtros":
             raise dash.exceptions.PreventUpdate
 
@@ -63,33 +69,57 @@ def registrar_callbacks_filtros(app):
             columns=["id", "nombre", "id_version"]
         )
 
+        # =====================================================
+        # OPCIONES AGRUPADAS POR LETRA
+        # =====================================================
+
+        grupos = defaultdict(list)
+
+        df_entidades = df_entidades.sort_values("nombre")
+
+        for _, row in df_entidades.iterrows():
+
+            letra = row["nombre"][0].upper()
+
+            grupos[letra].append(
+                {
+                    "label": row["nombre"],
+                    "value": str(row["id"])
+                }
+            )
+
         options = [
-            {"label": row["nombre"], "value": row["id"]}
-            for _, row in df_entidades.iterrows()
+
+            {
+                "group": letra,
+                "items": items
+            }
+
+            for letra, items in grupos.items()
+
         ]
 
-        ids_validos = df_entidades["id"].tolist()
+        # =====================================================
+        # VALORES SELECCIONADOS
+        # =====================================================
+
+        ids_validos = [str(i) for i in df_entidades["id"].tolist()]
 
         if store_entidades and tipo_cambiado == store_tipo:
-            seleccion = [v for v in store_entidades if v in ids_validos]
+
+            seleccion = [
+                v for v in store_entidades
+                if v in ids_validos
+            ]
+
             valor_entidades = seleccion if seleccion else ids_validos
+
         else:
+
             valor_entidades = ids_validos
 
         return options, valor_entidades
 
-
-    # @app.callback(
-    #     Output('tipo-entidad-dropdown', 'value'),
-    #     Input('store-tipo-entidad', 'data'),
-    #     State('tipo-entidad-dropdown', 'value'),
-    #     prevent_initial_call=True
-    # )
-    # def cargar_dropdown(tipoEntidad, valor_actual):
-    #     if valor_actual is not None:
-    #         return no_update
-
-    #     return tipoEntidad
 
     @app.callback(
         Output('store-entidad', 'data', allow_duplicate=True),
@@ -117,19 +147,6 @@ def registrar_callbacks_filtros(app):
         return dash.no_update
 
     
-    # @app.callback(
-    #     Output('store-entidad', 'data', allow_duplicate=True),
-    #     Output('store-tipo-entidad', 'data', allow_duplicate=True),
-    #     Input('init-trigger', 'n_intervals'),
-    #     State('store-entidad', 'data'),
-    #     State('store-tipo-entidad', 'data'),
-    #     prevent_initial_call='initial_duplicate'
-    # )
-    # def init_filtros(n, entidades_store, tipo_store):
-    #     if entidades_store is None and tipo_store is None:
-    #         return [], None
-    #     raise PreventUpdate
-    
     @app.callback(
         Output('store-entidad', 'data'),
         Output('store-tipo-entidad', 'data'),
@@ -152,85 +169,144 @@ def registrar_callbacks_filtros(app):
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     @app.callback(
-        Output("principios-checklist", "options"),
-        Output("wcag-version-checklist", "options"),
-        Output("nivel-checklist", "options"),
+        Output("principios-checklist", "children"),
+        Output("wcag-version-checklist", "children"),
+        Output("nivel-checklist", "children"),
         Input("principios-checklist", "value"),
         Input("wcag-version-checklist", "value"),
-        Input("nivel-checklist", "value")
+        Input("nivel-checklist", "value"),
     )
     def actualizar_filtros_dependientes(principios_sel, wcag_sel, nivel_sel):
+
+        principios_sel = principios_sel or []
+        wcag_sel = wcag_sel or []
+        nivel_sel = nivel_sel or []
+
         df = pd.DataFrame(qr.obtener_opciones_filtros())
 
         niveles = pd.DataFrame(qr.obtener_niveles()).to_dict("records")
         wcag = pd.DataFrame(qr.obtener_tipos_wcag()).to_dict("records")
         principios = pd.DataFrame(qr.obtener_principios()).to_dict("records")
 
-        # Aplicamos los filtros seleccionados
+        # Convertimos a string para que coincida con Mantine
+        df["id_principio"] = df["id_principio"].astype(str)
+        df["id_version"] = df["id_version"].astype(str)
+        df["id_nivel"] = df["id_nivel"].astype(str)
+
+        # =====================================================
+        # PRINCIPIOS DISPONIBLES
+        # =====================================================
+
         df_principios = df.copy()
+
         if wcag_sel:
-            df_principios = df_principios[df_principios["id_version"].isin(wcag_sel)]
+            df_principios = df_principios[
+                df_principios["id_version"].isin(wcag_sel)
+            ]
 
         if nivel_sel:
-            df_principios = df_principios[df_principios["id_nivel"].isin(nivel_sel)]
+            df_principios = df_principios[
+                df_principios["id_nivel"].isin(nivel_sel)
+            ]
 
         ok_principios = set(df_principios["id_principio"])
+
+        # =====================================================
+        # VERSIONES DISPONIBLES
+        # =====================================================
 
         df_wcag = df.copy()
 
         if principios_sel:
-            df_wcag = df_wcag[df_wcag["id_principio"].isin(principios_sel)]
+            df_wcag = df_wcag[
+                df_wcag["id_principio"].isin(principios_sel)
+            ]
 
         if nivel_sel:
-            df_wcag = df_wcag[df_wcag["id_nivel"].isin(nivel_sel)]
+            df_wcag = df_wcag[
+                df_wcag["id_nivel"].isin(nivel_sel)
+            ]
 
         ok_wcag = set(df_wcag["id_version"])
+
+        # =====================================================
+        # NIVELES DISPONIBLES
+        # =====================================================
 
         df_niveles = df.copy()
 
         if principios_sel:
-            df_niveles = df_niveles[df_niveles["id_principio"].isin(principios_sel)]
+            df_niveles = df_niveles[
+                df_niveles["id_principio"].isin(principios_sel)
+            ]
 
         if wcag_sel:
-            df_niveles = df_niveles[df_niveles["id_version"].isin(wcag_sel)]
+            df_niveles = df_niveles[
+                df_niveles["id_version"].isin(wcag_sel)
+            ]
 
         ok_niveles = set(df_niveles["id_nivel"])
 
-        principios_options = [
-            {
-                "label": p["nombre"],
-                "value": p["id"],
-                "disabled": p["id"] not in ok_principios
-            }
+        # =====================================================
+        # COMPONENTES
+        # =====================================================
+
+        principios_children = [
+
+            dmc.Checkbox(
+                label=p["nombre"],
+                value=str(p["id"]),
+                disabled=str(p["id"]) not in ok_principios,
+                size="md",
+                radius="xl",
+                color="blue",
+                className="checkbox-item",
+            )
+
             for p in principios
+
         ]
 
-        wcag_options = [
-            {
-                "label": w["version"],
-                "value": w["id"],
-                "disabled": w["id"] not in ok_wcag
-            }
+        wcag_children = [
+
+            dmc.Checkbox(
+                label=w["version"],
+                value=str(w["id"]),
+                disabled=str(w["id"]) not in ok_wcag,
+                size="md",
+                radius="xl",
+                color="blue",
+                className="checkbox-item",
+            )
+
             for w in wcag
+
         ]
 
-        niveles_options = [
-            {
-                "label": n["nombre"],
-                "value": n["id"],
-                "disabled": n["id"] not in ok_niveles
-            }
+        niveles_children = [
+
+            dmc.Checkbox(
+                label=n["nombre"],
+                value=str(n["id"]),
+                disabled=str(n["id"]) not in ok_niveles,
+                size="md",
+                radius="xl",
+                color="blue",
+                className="checkbox-item",
+            )
+
             for n in niveles
+
         ]
 
         return (
-            principios_options,
-            wcag_options,
-            niveles_options
+            principios_children,
+            wcag_children,
+            niveles_children,
         )
 
     @app.callback(
-        Output("version-auditoria-dropdown", "options"),
+        Output("version-auditoria-dropdown", "data"),
         Output("version-auditoria-dropdown", "value"),
         Input("tipo-entidad-dropdown", "value")
     )
@@ -250,7 +326,7 @@ def registrar_callbacks_filtros(app):
         opciones = [
             {
                 "label": row["fecha"].strftime("%d/%m/%Y"),
-                "value": row["id"]
+                "value": str(row["id"])
             }
             for _, row in versiones.iterrows()
         ]
@@ -281,3 +357,38 @@ def registrar_callbacks_filtros(app):
             qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
             qr.obtener_textos_interfaz(idioma, "filtros", "actualizar")
         )
+
+
+    @app.callback(
+        Output("entidad-dropdown", "value"),
+        Input("btn-seleccionar-todas", "n_clicks"),
+        Input("btn-deseleccionar", "n_clicks"),
+        Input("txt-seleccionar-todas", "n_clicks"),
+        Input("txt-deseleccionar", "n_clicks"),
+        State("entidad-dropdown", "data"),
+        prevent_initial_call=True,
+    )
+    def acciones_entidades(
+        btn_sel,
+        btn_des,
+        txt_sel,
+        txt_des,
+        data,
+    ):
+
+        trigger = ctx.triggered_id
+
+        if trigger in ("btn-deseleccionar", "txt-deseleccionar"):
+            return []
+
+        if trigger in ("btn-seleccionar-todas", "txt-seleccionar-todas"):
+
+            seleccion = []
+
+            for grupo in data:
+                for item in grupo["items"]:
+                    seleccion.append(item["value"])
+
+            return seleccion
+
+        raise PreventUpdate

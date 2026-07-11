@@ -4,6 +4,7 @@ from dash.exceptions import PreventUpdate
 from flask import session
 import pandas as pd
 import data.querys as qr
+from dash_iconify import DashIconify
 
 
 from dashboard.filtros import layout_filtros
@@ -68,45 +69,161 @@ def registrar_callbacks_routing(app):
         Input("store-idioma", "data")
     )
     def actualizar_textos_menu(idioma):
-        return (
-            [
-                html.Span("📊", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "filtros"), className="menu-text")
-            ],
-            [
-                html.Span("📈", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando"), className="menu-text")
-            ],
-            [
-                html.Span("📋", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "tabla_datos"), className="menu-text")
-            ],
-            [
-                html.Span("📥", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "importar_datos"), className="menu-text")
-            ],
 
-            # admin-toggle
-            html.Div([
-                html.Span("⚙️", className="icon"),
+        return (
+
+            # =========================================
+            # FILTROS
+            # =========================================
+            [
+                DashIconify(
+                    icon="tabler:filter",
+                    width=20,
+                    className="sidebar-icon"
+                ),
                 html.Span(
-                    qr.obtener_textos_interfaz(idioma, "menu", "panel_administracion"),
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "filtros"
+                    ),
                     className="menu-text"
                 )
-            ]),
+            ],
 
+            # =========================================
+            # CUADRO DE MANDO
+            # =========================================
             [
-                html.Span("👤", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "usuarios"), className="menu-text")
+                DashIconify(
+                    icon="tabler:chart-bar",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "cuadro_mando"
+                    ),
+                    className="menu-text"
+                )
             ],
+
+            # =========================================
+            # TABLA DATOS
+            # =========================================
             [
-                html.Span("📑", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "gestion_auditorias"), className="menu-text")
+                DashIconify(
+                    icon="tabler:table",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "tabla_datos"
+                    ),
+                    className="menu-text"
+                )
             ],
+
+            # =========================================
+            # IMPORTAR
+            # =========================================
             [
-                html.Span("🚪", className="icon"),
-                html.Span(qr.obtener_textos_interfaz(idioma, "menu", "cerrar_sesion"), className="menu-text")
+                DashIconify(
+                    icon="tabler:upload",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "importar_datos"
+                    ),
+                    className="menu-text"
+                )
             ],
+
+            # =========================================
+            # ADMINISTRACIÓN
+            # =========================================
+            [
+                DashIconify(
+                    icon="tabler:settings",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "panel_administracion"
+                    ),
+                    className="menu-text"
+                )
+            ],
+
+            # =========================================
+            # USUARIOS
+            # =========================================
+            [
+                DashIconify(
+                    icon="tabler:users",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "usuarios"
+                    ),
+                    className="menu-text"
+                )
+            ],
+
+            # =========================================
+            # AUDITORÍAS
+            # =========================================
+            [
+                DashIconify(
+                    icon="tabler:file-description",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "gestion_auditorias"
+                    ),
+                    className="menu-text"
+                )
+            ],
+
+            # =========================================
+            # LOGOUT
+            # =========================================
+            [
+                DashIconify(
+                    icon="tabler:logout",
+                    width=20,
+                    className="sidebar-icon"
+                ),
+                html.Span(
+                    qr.obtener_textos_interfaz(
+                        idioma,
+                        "menu",
+                        "cerrar_sesion"
+                    ),
+                    className="menu-text"
+                )
+            ]
+
         )
 
 
