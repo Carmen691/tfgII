@@ -226,7 +226,9 @@ def obtener_datos(entidades, principios, versiones, niveles, version):
                     JOIN versiones_wcag v on v.id = cv.id_version"""
             
         if versiones:
-            consulta += f""" and v.id in {versiones}"""
+            consulta += f""" and v.id in {versiones}"""    
+        else:
+            consulta += f" AND v.id = ver.id_version"
         
         if version:
             consulta += f""" and ver.id = {version}"""
@@ -316,7 +318,7 @@ def obtener_suma_cumplimiento(entidades, principios, versiones, niveles, version
         """
 
         if versiones:
-            consulta += f" AND v.id IN {versiones}"
+            consulta += f" AND v.id IN {max(versiones)}"
 
         if version:
             consulta += f" AND ver.id = {version}"

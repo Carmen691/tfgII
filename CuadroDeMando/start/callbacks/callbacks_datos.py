@@ -82,6 +82,7 @@ def registrar_callbacks_datos(app):
             "Id":datos["id_medicion"],
             "Criterios": datos["criterio"],
             "Valores": datos["id_descripcion"],
+            "Estado": datos["descripcion"],
             "Entidades": datos["entidad"],
         })
 
@@ -144,6 +145,7 @@ def registrar_callbacks_datos(app):
     
     @app.callback(
         Output("mensaje-guardar", "children"),
+        Output("btn-guardar-tabla", "disabled"),
         Input("btn-guardar-tabla", "n_clicks"),
         State("tabla-actual-store", "data"),
         State("store-idioma", "data"),
@@ -222,7 +224,16 @@ def registrar_callbacks_datos(app):
 
             if result > 0:
                 qr.registrar_auditoria(session.get('user'), 'GUARDAR_DATOS', 'Se han guardado los datos correctamente')
-                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok")
+                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok"), True
             else:
-                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko")
+                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko"), False
         return no_update
+    
+
+    @app.callback(
+        Output("btn-guardar-tabla", "disabled"),
+        Input("tabla-datos", "data_timestamp"),
+        prevent_initial_call=True,
+    )
+    def activar_guardado(_):
+        return False

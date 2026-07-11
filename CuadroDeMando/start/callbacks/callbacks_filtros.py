@@ -392,3 +392,4 @@ def registrar_callbacks_filtros(app):
             return seleccion
 
         raise PreventUpdate
+        
