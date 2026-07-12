@@ -122,8 +122,8 @@ def registrar_callbacks_admin(app):
     # ----------------------------
     @app.callback(
         Output("usuarios-dropdown", "data"),
-        Output("modal-confirmacion", "is_open"),
-        Output("modal-confirmacion-anadir", "is_open"),
+        Output("modal-confirmacion", "opened"),
+        Output("modal-confirmacion-anadir", "opened"),
         Output("mensaje-usuario-eliminar", "children"),
         Output("mensaje-usuario-eliminar", "style"),
         Output("mensaje-usuario-anadir", "children"),
@@ -134,8 +134,8 @@ def registrar_callbacks_admin(app):
         Input("add-usuario-button", "n_clicks"),
         Input("cancelar-anadir", "n_clicks"),
         Input("confirmar-anadir", "n_clicks"),
-        State("modal-confirmacion", "is_open"),
-        State("modal-confirmacion-anadir", "is_open"),
+        State("modal-confirmacion", "opened"),
+        State("modal-confirmacion-anadir", "opened"),
         State("usuarios-dropdown", "value"),
         State("input-usuario", "value"),
         State("input-passwd", "value"),
@@ -305,11 +305,9 @@ def registrar_callbacks_admin(app):
     
     @app.callback(
         Output("titulo-gestion", "children"),
-        Output("label-auditorias", "children"),
-        Output("label-versiones", "children"),
-        Output("borrar-auditoria-button", "children"),
         Output("versiones-dropdown", "placeholder"),
         Output("auditorias-dropdown", "placeholder"),
+        Output("borrar-auditoria-button", "children"),
         Input("store-idioma", "data")
     )
     def textos_gestion(idioma):
@@ -330,10 +328,6 @@ def registrar_callbacks_admin(app):
                     )
                 ),
             ],
-
-            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
-
-            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
         )
     
 
@@ -368,8 +362,8 @@ def registrar_callbacks_admin(app):
     def textos_gestion(idioma):
 
         return (
-            qr.obtener_textos_interfaz(idioma, "usuarios", "usuarios"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar_usuarios"),
+            qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "cancelar"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar"),
             qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
@@ -456,11 +450,11 @@ def registrar_callbacks_admin(app):
     
 
     @app.callback(
-        Output("modal-confirmacion-password", "is_open"),
+        Output("modal-confirmacion-password", "opened"),
         Input("cambiar-password-button", "n_clicks"),
         Input("cancelar-password", "n_clicks"),
         Input("confirmar-password", "n_clicks"),
-        State("modal-confirmacion-password", "is_open"),
+        State("modal-confirmacion-password", "opened"),
         prevent_initial_call=True
     )
     def toggle_modal_password(
@@ -534,10 +528,43 @@ def registrar_callbacks_admin(app):
             "",
             ""
         )
-        
+    
+
     @app.callback(
-        Output("input-passwd", "type"),
-        Input("ver-password-alta", "n_clicks"),
+        Output("borrar-auditoria-button", "disabled"),
+        Input("versiones-dropdown", "value"),
+        Input("auditorias-dropdown", "value"),
     )
-    def ver_password_alta(n):
-        return "text" if n and n % 2 else "password"
+    def activar_boton_eliminar_aud(fecha, nombre):
+        return not (nombre and fecha)
+    
+
+    @app.callback(
+        Output("borrar-usuario-button", "disabled"),
+        Input("usuarios-dropdown", "value"),
+    )
+    def activar_boton_eliminar_usu(usuario):
+        return not (usuario)
+    
+
+    @app.callback(
+        Output("add-usuario-button", "disabled"),
+        Input("input-usuario", "n_blur"),
+        Input("input-passwd", "n_blur"),
+        State("input-usuario", "value"),
+        State("input-passwd", "value"),
+    )
+    def activar_boton_anadir_usu(b1, b2, usuario, pwd):
+        return not (usuario and pwd)
+    
+    @app.callback(
+        Output("cambiar-password-button", "disabled"),
+        Input("input-password-actual", "n_blur"),
+        Input("input-password-nueva", "n_blur"),
+        Input("input-password-confirmar", "n_blur"),
+        State("input-password-actual", "value"),
+        State("input-password-nueva", "value"),
+        State("input-password-confirmar", "value"),
+    )
+    def activar_boton_cambiar_pwd(b1, b2, b3, actual, nueva, confirmar):
+        return not (actual and nueva and confirmar)

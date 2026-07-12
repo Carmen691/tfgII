@@ -17,7 +17,7 @@ def layout_graficos():
 
                 html.H2(
                     id="titulo-graficos",
-                    className="gestion-titulo"
+                    className="graficos-titulo"
                 ),
 
                 html.Div(

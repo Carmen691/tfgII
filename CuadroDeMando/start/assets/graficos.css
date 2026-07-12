@@ -168,3 +168,39 @@
     }
 
 }
+
+.grafico-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    min-height:130px;
+
+}
+
+.graficos-titulo{
+
+    font-size:32px;
+
+    font-weight:700;
+
+    color:#0f172a;
+
+    margin:0 0 8px 0;
+
+}
+
+.grafico-chip{
+
+    padding:12px 22px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+}

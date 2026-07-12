@@ -1,5 +1,4 @@
 from dash import html, dcc
-import dash_bootstrap_components as dbc
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
@@ -73,6 +72,7 @@ def layout_usuarios():
                                             radius="md",
                                             size="md",
                                             w=250,
+                                            disabled=True,
                                             leftSection=DashIconify(
                                                 icon="tabler:trash",
                                                 width=18
@@ -90,42 +90,76 @@ def layout_usuarios():
 
                                 ),
 
-                                dbc.Modal(
+                                dmc.Modal(
 
-                                    [
+                                    id="modal-confirmacion",
 
-                                        dbc.ModalHeader(
-                                            id="modal-titulo-eliminar"
+                                    opened=False,
+
+                                    centered=True,
+
+                                    withCloseButton=False,
+
+                                    closeOnClickOutside=False,
+
+                                    closeOnEscape=False,
+
+                                    radius="lg",
+
+                                    size="md",
+
+                                    title=dmc.Group(
+
+                                        [
+
+                                            DashIconify(
+                                                icon="tabler:alert-triangle",
+                                                width=22,
+                                                color="#dc2626"
+                                            ),
+
+                                            html.Span(
+                                                id="modal-titulo-eliminar"
+                                            ),
+
+                                        ],
+
+                                        gap="sm",
+
+                                    ),
+
+                                    children=[
+
+                                        html.Div(
+                                            id="modal-texto-eliminar",
+                                            style={
+                                                "paddingBottom": "20px"
+                                            }
                                         ),
 
-                                        dbc.ModalBody(
-                                            id="modal-texto-eliminar"
-                                        ),
-
-                                        dbc.ModalFooter(
+                                        dmc.Group(
 
                                             [
 
-                                                dbc.Button(
+                                                dmc.Button(
                                                     id="cancelar-eliminar",
-                                                    className="boton-azul",
-                                                    n_clicks=0
+                                                    variant="default",
+                                                    radius="md",
                                                 ),
 
-                                                dbc.Button(
+                                                dmc.Button(
                                                     id="confirmar-eliminar",
-                                                    color="danger",
-                                                    n_clicks=0
+                                                    color="red",
+                                                    radius="md",
                                                 ),
 
-                                            ]
+                                            ],
+
+                                            justify="flex-end",
 
                                         ),
 
                                     ],
-
-                                    id="modal-confirmacion",
-                                    is_open=False,
 
                                 ),
 
@@ -207,6 +241,7 @@ def layout_usuarios():
                                             radius="md",
                                             size="md",
                                             w=250,
+                                            disabled=True,
                                             leftSection=DashIconify(
                                                 icon="tabler:user-plus",
                                                 width=18
@@ -224,43 +259,76 @@ def layout_usuarios():
 
                                 ),
 
-                                dbc.Modal(
+                                dmc.Modal(
 
-                                    [
+                                    id="modal-confirmacion-anadir",
 
-                                        dbc.ModalHeader(
-                                            id="modal-titulo-anadir"
+                                    opened=False,
+
+                                    centered=True,
+
+                                    withCloseButton=False,
+
+                                    closeOnClickOutside=False,
+
+                                    closeOnEscape=False,
+
+                                    radius="lg",
+
+                                    size="md",
+
+                                    title=dmc.Group(
+
+                                        [
+
+                                            DashIconify(
+                                                icon="tabler:user-plus",
+                                                width=22,
+                                                color="#2563eb"
+                                            ),
+
+                                            html.Span(
+                                                id="modal-titulo-anadir"
+                                            ),
+
+                                        ],
+
+                                        gap="sm",
+
+                                    ),
+
+                                    children=[
+
+                                        html.Div(
+                                            id="modal-texto-anadir",
+                                            style={
+                                                "paddingBottom": "20px"
+                                            }
                                         ),
 
-                                        dbc.ModalBody(
-                                            id="modal-texto-anadir"
-                                        ),
-
-                                        dbc.ModalFooter(
+                                        dmc.Group(
 
                                             [
 
-                                                dbc.Button(
-                                                    "Cancelar",
+                                                dmc.Button(
                                                     id="cancelar-anadir",
-                                                    n_clicks=0
+                                                    variant="default",
+                                                    radius="md",
                                                 ),
 
-                                                dbc.Button(
-                                                    "Añadir",
+                                                dmc.Button(
                                                     id="confirmar-anadir",
-                                                    color="success",
-                                                    n_clicks=0
+                                                    color="blue",
+                                                    radius="md",
                                                 ),
 
-                                            ]
+                                            ],
+
+                                            justify="flex-end",
 
                                         ),
 
                                     ],
-
-                                    id="modal-confirmacion-anadir",
-                                    is_open=False,
 
                                 ),
 
@@ -336,6 +404,7 @@ def layout_usuarios():
                                             radius="md",
                                             size="md",
                                             w=250,
+                                            disabled=True,
                                             leftSection=DashIconify(
                                                 icon="tabler:key",
                                                 width=18
@@ -353,41 +422,76 @@ def layout_usuarios():
 
                                 ),
 
-                                dbc.Modal(
+                                dmc.Modal(
 
-                                    [
+                                    id="modal-confirmacion-password",
 
-                                        dbc.ModalHeader(
-                                            id="btn-confirmar-cambio"
+                                    opened=False,
+
+                                    centered=True,
+
+                                    withCloseButton=False,
+
+                                    closeOnClickOutside=False,
+
+                                    closeOnEscape=False,
+
+                                    radius="lg",
+
+                                    size="md",
+
+                                    title=dmc.Group(
+
+                                        [
+
+                                            DashIconify(
+                                                icon="tabler:key",
+                                                width=22,
+                                                color="#16a34a"
+                                            ),
+
+                                            html.Span(
+                                                id="btn-confirmar-cambio"
+                                            ),
+
+                                        ],
+
+                                        gap="sm",
+
+                                    ),
+
+                                    children=[
+
+                                        html.Div(
+                                            id="body-confirmar-cambio",
+                                            style={
+                                                "paddingBottom": "20px"
+                                            }
                                         ),
 
-                                        dbc.ModalBody(
-                                            id="body-confirmar-cambio"
-                                        ),
-
-                                        dbc.ModalFooter(
+                                        dmc.Group(
 
                                             [
 
-                                                dbc.Button(
+                                                dmc.Button(
                                                     id="cancelar-password",
-                                                    n_clicks=0
+                                                    variant="default",
+                                                    radius="md",
                                                 ),
 
-                                                dbc.Button(
+                                                dmc.Button(
                                                     id="confirmar-password",
-                                                    color="success",
-                                                    n_clicks=0
+                                                    color="green",
+                                                    radius="md",
                                                 ),
 
-                                            ]
+                                            ],
+
+                                            justify="flex-end",
 
                                         ),
 
                                     ],
-
-                                    id="modal-confirmacion-password",
-                                    is_open=False,
 
                                 ),
 

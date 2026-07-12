@@ -99,11 +99,6 @@ def crear_layout():
                                             className="header-title"
                                         ),
 
-                                        html.Div(
-                                            "TFG",
-                                            className="header-subtitle"
-                                        )
-
                                     ],
 
                                     className="header-brand-text"

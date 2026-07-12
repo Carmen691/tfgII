@@ -130,28 +130,6 @@
 
 }
 
-.modal-content{
-
-    border:none;
-
-    border-radius:16px;
-
-}
-
-.modal-header{
-
-    border-bottom:1px solid #eef2f7;
-
-    font-weight:600;
-
-}
-
-.modal-footer{
-
-    border-top:1px solid #eef2f7;
-
-}
-
 
 /* ==========================
    TITULO
@@ -254,4 +232,71 @@
 
     padding-top:2px;
 
+}
+
+.modal-content{
+    border:none !important;
+    border-radius:18px !important;
+    overflow:hidden;
+    box-shadow:0 12px 40px rgba(15,23,42,.18);
+}
+
+.modal-header{
+    border-bottom:1px solid #e5e7eb;
+    padding:18px 24px;
+}
+
+.modal-body{
+    padding:24px;
+    font-size:15px;
+    color:#475569;
+}
+
+.modal-footer{
+    border-top:1px solid #e5e7eb;
+    padding:18px 24px;
+}
+
+.modal-header-custom{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:18px;
+    font-weight:600;
+}
+
+.modal-footer-custom{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+/* ==========================================================
+   MODALES MANTINE
+========================================================== */
+
+.mantine-Modal-content{
+    border-radius:18px !important;
+    overflow:hidden;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+}
+
+.mantine-Modal-header{
+    padding:20px 24px 12px;
+    border-bottom:1px solid #eef2f7;
+}
+
+.mantine-Modal-title{
+    font-size:18px;
+    font-weight:600;
+    color:#0f172a;
+}
+
+.mantine-Modal-body{
+    padding:24px;
+}
+
+.mantine-Modal-overlay{
+    backdrop-filter:blur(3px);
+    background:rgba(15,23,42,.35);
 }

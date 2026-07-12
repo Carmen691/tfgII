@@ -25,11 +25,6 @@ def layout_gestion():
                         html.Div(
                             className="gestion-campo",
                             children=[
-                                html.Label(
-                                    id="label-auditorias",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.Select(
                                     id="auditorias-dropdown",
                                     data=[],
@@ -49,11 +44,6 @@ def layout_gestion():
                         html.Div(
                             className="gestion-campo",
                             children=[
-                                html.Label(
-                                    id="label-versiones",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.Select(
                                     id="versiones-dropdown",
 
@@ -95,6 +85,7 @@ def layout_gestion():
                     radius="md",
                     size="md",
                     w=250,
+                    disabled=True,
                     leftSection=DashIconify(
                         icon="tabler:trash",
                         width=18

@@ -32,12 +32,6 @@ def layout_importar():
                         html.Div(
 
                             [
-
-                                html.Label(
-                                    id="entidad-datos",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.TextInput(
                                     id="input-texto",
                                     radius="md",
@@ -54,12 +48,6 @@ def layout_importar():
                         html.Div(
 
                             [
-
-                                html.Label(
-                                    id="fecha-audit",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.DateInput(
                                     id="input-fecha",
                                     radius="md",
@@ -87,12 +75,6 @@ def layout_importar():
                         html.Div(
 
                             [
-
-                                html.Label(
-                                    id="version-wcag",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.Select(
                                     id="dropdown-wcag",
                                     data=[],
@@ -111,12 +93,6 @@ def layout_importar():
                         html.Div(
 
                             [
-
-                                html.Label(
-                                    id="escala-wcag",
-                                    className="gestion-label"
-                                ),
-
                                 dmc.Select(
                                     id="dropdown-escala",
                                     data=[],
@@ -211,6 +187,7 @@ def layout_importar():
                             radius="md",
                             size="md",
                             w=250,
+                            disabled=True,
                             leftSection=DashIconify(
                                 icon="tabler:upload",
                                 width=18

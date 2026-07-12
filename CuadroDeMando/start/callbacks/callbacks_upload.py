@@ -93,12 +93,9 @@ def registrar_callbacks_upload(app):
     
     @app.callback(
         Output("importar-titulo", "children"),
-        Output("entidad-datos", "children"),
-        Output("fecha-audit", "children"),
         Output("input-texto", "placeholder"),
+        Output("input-fecha", "placeholder"),
         Output("dropdown-wcag", "placeholder"),
-        Output("version-wcag", "children"),
-        Output("escala-wcag", "children"),
         Output("dropdown-escala", "placeholder"),
         Output("arrastra-ficheros", "children"),
         Output("btn-importar", "children"),
@@ -110,18 +107,15 @@ def registrar_callbacks_upload(app):
             qr.obtener_textos_interfaz(idioma, "auditorias", "importar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "datos"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "escribir"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "escala"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "seleccionar"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "fichero"),
             qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
         )
     
 
     @app.callback(
-        Output("dropdown-wcag", "options"),
+        Output("dropdown-wcag", "data"),
         Input('url', 'pathname')
     )
     def dropdown_wcag(pathname):
@@ -131,7 +125,7 @@ def registrar_callbacks_upload(app):
         wcag = qr.obtener_tipos_wcag()
 
         opciones_wcag = [
-            {"label": version, "value": id_}
+            {"label": version, "value": str(id_)}
             for id_, version in wcag
         ]
 
@@ -139,7 +133,7 @@ def registrar_callbacks_upload(app):
 
 
     @app.callback(
-        Output("dropdown-escala", "options"),
+        Output("dropdown-escala", "data"),
         Input('url', 'pathname')
     )
     def dropdown_escala(pathname):
@@ -150,11 +144,26 @@ def registrar_callbacks_upload(app):
         escala = pd.DataFrame(escalas.to_dict('records'))
 
         opciones_escala = [
-            {"label": row["descripcion"], "value": row["id"]}
+            {"label": row["descripcion"], "value": str(row["id"])}
             for _, row in escala.iterrows()
         ]
 
         return opciones_escala
+    
+
+    @app.callback(
+        Output("btn-importar", "disabled"),
+        Input("input-texto", "n_blur"),
+        Input("input-fecha", "value"),
+        Input("dropdown-wcag", "value"),
+        Input("dropdown-escala", "value"),
+        Input("upload-data", "contents"),
+        State("input-texto", "value"),
+    )
+    def activar_boton_cambiar_pwd(b1, fecha, wcag, escala, fichero, texto):
+        return not (fecha and wcag and escala and fichero and texto)
+    
+
 
 def procesar_y_guardar_archivo(content, valor_dropdown, valor_wcag, valor_escala, fecha, idioma):
 
