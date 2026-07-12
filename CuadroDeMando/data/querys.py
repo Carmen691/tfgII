@@ -170,14 +170,12 @@ def actualizar_password(username, passwd):
         WHERE usuario = :username
     """)
 
-    passwd_bytes = passwd.encode("utf-8")
-    pwd_converted = bcrypt.hashpw(passwd_bytes, bcrypt.gensalt())
     with engine.begin() as conn:
 
         result = conn.execute(
             query,
             {
-                "password": pwd_converted,
+                "password": passwd,
                 "username": username
             }
         )
@@ -670,9 +668,10 @@ def eliminar_usuario(usuario):
     with engine.begin() as conn:
 
         datos = [{'usuario': usuario}]
-        sql = text("delete from usuarios where usuario = :usuario")
-        conn.execute(sql, datos)
-        result = conn.execute(sql, datos)
+        sql = text("delete from usuarios where id = :usuario")
+        resultado =  conn.execute(sql, datos)
+        return resultado.rowcount
+
 
 
 def obtener_textos_interfaz(idioma_codigo, seccion, clave):

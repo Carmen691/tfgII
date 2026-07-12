@@ -128,6 +128,9 @@ def registrar_callbacks_admin(app):
         Output("mensaje-usuario-eliminar", "style"),
         Output("mensaje-usuario-anadir", "children"),
         Output("mensaje-usuario-anadir", "style"),
+        Output("input-usuario", "value"),
+        Output("input-passwd", "value"),
+        Output("check-admin", "value"),
         Input("borrar-usuario-button", "n_clicks"),
         Input("cancelar-eliminar", "n_clicks"),
         Input("confirmar-eliminar", "n_clicks"),
@@ -140,7 +143,7 @@ def registrar_callbacks_admin(app):
         State("input-usuario", "value"),
         State("input-passwd", "value"),
         State("check-admin", "value"),
-        State("store-idioma", "data")
+        State("store-idioma", "data"),
     )
     def gestionar_usuarios(
         n_borrar, n_cancelar_del, n_confirmar_del,
@@ -152,7 +155,7 @@ def registrar_callbacks_admin(app):
         ctx = dash.callback_context
 
         if not ctx.triggered:
-            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}, "", {"marginTop": "10px"}
+            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}, "", {"marginTop": "10px"}, dash.no_update, dash.no_update, dash.no_update
 
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
@@ -163,14 +166,14 @@ def registrar_callbacks_admin(app):
         try:
 
             if trigger_id == "borrar-usuario-button":
-                return dash.no_update, True, is_open_add, "", estilo, "", estilo
+                return dash.no_update, True, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
             elif trigger_id == "cancelar-eliminar":
-                return dash.no_update, False, is_open_add, "", estilo, "", estilo
+                return dash.no_update, False, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
             elif trigger_id == "confirmar-eliminar":
 
-                qr.eliminar_usuario(usuario_a_borrar)
+                resultado = qr.eliminar_usuario(usuario_a_borrar)
 
                 usuarios_actualizados = pd.DataFrame(
                     qr.obtener_usuarios(),
@@ -178,35 +181,38 @@ def registrar_callbacks_admin(app):
                 )
 
                 opciones = [
-                    {'label': usu, 'value': str(usu)}
-                    for usu in usuarios_actualizados["usuario"].unique()
+                    {
+                        "label": row["usuario"],
+                        "value": str(row["id"])
+                    }
+                    for _, row in usuarios_actualizados.iterrows()
                 ]
 
                 qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(usuario_a_borrar) + " eliminado")
                 mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_eliminado_ok")
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, False, is_open_add, mensaje, estilo, "", estilo
+                return opciones, False, is_open_add, mensaje, estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
             elif trigger_id == "add-usuario-button":
-                return dash.no_update, is_open_del, True, "", estilo, "", estilo
+                return dash.no_update, is_open_del, True, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
             elif trigger_id == "cancelar-anadir":
-                return dash.no_update, is_open_del, False, "", estilo, "", estilo
+                return dash.no_update, is_open_del, False, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
             elif trigger_id == "confirmar-anadir":
                 estilo = {"color": "orange", "marginTop": "10px"}
                 if len(nuevo_pass) < 7:
-                    return  dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo
+                    return  dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo, dash.no_update, dash.no_update, dash.no_update
 
                 if not re.search(r"[a-z]", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo, dash.no_update, dash.no_update, dash.no_update
 
                 if not re.search(r"[A-Z]", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo, dash.no_update, dash.no_update, dash.no_update
 
                 if not re.search(r"\d", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo
+                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo, dash.no_update, dash.no_update, dash.no_update
 
                 resultado = qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
 
@@ -214,7 +220,7 @@ def registrar_callbacks_admin(app):
                     qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " no añadido")
                     mensaje = "❌ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add_error")
                     estilo = {"color": "red", "marginTop": "10px"}
-                    return dash.no_update, is_open_del, False, "", estilo, mensaje, estilo
+                    return dash.no_update, is_open_del, False, "", estilo, mensaje, estilo, dash.no_update, dash.no_update, dash.no_update
 
 
                 usuarios_actualizados = pd.DataFrame(
@@ -223,24 +229,27 @@ def registrar_callbacks_admin(app):
                 )
 
                 opciones = [
-                    {'label': usu, 'value': usu}
-                    for usu in usuarios_actualizados["usuario"].unique()
+                    {
+                        "label": row["usuario"],
+                        "value": str(row["id"])
+                    }
+                    for _, row in usuarios_actualizados.iterrows()
                 ]
 
                 qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " añadido")
                 mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add")
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, is_open_del, False, "", estilo, mensaje, estilo
+                return opciones, is_open_del, False, "", estilo, mensaje, estilo, "", "", False
 
         except Exception as e:
 
             mensaje = f"❌ Error: {e}"
             estilo = {"color": "red", "marginTop": "10px"}
 
-            return dash.no_update, is_open_del, is_open_add, mensaje, estilo, "", estilo
+            return dash.no_update, is_open_del, is_open_add, mensaje, estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
-        return dash.no_update, is_open_del, is_open_add, "", estilo, "", estilo
+        return dash.no_update, is_open_del, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
 
 
     # ----------------------------

@@ -26,8 +26,8 @@ def login():
         password = request.form['password'].encode('utf-8')
 
         if dq.existe_usuario(username):
-            passwd = dq.obtener_pwd(username).encode('utf-8')
-            if bcrypt.checkpw(password, passwd):
+            passwd = dq.obtener_pwd(username)
+            if bcrypt.checkpw(password, passwd.encode('utf-8')):
                 session['user'] = username
                 session['admin'] = dq.obtener_admin(username)
                 session.permanent = True

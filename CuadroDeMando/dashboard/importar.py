@@ -1,3 +1,5 @@
+from datetime import date
+
 from dash import html, dcc
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
@@ -54,6 +56,7 @@ def layout_importar():
                                     size="md",
                                     w=300,
                                     valueFormat="YYYY-MM-DD",
+                                    maxDate=date.today()
                                 ),
 
                             ],

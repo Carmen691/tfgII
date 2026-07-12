@@ -1,4 +1,5 @@
 from dash import Output, Input, State, html, no_update
+import dash
 from dash.exceptions import PreventUpdate
 from flask import session
 import pandas as pd
@@ -59,6 +60,11 @@ def registrar_callbacks_upload(app):
     @app.callback(
         Output("mensaje-importacion", "children"),
         Output("mensaje-importacion", "style"),
+        Output("upload-data", "contents"),
+        Output("input-texto", "value"),
+        Output("dropdown-wcag", "value"),
+        Output("dropdown-escala", "value"),
+        Output("input-fecha", "value"),
         Input("btn-importar", "n_clicks"),
         State("upload-data", "contents"),
         State("input-texto", "value"),
@@ -73,9 +79,9 @@ def registrar_callbacks_upload(app):
         try:
 
             if not content:
-                return "Seleccione un archivo"
+                return "Seleccione un archivo", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
-            resultado = procesar_y_guardar_archivo(
+            mensaje, estilo = procesar_y_guardar_archivo(
                 content,
                 valor_dropdown,
                 valor_wcag,
@@ -84,11 +90,11 @@ def registrar_callbacks_upload(app):
                 idioma
             )
             qr.registrar_auditoria(session.get('user'), "INSERT", "Auditoria insertada " + str(valor_dropdown))
-            return resultado
+            return mensaje, estilo, None, "", None, None, None
 
         except Exception as e:
 
-            return f"Error durante la importación: {e}"
+            return f"Error durante la importación: {e}", dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     
     @app.callback(
