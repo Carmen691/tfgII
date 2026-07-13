@@ -109,15 +109,17 @@ def registrar_callbacks_upload(app):
     )
     def textos_gestion(idioma):
 
+        t = qr.obtener_textos_seccion(idioma, "auditorias")
+
         return (
-            qr.obtener_textos_interfaz(idioma, "auditorias", "importar"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "datos"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "escala"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "fichero"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
-        )
+            t["importar"],
+            t["datos"],
+            t["fecha"],
+            t["versionwcag"],
+            t["escala"],
+            t["fichero"],
+            t["guardar"],
+)
     
 
     @app.callback(
@@ -159,44 +161,95 @@ def registrar_callbacks_upload(app):
 
     @app.callback(
         Output("btn-importar", "disabled"),
-        Input("input-texto", "n_blur"),
+        Input("input-texto", "value"),
         Input("input-fecha", "value"),
         Input("dropdown-wcag", "value"),
         Input("dropdown-escala", "value"),
         Input("upload-data", "contents"),
-        State("input-texto", "value"),
     )
-    def activar_boton_cambiar_pwd(b1, fecha, wcag, escala, fichero, texto):
+    def activar_boton_cambiar_pwd(texto, fecha, wcag, escala, fichero):
         return not (fecha and wcag and escala and fichero and texto)
     
 
 
-def procesar_y_guardar_archivo(content, valor_dropdown, valor_wcag, valor_escala, fecha, idioma):
+def procesar_y_guardar_archivo(
+    content,
+    valor_dropdown,
+    valor_wcag,
+    valor_escala,
+    fecha,
+    idioma
+):
 
     try:
-        estilo = {"color": "red", "marginTop": "10px"}
-        content_type, content_string = content.split(',')
+
+        textos = qr.obtener_textos_seccion(idioma, "importar")
+
+        estilo = {
+            "color": "red",
+            "marginTop": "10px"
+        }
+
+        _, content_string = content.split(",")
+
         decoded = base64.b64decode(content_string)
 
-        df = pd.read_excel(io.BytesIO(decoded), engine='openpyxl')
+        df = pd.read_excel(
+            io.BytesIO(decoded),
+            engine="openpyxl"
+        )
 
         columnas_limpias = [
-            col for col in df.columns if not col.startswith('Unnamed')
+            col
+            for col in df.columns
+            if not col.startswith("Unnamed")
         ]
+
         with qr.engine.begin() as conn:
-            tipo = qr.guardar_nuevo_tipo_entidad(conn, valor_dropdown, valor_escala, fecha, valor_wcag)
+
+            tipo = qr.guardar_nuevo_tipo_entidad(
+                conn,
+                valor_dropdown,
+                valor_escala,
+                fecha,
+                valor_wcag
+            )
 
             if tipo == 0:
-                return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "tipo_entidad_ko"), estilo
-            else:
-                if qr.guardar_entidades(conn, tipo, columnas_limpias) > 0:
-                    if qr.guardar_valores(conn, tipo, df) > 0:
-                        estilo = {"color": "green", "marginTop": "10px"}
-                        return '✅' + qr.obtener_textos_interfaz(idioma, "importar", "imp_auditoria_ok"), estilo
-                    else:
-                        return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "imp_auditoria_ko"), estilo
-                else:
-                    return '❌ ' + qr.obtener_textos_interfaz(idioma, "importar", "entidad_ko"), estilo
+                return (
+                    "❌ " + textos["tipo_entidad_ko"],
+                    estilo
+                )
+
+            if qr.guardar_entidades(
+                conn,
+                tipo,
+                columnas_limpias
+            ) <= 0:
+                return (
+                    "❌ " + textos["entidad_ko"],
+                    estilo
+                )
+
+            if qr.guardar_valores(
+                conn,
+                tipo,
+                df
+            ) <= 0:
+                return (
+                    "❌ " + textos["imp_auditoria_ko"],
+                    estilo
+                )
+
+            estilo = {
+                "color": "green",
+                "marginTop": "10px"
+            }
+
+            return (
+                "✅ " + textos["imp_auditoria_ok"],
+                estilo
+            )
 
     except Exception as error:
 

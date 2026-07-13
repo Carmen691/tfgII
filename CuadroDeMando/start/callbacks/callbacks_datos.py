@@ -20,7 +20,7 @@ def registrar_callbacks_datos(app):
         State('tipo-entidad-dropdown', 'value'),
         prevent_initial_call='initial_duplicate'
     )
-    def actualizar_datos(tipoEntidad):
+    def actualizar_datos(data, tipoEntidad):
         tipos = pd.DataFrame(qr.obtener_tipos_entidad()).to_dict('records')
         if tipoEntidad is None:
             return tipos[0]['id']
@@ -39,85 +39,116 @@ def registrar_callbacks_datos(app):
         State("store-fecha", "data"),
         State("store-tipo-entidad", "data")
     )
-    def cargar_tabla_datos(pathname, idioma, entidades_sql, principios_sql, versiones_sql, niveles_sql, version_aud, tipo_aud):
+    def cargar_tabla_datos(
+        pathname,
+        idioma,
+        entidades_sql,
+        principios_sql,
+        versiones_sql,
+        niveles_sql,
+        version_aud,
+        tipo_aud
+    ):
+
         if pathname != "/dash/datos":
             raise PreventUpdate
-        
-        if not entidades_sql:
-            ent_sel = None
-        else:
-            ent_sel = f"({','.join(map(str, entidades_sql))})"
 
-        if not principios_sql:
-            princ_sel = None
-        else:
-            princ_sel = f"({','.join(map(str, principios_sql))})"
-        
-        if not versiones_sql:
-            ver_sel = None
-        else:
-            ver_sel = f"({','.join(map(str, versiones_sql))})"
-        
-        if not niveles_sql:
-            niv_sel = None
-        else:
-            niv_sel = f"({','.join(map(str, niveles_sql))})" 
+        textos = qr.obtener_textos_seccion(idioma, "tabla")
+
+        ent_sel = (
+            None
+            if not entidades_sql
+            else "(" + ",".join(map(str, entidades_sql)) + ")"
+        )
+
+        princ_sel = (
+            None
+            if not principios_sql
+            else "(" + ",".join(map(str, principios_sql)) + ")"
+        )
+
+        ver_sel = (
+            None
+            if not versiones_sql
+            else "(" + ",".join(map(str, versiones_sql)) + ")"
+        )
+
+        niv_sel = (
+            None
+            if not niveles_sql
+            else "(" + ",".join(map(str, niveles_sql)) + ")"
+        )
 
         if not version_aud:
             version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
 
-        
-        id = qr.obtener_escala_tipo_auditoria(tipo_aud)[0][0]
+        id_escala = qr.obtener_escala_tipo_auditoria(tipo_aud)[0][0]
 
         datos = pd.DataFrame(
-        qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
-        columns=[
-            "id_medicion","id_principio","principio","id_entidad","entidad",
-            "id_criterio","criterio","id_descripcion","descripcion",
-            "observaciones","version"
-        ]
-    )
+            qr.obtener_datos(
+                ent_sel,
+                princ_sel,
+                ver_sel,
+                niv_sel,
+                version_aud
+            ),
+            columns=[
+                "id_medicion",
+                "id_principio",
+                "principio",
+                "id_entidad",
+                "entidad",
+                "id_criterio",
+                "criterio",
+                "id_descripcion",
+                "descripcion",
+                "observaciones",
+                "version",
+            ],
+        )
 
-        df_datos = pd.DataFrame({
-            "Id":datos["id_medicion"],
-            "Criterios": datos["criterio"],
-            "Valores": datos["id_descripcion"],
-            "Estado": datos["descripcion"],
-            "Entidades": datos["entidad"],
-        })
-
-        df_datos["Entidades"] = df_datos["Entidades"].astype(str)
-        df = df_datos.to_dict('records')
+        df = pd.DataFrame(
+            {
+                "Id": datos["id_medicion"],
+                "Criterios": datos["criterio"],
+                "Valores": datos["id_descripcion"],
+                "Estado": datos["descripcion"],
+                "Entidades": datos["entidad"].astype(str),
+            }
+        ).to_dict("records")
 
         columnas = [
             {
-                "name": qr.obtener_textos_interfaz(idioma, "tabla", "criterios"),
-                "id": "Criterios"
+                "name": textos["criterios"],
+                "id": "Criterios",
             },
             {
-                "name": qr.obtener_textos_interfaz(idioma, "tabla", "entidades"),
-                "id": "Entidades"
+                "name": textos["entidades"],
+                "id": "Entidades",
             },
             {
-                "name": qr.obtener_textos_interfaz(idioma, "tabla", "valores"),
+                "name": textos["valores"],
                 "id": "Valores",
                 "presentation": "dropdown",
-                "editable": True
-            }
+                "editable": True,
+            },
         ]
+
+        opciones = qr.obtener_opciones_cumplimiento(
+            idioma,
+            id_escala
+        )
 
         dropdown = [
             {
                 "if": {"column_id": "Valores"},
                 "options": [
                     {
-                        "label": row["descripcion"],
-                        "value": row["id_descripcion"]
+                        "label": descripcion,
+                        "value": id_descripcion,
                     }
-                    for _, row in pd.DataFrame(
-                        qr.obtener_opciones_cumplimiento(idioma, id)
-                    ).iterrows()
-                ]
+                    for id_descripcion, descripcion in opciones
+                ],
             }
         ]
 
@@ -129,9 +160,9 @@ def registrar_callbacks_datos(app):
     )
     def textos_gestion(idioma):
 
-        return (
-            qr.obtener_textos_interfaz(idioma, "auditorias", "guardar")
-        )
+        textos = qr.obtener_textos_seccion(idioma, "auditorias")
+
+        return textos["guardar"]
     
 
     @app.callback(
@@ -157,78 +188,124 @@ def registrar_callbacks_datos(app):
         State("store-tipo-entidad", "data"),
         prevent_initial_call=True
     )
-    def guardar_datos_tabla(n_clicks, datosn, idioma, entidades_sql, principios_sql, versiones_sql, niveles_sql, version_aud, tipo_aud):
-        if n_clicks > 0:
+    def guardar_datos_tabla(
+        n_clicks,
+        datosn,
+        idioma,
+        entidades_sql,
+        principios_sql,
+        versiones_sql,
+        niveles_sql,
+        version_aud,
+        tipo_aud
+    ):
 
-            if not entidades_sql:
-                ent_sel = None
-            else:
-                ent_sel = f"({','.join(map(str, entidades_sql))})"
+        if n_clicks <= 0:
+            return no_update
 
-            if not principios_sql:
-                princ_sel = None
-            else:
-                princ_sel = f"({','.join(map(str, principios_sql))})"
-            
-            if not versiones_sql:
-                ver_sel = None
-            else:
-                ver_sel = f"({','.join(map(str, versiones_sql))})"
-            
-            if not niveles_sql:
-                niv_sel = None
-            else:
-                niv_sel = f"({','.join(map(str, niveles_sql))})" 
+        textos = qr.obtener_textos_seccion(idioma, "tabla")
 
-            if not version_aud:
-                version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
+        ent_sel = (
+            None
+            if not entidades_sql
+            else "(" + ",".join(map(str, entidades_sql)) + ")"
+        )
 
-            datos = pd.DataFrame(
-                qr.obtener_datos(ent_sel, princ_sel, ver_sel, niv_sel, version_aud),
-                columns=[
-                    "id_medicion","id_principio","principio","id_entidad","entidad",
-                    "id_criterio","criterio","id_descripcion","descripcion",
-                    "observaciones","version"
-                ]
-            )
+        princ_sel = (
+            None
+            if not principios_sql
+            else "(" + ",".join(map(str, principios_sql)) + ")"
+        )
 
-            df_datos = pd.DataFrame({
-                "Id":datos["id_medicion"],
-                "Criterios": datos["criterio"],
-                "Valores": datos["id_descripcion"],
-                "Entidades": datos["entidad"],
-            })
+        ver_sel = (
+            None
+            if not versiones_sql
+            else "(" + ",".join(map(str, versiones_sql)) + ")"
+        )
 
-            df_datos["Entidades"] = df_datos["Entidades"].astype(str)
-        
-            datos_antiguos = df_datos
-            datos_nuevos = pd.DataFrame(datosn)
+        niv_sel = (
+            None
+            if not niveles_sql
+            else "(" + ",".join(map(str, niveles_sql)) + ")"
+        )
 
-            df = datos_nuevos.merge(
-                datos_antiguos,
-                on="Id",
-                suffixes=("_new", "_old")
-            )
+        if not version_aud:
+            version_aud = qr.obtener_versiones_auditoria(tipo_aud)[0][0]
 
-            cambios = df[df["Valores_new"] != df["Valores_old"]]
-
-            if cambios.empty:
-                return no_update, qr.obtener_textos_interfaz(idioma, "tabla", "guardar_vacio")
-            
-            tuplas_update = [
-                (row["Valores_new"], row["Id"])
-                for _, row in cambios.iterrows()
+        datos = pd.DataFrame(
+            qr.obtener_datos(
+                ent_sel,
+                princ_sel,
+                ver_sel,
+                niv_sel,
+                version_aud
+            ),
+            columns=[
+                "id_medicion",
+                "id_principio",
+                "principio",
+                "id_entidad",
+                "entidad",
+                "id_criterio",
+                "criterio",
+                "id_descripcion",
+                "descripcion",
+                "observaciones",
+                "version"
             ]
+        )
 
-            result = qr.actualizar_datos_mediciones(tuplas_update)
+        datos_antiguos = pd.DataFrame({
+            "Id": datos["id_medicion"],
+            "Criterios": datos["criterio"],
+            "Valores": datos["id_descripcion"],
+            "Entidades": datos["entidad"].astype(str),
+        })
 
-            if result > 0:
-                qr.registrar_auditoria(session.get('user'), 'GUARDAR_DATOS', 'Se han guardado los datos correctamente')
-                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ok"), True
-            else:
-                return qr.obtener_textos_interfaz(idioma, "tabla", "guardar_ko"), False
-        return no_update
-    
+        datos_nuevos = pd.DataFrame(datosn)
+
+        df = datos_nuevos.merge(
+            datos_antiguos,
+            on="Id",
+            suffixes=("_new", "_old")
+        )
+
+        cambios = df[
+            df["Valores_new"] != df["Valores_old"]
+        ]
+
+        if cambios.empty:
+            return no_update, textos["guardar_vacio"]
+
+        tuplas_update = [
+            (
+                row["Valores_new"],
+                row["Id"]
+            )
+            for _, row in cambios.iterrows()
+        ]
+
+        result = qr.actualizar_datos_mediciones(
+            tuplas_update
+        )
+
+        if result > 0:
+
+            qr.registrar_auditoria(
+                session.get("user"),
+                "GUARDAR_DATOS",
+                "Se han guardado los datos correctamente"
+            )
+
+            return (
+                textos["guardar_ok"],
+                True
+            )
+
+        return (
+            textos["guardar_ko"],
+            False
+        )
 
     @app.callback(
         Output("btn-guardar-tabla", "disabled"),

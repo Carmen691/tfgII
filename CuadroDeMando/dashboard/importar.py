@@ -7,12 +7,7 @@ import dash_mantine_components as dmc
 
 def layout_importar():
 
-    return dcc.Loading(
-        id="loading-importar",
-        type="circle",
-        fullscreen=False,
-
-        children=html.Div(
+    return html.Div(
 
             [
 
@@ -213,5 +208,3 @@ def layout_importar():
             className="gestion-container"
 
         )
-
-    )

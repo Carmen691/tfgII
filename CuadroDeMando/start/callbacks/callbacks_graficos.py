@@ -9,7 +9,6 @@ import data.querys as qr
 
 
 def registrar_callbacks_graficos(app):
-
     @app.callback(
         Output("nombre_medicion", "children"),
         Output("version_medicion", "children"),
@@ -17,11 +16,23 @@ def registrar_callbacks_graficos(app):
         Input("store-idioma", "data")
     )
     def cargar_tabla_datos(data, idioma):
-        nombre = qr.obtener_textos_interfaz(idioma, "menu", "cuadro_mando") + ": " + qr.obtener_tipos_entidad_por_id(data)[0][0]
-        version = qr.obtener_textos_interfaz(idioma, "auditorias", "versionwcag") + ": " + qr.obtener_version_por_id_entidad(data)[0][0]
+
+        menu = qr.obtener_textos_seccion(idioma, "menu")
+        auditorias = qr.obtener_textos_seccion(idioma, "auditorias")
+
+        nombre = (
+            menu["cuadro_mando"]
+            + ": "
+            + qr.obtener_tipos_entidad_por_id(data)[0][0]
+        )
+
+        version = (
+            auditorias["versionwcag"]
+            + ": "
+            + qr.obtener_version_por_id_entidad(data)[0][0]
+        )
 
         return nombre, version
-
 
 
 

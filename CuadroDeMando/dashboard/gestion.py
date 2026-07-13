@@ -4,12 +4,7 @@ from dash_iconify import DashIconify
 
 
 def layout_gestion():
-    return dcc.Loading(
-        id="loading-gestion",
-        type="circle",
-        fullscreen=False,
-        className='gestion-filtros',
-        children=html.Div(
+    return html.Div(
             className="gestion-container",
             children=[
 
@@ -98,5 +93,4 @@ def layout_gestion():
                 ),
 
             ],
-        ),
-    )
+        )

@@ -81,7 +81,7 @@ def obtener_numero_cumplimientos(entidades):
 def obtener_porcentaje_cumplimiento(entidades):
     num = obtener_numero_cumplimientos(entidades)
     den = obtener_numero_mediciones(entidades)
-    return round(100*(num/den), 2)
+    return round(100 * num / den, 2) if den else 0
     
 
 def obtener_usuarios():
@@ -107,24 +107,29 @@ def obtener_auditorias():
     
 def obtener_versiones_auditoria(auditoria):
     with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT
-                id AS id_version,
-                fecha
+        result = conn.execute(
+            text("""
+                SELECT id AS id_version, fecha
                 FROM versiones
-                WHERE id_tipo_entidad = {auditoria}
-            ORDER BY fecha DESC
-        """))
+                WHERE id_tipo_entidad = :auditoria
+                ORDER BY fecha DESC
+            """),
+            {"auditoria": auditoria}
+        )
         datos = result.fetchall()
         return datos
         
 def obtener_escala_tipo_auditoria(auditoria):
     with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT
-                id_escala
+        result = conn.execute(
+            text("""
+                SELECT id_escala
                 FROM versiones
-                WHERE id_tipo_entidad = {auditoria}
-            ORDER BY fecha DESC
-        """))
+                WHERE id_tipo_entidad = :auditoria
+                ORDER BY fecha DESC
+            """),
+            {"auditoria": auditoria}
+        )
         datos = result.fetchall()
         return datos
         
@@ -158,7 +163,10 @@ def eliminar_auditoria(auditoria, version):
 
 def obtener_pwd(username):
     with engine.begin() as conn:
-        result = conn.execute(text(f"Select pwd from usuarios where usuario = '{username}'"))
+        result = conn.execute(
+            text("SELECT pwd FROM usuarios WHERE usuario = :username"),
+            {"username": username}
+        )
         datos = result.fetchall()
         return datos[0][0]
     
@@ -184,14 +192,20 @@ def actualizar_password(username, passwd):
     
 def obtener_admin(username):
     with engine.begin() as conn:
-        result = conn.execute(text(f"Select es_admin from usuarios where usuario = '{username}'"))
+        result = conn.execute(
+            text("SELECT es_admin FROM usuarios WHERE usuario = :username"),
+            {"username": username}
+        )
         datos = result.fetchall()
         return datos[0][0]
 
 def existe_usuario(username):
     with engine.begin() as conn:
-        result = conn.execute(text(f"Select usuario from usuarios where usuario = '{username}'"))
-        datos = result.rowcount
+        result = conn.execute(
+            text("SELECT COUNT(*) FROM usuarios WHERE usuario = :username"),
+            {"username": username}
+        )        
+        datos = result.scalar()
         return datos
 
 
@@ -224,7 +238,7 @@ def obtener_datos(entidades, principios, versiones, niveles, version):
                     JOIN versiones_wcag v on v.id = cv.id_version"""
             
         if versiones:
-            consulta += f""" and v.id in {versiones}"""    
+            consulta += f""" and v.id = {max(versiones)}"""    
         else:
             consulta += f" AND v.id = ver.id_version"
         
@@ -316,7 +330,9 @@ def obtener_suma_cumplimiento(entidades, principios, versiones, niveles, version
         """
 
         if versiones:
-            consulta += f" AND v.id IN {max(versiones)}"
+            consulta += f" AND v.id = {max(versiones)}"
+        else:
+            consulta += f" AND v.id = ver.id_version"
 
         if version:
             consulta += f" AND ver.id = {version}"
@@ -371,7 +387,14 @@ def obtener_mapa_calor():
 
 def obtener_opciones_cumplimiento(idioma, id):
     with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT id_descripcion, descripcion FROM dashboard.escala_valores where id_escala = {id};"""))
+        result = conn.execute(
+            text("""
+                SELECT id_descripcion, descripcion
+                FROM dashboard.escala_valores
+                WHERE id_escala = :id
+            """),
+            {"id": id}
+        )
         datos = result.fetchall()
         return datos
 
@@ -390,13 +413,27 @@ def obtener_tipos_entidad():
     
 def obtener_tipos_entidad_por_id(id):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT nombre FROM tipos_entidad where id = {id}"))
+        result = conn.execute(
+            text("SELECT nombre FROM tipos_entidad WHERE id = :id"),
+            {"id": id}
+        )
         datos = result.fetchall()
         return datos
     
 def obtener_version_por_id_entidad(id):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT version FROM versiones_wcag where id = (Select id_version from versiones where id_tipo_entidad = {id})"))
+        result = conn.execute(
+            text("""
+                SELECT version
+                FROM versiones_wcag
+                WHERE id = (
+                    SELECT id_version
+                    FROM versiones
+                    WHERE id_tipo_entidad = :id
+                )
+            """),
+            {"id": id}
+        )
         datos = result.fetchall()
         return datos
 
@@ -442,7 +479,9 @@ def obtener_cumplimiento_principios(entidades, principios, versiones, niveles, v
             JOIN versiones_wcag v on v.id = cv.id_version"""
 
     if versiones:
-        sql += f" and v.id in {versiones}"
+        sql += f" and v.id = {max(versiones)}"
+    else:
+        sql += f" AND v.id = ver.id_version"
     
     if version:
         sql += f""" and ver.id = {version}"""
@@ -455,7 +494,7 @@ def obtener_cumplimiento_principios(entidades, principios, versiones, niveles, v
             LEFT JOIN traducciones ct ON c.id = ct.id_elemento 
             AND ct.tabla = 'criterios_wcag' AND ct.campo = 'nombre' 
             AND ct.id_idioma = (SELECT id FROM idiomas WHERE codigo = 'ES')
-            ORDER BY p.nombre"""
+            group by p.nombre ORDER BY p.nombre"""
 
     with engine.begin() as conn:
         result = conn.execute(text(sql))
@@ -528,12 +567,35 @@ def obtener_versiones():
         return datos
 
 def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha, version):
-    result = conn.execute(text(f"SELECT * FROM tipos_entidad where nombre = '{valor_input}'"))
+    result = conn.execute(
+        text("""
+            SELECT *
+            FROM tipos_entidad
+            WHERE nombre = :nombre
+        """),
+        {"nombre": valor_input}
+    )
     fila = result.fetchone()
     if fila:
         id_tipo = fila.id
-        result = conn.execute(text(f"""SELECT id FROM versiones
-            WHERE id_tipo_entidad = (Select id from tipos_entidad where nombre = '{valor_input}') AND fecha = '{fecha}' AND id_escala = '{valor_escala}'"""))
+        result = conn.execute(
+            text("""
+                SELECT id
+                FROM versiones
+                WHERE id_tipo_entidad = (
+                    SELECT id
+                    FROM tipos_entidad
+                    WHERE nombre = :nombre
+                )
+                AND fecha = :fecha
+                AND id_escala = :escala
+            """),
+            {
+                "nombre": valor_input,
+                "fecha": fecha,
+                "escala": valor_escala
+            }
+        )
         if result.rowcount > 0:
             return 0
         else: 
@@ -541,7 +603,7 @@ def guardar_nuevo_tipo_entidad(conn, valor_input, valor_escala, fecha, version):
             return result.lastrowid
     else:
         result = conn.execute(text(f"INSERT INTO tipos_entidad (nombre) VALUES (:valor)"), {"valor": valor_input})
-        result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala) VALUES (:id_tipo, :fecha, :escala)"""), {"id_tipo": result.lastrowid, "fecha": fecha, "escala": valor_escala})
+        result = conn.execute(text(f"""INSERT INTO versiones (id_tipo_entidad, fecha, id_escala, id_version) VALUES (:id_tipo, :fecha, :escala, :version)"""), {"id_tipo": result.lastrowid, "fecha": fecha, "escala": valor_escala, "version":version})
         return result.lastrowid
 
 def guardar_entidades(conn, id_version, columnas_limpias):
@@ -556,20 +618,45 @@ def guardar_entidades(conn, id_version, columnas_limpias):
 
 def obtener_entidades_por_id(id_version):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM entidades where id_version = {id_version}"))
+        result = conn.execute(
+            text("""
+                SELECT *
+                FROM entidades
+                WHERE id_version = :id_version
+            """),
+            {"id_version": id_version}
+        )
         datos = result.fetchall()
         return datos
 
 def obtener_entidades_por_nombre(id_tipo):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT * FROM entidades where id_version = (SELECT id from versiones where id_tipo_entidad = '{id_tipo}')"))
+        result = conn.execute(
+            text("""
+                SELECT *
+                FROM entidades
+                WHERE id_version = (
+                    SELECT id
+                    FROM versiones
+                    WHERE id_tipo_entidad = :id_tipo
+                )
+            """),
+            {"id_tipo": id_tipo}
+        )
         datos = result.fetchall()
         return datos
 
 
 def guardar_valores(conn, id_version, df):
 
-    result = conn.execute(text(f"SELECT * FROM entidades where id_version = {id_version}"))
+    result = conn.execute(
+        text("""
+            SELECT *
+            FROM entidades
+            WHERE id_version = :id_version
+        """),
+        {"id_version": id_version}
+    )
     entidades = result.fetchall()
 
     # Cargar todos los criterios una sola vez
@@ -635,15 +722,27 @@ def guardar_valores(conn, id_version, df):
 
 def obtener_criterio(codigo):
     with engine.begin() as conn:
-        result = conn.execute(text(f"SELECT id FROM dashboard.criterios_wcag where codigo = '{codigo}'"))
+        result = conn.execute(
+            text("""
+                SELECT id
+                FROM dashboard.criterios_wcag
+                WHERE codigo = :codigo
+            """),
+            {"codigo": codigo}
+        )
         dato = result.fetchone()
         return dato[0]
 
 def guardar_nuevo_usuario(usuario, passwd, admin):
     with engine.begin() as conn:
-
-        existe_usuario = text(f"SELECT COUNT(*) FROM usuarios WHERE usuario = '{usuario}'")
-        result = conn.execute(existe_usuario, {"usuario": usuario}).scalar()
+        result = conn.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM usuarios
+                WHERE usuario = :usuario
+            """),
+            {"usuario": usuario}
+        ).scalar()
 
         if admin:
             admin = 1
@@ -672,21 +771,6 @@ def eliminar_usuario(usuario):
         resultado =  conn.execute(sql, datos)
         return resultado.rowcount
 
-
-
-def obtener_textos_interfaz(idioma_codigo, seccion, clave):
-    """
-    Devuelve el texto dependiendo del idioma seleccionado
-    """
-    with engine.begin() as conn:
-        result = conn.execute(text(f"""SELECT ui.texto FROM traducciones_ui ui
-                JOIN idiomas i ON i.id = ui.id_idioma
-                WHERE i.codigo = '{idioma_codigo}' 
-                AND ui.seccion = '{seccion}' AND ui.clave = '{clave}'"""))
-        dato = result.fetchone()
-        return dato[0]
-
-        
 def actualizar_datos_mediciones(tuplas_update):
     """
     Actualiza los datos de mediciones
@@ -704,3 +788,26 @@ def actualizar_datos_mediciones(tuplas_update):
         ])
         result = result.rowcount
     return result
+
+
+def obtener_textos_seccion(idioma_codigo, seccion):
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("""
+                SELECT ui.clave, ui.texto
+                FROM traducciones_ui ui
+                JOIN idiomas i
+                    ON i.id = ui.id_idioma
+                WHERE i.codigo = :idioma
+                  AND ui.seccion = :seccion
+            """),
+            {
+                "idioma": idioma_codigo,
+                "seccion": seccion
+            }
+        )
+
+        return {
+            fila.clave: fila.texto
+            for fila in result
+        }

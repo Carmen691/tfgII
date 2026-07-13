@@ -146,16 +146,38 @@ def registrar_callbacks_admin(app):
         State("store-idioma", "data"),
     )
     def gestionar_usuarios(
-        n_borrar, n_cancelar_del, n_confirmar_del,
-        n_add, n_cancelar_add, n_confirmar_add,
-        is_open_del, is_open_add,
-        usuario_a_borrar, nuevo_usuario, nuevo_pass, es_admin, idioma
+        n_borrar,
+        n_cancelar_del,
+        n_confirmar_del,
+        n_add,
+        n_cancelar_add,
+        n_confirmar_add,
+        is_open_del,
+        is_open_add,
+        usuario_a_borrar,
+        nuevo_usuario,
+        nuevo_pass,
+        es_admin,
+        idioma,
     ):
+
+        textos = qr.obtener_textos_seccion(idioma, "usuarios")
 
         ctx = dash.callback_context
 
         if not ctx.triggered:
-            return dash.no_update, is_open_del, is_open_add, "", {"marginTop": "10px"}, "", {"marginTop": "10px"}, dash.no_update, dash.no_update, dash.no_update
+            return (
+                dash.no_update,
+                is_open_del,
+                is_open_add,
+                "",
+                {"marginTop": "10px"},
+                "",
+                {"marginTop": "10px"},
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+            )
 
         trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
@@ -163,94 +185,250 @@ def registrar_callbacks_admin(app):
         estilo = {"marginTop": "10px"}
         opciones = dash.no_update
 
+        def obtener_opciones_usuarios():
+            df = pd.DataFrame(
+                qr.obtener_usuarios(),
+                columns=["id", "usuario"]
+            )
+
+            return [
+                {
+                    "label": row["usuario"],
+                    "value": str(row["id"])
+                }
+                for _, row in df.iterrows()
+            ]
+
         try:
 
             if trigger_id == "borrar-usuario-button":
-                return dash.no_update, True, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
+                return (
+                    dash.no_update,
+                    True,
+                    is_open_add,
+                    "",
+                    estilo,
+                    "",
+                    estilo,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                )
 
             elif trigger_id == "cancelar-eliminar":
-                return dash.no_update, False, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
+                return (
+                    dash.no_update,
+                    False,
+                    is_open_add,
+                    "",
+                    estilo,
+                    "",
+                    estilo,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                )
 
             elif trigger_id == "confirmar-eliminar":
 
-                resultado = qr.eliminar_usuario(usuario_a_borrar)
+                qr.eliminar_usuario(usuario_a_borrar)
 
-                usuarios_actualizados = pd.DataFrame(
-                    qr.obtener_usuarios(),
-                    columns=["id", "usuario"]
+                opciones = obtener_opciones_usuarios()
+
+                qr.registrar_auditoria(
+                    session.get("user"),
+                    "DELETE",
+                    "Usuario " + str(usuario_a_borrar) + " eliminado"
                 )
 
-                opciones = [
-                    {
-                        "label": row["usuario"],
-                        "value": str(row["id"])
-                    }
-                    for _, row in usuarios_actualizados.iterrows()
-                ]
-
-                qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(usuario_a_borrar) + " eliminado")
-                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_eliminado_ok")
+                mensaje = "✅ " + textos["usuario_eliminado_ok"]
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, False, is_open_add, mensaje, estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
+                return (
+                    opciones,
+                    False,
+                    is_open_add,
+                    mensaje,
+                    estilo,
+                    "",
+                    estilo,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                )
 
             elif trigger_id == "add-usuario-button":
-                return dash.no_update, is_open_del, True, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
-
-            elif trigger_id == "cancelar-anadir":
-                return dash.no_update, is_open_del, False, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
-
-            elif trigger_id == "confirmar-anadir":
-                estilo = {"color": "orange", "marginTop": "10px"}
-                if len(nuevo_pass) < 7:
-                    return  dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo, dash.no_update, dash.no_update, dash.no_update
-
-                if not re.search(r"[a-z]", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo, dash.no_update, dash.no_update, dash.no_update
-
-                if not re.search(r"[A-Z]", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo, dash.no_update, dash.no_update, dash.no_update
-
-                if not re.search(r"\d", nuevo_pass):
-                    return dash.no_update, is_open_del, False, "", estilo, qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo, dash.no_update, dash.no_update, dash.no_update
-
-                resultado = qr.guardar_nuevo_usuario(nuevo_usuario, nuevo_pass, es_admin)
-
-                if resultado == 0:
-                    qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " no añadido")
-                    mensaje = "❌ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add_error")
-                    estilo = {"color": "red", "marginTop": "10px"}
-                    return dash.no_update, is_open_del, False, "", estilo, mensaje, estilo, dash.no_update, dash.no_update, dash.no_update
-
-
-                usuarios_actualizados = pd.DataFrame(
-                    qr.obtener_usuarios(),
-                    columns=["id", "usuario"]
+                return (
+                    dash.no_update,
+                    is_open_del,
+                    True,
+                    "",
+                    estilo,
+                    "",
+                    estilo,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
                 )
 
-                opciones = [
-                    {
-                        "label": row["usuario"],
-                        "value": str(row["id"])
-                    }
-                    for _, row in usuarios_actualizados.iterrows()
-                ]
+            elif trigger_id == "cancelar-anadir":
+                return (
+                    dash.no_update,
+                    is_open_del,
+                    False,
+                    "",
+                    estilo,
+                    "",
+                    estilo,
+                    dash.no_update,
+                    dash.no_update,
+                    dash.no_update,
+                )
 
-                qr.registrar_auditoria(session.get('user'), "DELETE", "Usuario " + str(nuevo_usuario) + " añadido")
-                mensaje = "✅ " + qr.obtener_textos_interfaz(idioma, "usuarios", "usuario_add")
+            elif trigger_id == "confirmar-anadir":
+
+                estilo = {"color": "orange", "marginTop": "10px"}
+
+                if len(nuevo_pass) < 7:
+                    return (
+                        dash.no_update,
+                        is_open_del,
+                        False,
+                        "",
+                        estilo,
+                        textos["pwd_min_caract"],
+                        estilo,
+                        dash.no_update,
+                        dash.no_update,
+                        dash.no_update,
+                    )
+
+                if not re.search(r"[a-z]", nuevo_pass):
+                    return (
+                        dash.no_update,
+                        is_open_del,
+                        False,
+                        "",
+                        estilo,
+                        textos["pwd_minuscula"],
+                        estilo,
+                        dash.no_update,
+                        dash.no_update,
+                        dash.no_update,
+                    )
+
+                if not re.search(r"[A-Z]", nuevo_pass):
+                    return (
+                        dash.no_update,
+                        is_open_del,
+                        False,
+                        "",
+                        estilo,
+                        textos["pwd_mayuscula"],
+                        estilo,
+                        dash.no_update,
+                        dash.no_update,
+                        dash.no_update,
+                    )
+
+                if not re.search(r"\d", nuevo_pass):
+                    return (
+                        dash.no_update,
+                        is_open_del,
+                        False,
+                        "",
+                        estilo,
+                        textos["pwd_numero"],
+                        estilo,
+                        dash.no_update,
+                        dash.no_update,
+                        dash.no_update,
+                    )
+
+                resultado = qr.guardar_nuevo_usuario(
+                    nuevo_usuario,
+                    nuevo_pass,
+                    es_admin
+                )
+
+                if resultado == 0:
+
+                    qr.registrar_auditoria(
+                        session.get("user"),
+                        "DELETE",
+                        "Usuario " + str(nuevo_usuario) + " no añadido"
+                    )
+
+                    mensaje = "❌ " + textos["usuario_add_error"]
+                    estilo = {"color": "red", "marginTop": "10px"}
+
+                    return (
+                        dash.no_update,
+                        is_open_del,
+                        False,
+                        "",
+                        estilo,
+                        mensaje,
+                        estilo,
+                        dash.no_update,
+                        dash.no_update,
+                        dash.no_update,
+                    )
+
+                opciones = obtener_opciones_usuarios()
+
+                qr.registrar_auditoria(
+                    session.get("user"),
+                    "DELETE",
+                    "Usuario " + str(nuevo_usuario) + " añadido"
+                )
+
+                mensaje = "✅ " + textos["usuario_add"]
                 estilo = {"color": "green", "marginTop": "10px"}
 
-                return opciones, is_open_del, False, "", estilo, mensaje, estilo, "", "", False
+                return (
+                    opciones,
+                    is_open_del,
+                    False,
+                    "",
+                    estilo,
+                    mensaje,
+                    estilo,
+                    "",
+                    "",
+                    False,
+                )
 
         except Exception as e:
 
-            mensaje = f"❌ Error: {e}"
+            mensaje = "❌ Error: " + str(e)
             estilo = {"color": "red", "marginTop": "10px"}
 
-            return dash.no_update, is_open_del, is_open_add, mensaje, estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
+            return (
+                dash.no_update,
+                is_open_del,
+                is_open_add,
+                mensaje,
+                estilo,
+                "",
+                estilo,
+                dash.no_update,
+                dash.no_update,
+                dash.no_update,
+            )
 
-        return dash.no_update, is_open_del, is_open_add, "", estilo, "", estilo, dash.no_update, dash.no_update, dash.no_update
-
+        return (
+            dash.no_update,
+            is_open_del,
+            is_open_add,
+            "",
+            estilo,
+            "",
+            estilo,
+            dash.no_update,
+            dash.no_update,
+            dash.no_update,
+        )
 
     # ----------------------------
     # ELIMINAR AUDITORIA
@@ -265,32 +443,66 @@ def registrar_callbacks_admin(app):
         State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def eliminar_auditoria_callback(n_clicks, auditoria_seleccionada, version_seleccionada, idioma):
+    def eliminar_auditoria_callback(
+        n_clicks,
+        auditoria_seleccionada,
+        version_seleccionada,
+        idioma
+    ):
+
+        textos = qr.obtener_textos_seccion(idioma, "auditorias")
 
         if not auditoria_seleccionada or not version_seleccionada:
-
-            return dash.no_update, "❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditorias_eliminar"), {"color": "red"}
+            return (
+                dash.no_update,
+                "❌ " + textos["auditorias_eliminar"],
+                {"color": "red"}
+            )
 
         try:
 
-            qr.eliminar_auditoria(auditoria_seleccionada, version_seleccionada)
+            qr.eliminar_auditoria(
+                auditoria_seleccionada,
+                version_seleccionada
+            )
 
             df_actualizado = pd.DataFrame(
                 qr.obtener_auditorias(),
-                columns=["id", "nombre", "idversion", "fecha"]
+                columns=[
+                    "id",
+                    "nombre",
+                    "idversion",
+                    "fecha"
+                ]
             )
 
             opciones_actualizadas = [
-                {"label": str(aud), "value": str(aud)}
+                {
+                    "label": str(aud),
+                    "value": str(aud)
+                }
                 for aud in df_actualizado["nombre"].unique()
             ]
-            qr.registrar_auditoria(session.get('user'), "DELETE", "Auditoria " + str(auditoria_seleccionada) + " eliminada")
-            return opciones_actualizadas, "✅ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ok"), {"color": "green"}
+
+            qr.registrar_auditoria(
+                session.get("user"),
+                "DELETE",
+                f"Auditoria {auditoria_seleccionada} eliminada"
+            )
+
+            return (
+                opciones_actualizadas,
+                "✅ " + textos["auditoria_eliminar_ok"],
+                {"color": "green"}
+            )
 
         except Exception as e:
 
-            return dash.no_update, "❌ " + qr.obtener_textos_interfaz(idioma, "auditorias", "auditoria_eliminar_ko") + f": {e}", {"color": "red"}
-        
+            return (
+                dash.no_update,
+                "❌ " + textos["auditoria_eliminar_ko"] + f": {e}",
+                {"color": "red"}
+            )
 
 
     @app.callback(
@@ -321,22 +533,13 @@ def registrar_callbacks_admin(app):
     )
     def textos_gestion(idioma):
 
+        t = qr.obtener_textos_seccion(idioma, "gestion")
+
         return (
-            qr.obtener_textos_interfaz(idioma, "gestion", "titulo"),
-
-            qr.obtener_textos_interfaz(idioma, "gestion", "auditorias"),
-
-            qr.obtener_textos_interfaz(idioma, "gestion", "versiones"),
-
-            [
-                html.Span(
-                    qr.obtener_textos_interfaz(
-                        idioma,
-                        "gestion",
-                        "eliminar"
-                    )
-                ),
-            ],
+            t["titulo"],
+            t["auditorias"],
+            t["versiones"],
+            [html.Span(t["eliminar"])],
         )
     
 
@@ -368,36 +571,38 @@ def registrar_callbacks_admin(app):
         Output("confirmar-password", "children"),
         Input("store-idioma", "data")
     )
-    def textos_gestion(idioma):
+    def textos_usuarios(idioma):
+
+        t = qr.obtener_textos_seccion(idioma, "usuarios")
 
         return (
-            qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar_usuarios"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "cancelar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "eliminar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "confirmacion"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "anadir_usuarios"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "anadir"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "confirmacion"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "msg_confirmacion_usu"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "cancelar"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "anadir"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "admin"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "usuario"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "passwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "cambiar_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_actual"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "nueva_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "confirmar_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_cambiar_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_confirmar_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_body_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_cancelar_pwd"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "btn_aceptar_pwd"),
+            t["eliminar_usuarios"],
+            t["eliminar"],
+            t["cancelar"],
+            t["eliminar"],
+            t["seleccionar"],
+            t["msg_confirmacion"],
+            t["confirmacion"],
+            t["anadir_usuarios"],
+            t["anadir"],
+            t["confirmacion"],
+            t["msg_confirmacion_usu"],
+            t["cancelar"],
+            t["anadir"],
+            t["admin"],
+            t["usuario"],
+            t["passwd"],
+            t["cambiar_pwd"],
+            t["pwd_actual"],
+            t["nueva_pwd"],
+            t["confirmar_pwd"],
+            t["btn_cambiar_pwd"],
+            t["btn_confirmar_pwd"],
+            t["btn_body_pwd"],
+            t["btn_cancelar_pwd"],
+            t["btn_aceptar_pwd"],
         )
-    
+        
     @app.callback(
         Output("auditorias-dropdown", "data", allow_duplicate=True),
         Input("url", "pathname"),
@@ -491,24 +696,68 @@ def registrar_callbacks_admin(app):
     def cambiar_password(n, actual, nueva, confirmar, idioma):
 
         usuario = session.get("user")
-        estilo = {"color": "orange", "marginTop": "10px"}
+
+        textos_usuario = qr.obtener_textos_seccion(idioma, "usuarios")
+        textos_sesion = qr.obtener_textos_seccion(idioma, "sesion")
+
+        estilo = {
+            "color": "orange",
+            "marginTop": "10px"
+        }
+
         if not usuario:
-            return qr.obtener_textos_interfaz(idioma, "sesion", "sesion_exp"), estilo, actual, nueva, confirmar
+            return (
+                textos_sesion["sesion_exp"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         if nueva != confirmar:
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_change"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_change"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         if len(nueva) < 7:
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_min_caract"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_min_caract"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         if not re.search(r"[a-z]", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_minuscula"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_minuscula"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         if not re.search(r"[A-Z]", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_mayuscula"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_mayuscula"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         if not re.search(r"\d", nueva):
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_numero"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_numero"],
+                estilo,
+                actual,
+                nueva,
+                confirmar
+            )
 
         passwd_guardada = qr.obtener_pwd(usuario)
 
@@ -516,8 +765,16 @@ def registrar_callbacks_admin(app):
             actual.encode(),
             passwd_guardada.encode()
         ):
-            estilo = {"color": "red", "marginTop": "10px"}
-            return qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_incorrecta"), estilo, actual, nueva, confirmar
+            return (
+                textos_usuario["pwd_incorrecta"],
+                {
+                    "color": "red",
+                    "marginTop": "10px"
+                },
+                actual,
+                nueva,
+                confirmar
+            )
 
         nueva_hash = bcrypt.hashpw(
             nueva.encode(),
@@ -528,11 +785,19 @@ def registrar_callbacks_admin(app):
             usuario,
             nueva_hash
         )
-        qr.registrar_auditoria(session.get('user'), "UPDATE", "Usuario " + str(usuario) + " actualizó su contraseña")
-        estilo = {"color": "green", "marginTop": "10px"}
+
+        qr.registrar_auditoria(
+            usuario,
+            "UPDATE",
+            "Usuario " + str(usuario) + " actualizó su contraseña"
+        )
+
         return (
-            qr.obtener_textos_interfaz(idioma, "usuarios", "pwd_actualizada"),
-            estilo,
+            textos_usuario["pwd_actualizada"],
+            {
+                "color": "green",
+                "marginTop": "10px"
+            },
             "",
             "",
             ""
@@ -558,22 +823,17 @@ def registrar_callbacks_admin(app):
 
     @app.callback(
         Output("add-usuario-button", "disabled"),
-        Input("input-usuario", "n_blur"),
-        Input("input-passwd", "n_blur"),
-        State("input-usuario", "value"),
-        State("input-passwd", "value"),
+        Input("input-usuario", "value"),
+        Input("input-passwd", "value"),
     )
-    def activar_boton_anadir_usu(b1, b2, usuario, pwd):
+    def activar_boton_anadir_usu(usuario, pwd):
         return not (usuario and pwd)
     
     @app.callback(
         Output("cambiar-password-button", "disabled"),
-        Input("input-password-actual", "n_blur"),
-        Input("input-password-nueva", "n_blur"),
-        Input("input-password-confirmar", "n_blur"),
-        State("input-password-actual", "value"),
-        State("input-password-nueva", "value"),
-        State("input-password-confirmar", "value"),
+        Input("input-password-actual", "value"),
+        Input("input-password-nueva", "value"),
+        Input("input-password-confirmar", "value"),
     )
-    def activar_boton_cambiar_pwd(b1, b2, b3, actual, nueva, confirmar):
+    def activar_boton_cambiar_pwd(actual, nueva, confirmar):
         return not (actual and nueva and confirmar)

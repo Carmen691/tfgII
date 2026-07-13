@@ -5,13 +5,7 @@ import dash_mantine_components as dmc
 
 def layout_filtros():
 
-    return dcc.Loading(
-
-        id="loading-filtros",
-
-        type="circle",
-
-        children=html.Div(
+    return html.Div(
 
             [
 
@@ -280,5 +274,3 @@ def layout_filtros():
             className="gestion-container"
 
         )
-
-    )

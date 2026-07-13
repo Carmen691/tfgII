@@ -5,12 +5,7 @@ import dash_mantine_components as dmc
 
 def layout_usuarios():
 
-    return dcc.Loading(
-        id="loading-usuarios-page",
-        type="circle",
-        fullscreen=False,
-
-        children=html.Div(
+    return html.Div(
 
             [
 
@@ -511,6 +506,4 @@ def layout_usuarios():
 
             className="usuarios-container",
 
-        ),
-
-    )
+        )

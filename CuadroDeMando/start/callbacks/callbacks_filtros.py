@@ -18,7 +18,7 @@ def registrar_callbacks_filtros(app):
     )
     def cargar_tipos_entidad(pathname, tipo_guardado):
         if pathname != "/dash/filtros":
-            raise PreventUpdate
+            return dash.no_update, dash.no_update
 
         tipos = pd.DataFrame(qr.obtener_tipos_entidad()).to_dict('records')
 
@@ -169,12 +169,13 @@ def registrar_callbacks_filtros(app):
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     @app.callback(
-        Output("principios-checklist", "children"),
+        Output("principios-checklist", "children", allow_duplicate=True),
         Output("wcag-version-checklist", "children"),
         Output("nivel-checklist", "children"),
         Input("principios-checklist", "value"),
         Input("wcag-version-checklist", "value"),
         Input("nivel-checklist", "value"),
+        prevent_initial_call=True
     )
     def actualizar_filtros_dependientes(principios_sel, wcag_sel, nivel_sel):
 
@@ -347,15 +348,19 @@ def registrar_callbacks_filtros(app):
     )
     def textos_gestion(idioma):
 
+        filtros = qr.obtener_textos_seccion(idioma, "filtros")
+        usuarios = qr.obtener_textos_seccion(idioma, "usuarios")
+        auditorias = qr.obtener_textos_seccion(idioma, "auditorias")
+
         return (
-            qr.obtener_textos_interfaz(idioma, "filtros", "tipo_entidad"),
-            qr.obtener_textos_interfaz(idioma, "usuarios", "seleccionar"),
-            qr.obtener_textos_interfaz(idioma, "auditorias", "fecha"),
-            qr.obtener_textos_interfaz(idioma, "filtros", "entidades"),
-            qr.obtener_textos_interfaz(idioma, "filtros", "principios"),
-            qr.obtener_textos_interfaz(idioma, "filtros", "version"),
-            qr.obtener_textos_interfaz(idioma, "filtros", "nivel"),
-            qr.obtener_textos_interfaz(idioma, "filtros", "actualizar")
+            filtros["tipo_entidad"],
+            usuarios["seleccionar"],
+            auditorias["fecha"],
+            filtros["entidades"],
+            filtros["principios"],
+            filtros["version"],
+            filtros["nivel"],
+            filtros["actualizar"],
         )
 
 
@@ -393,3 +398,98 @@ def registrar_callbacks_filtros(app):
 
         raise PreventUpdate
         
+
+    @app.callback(
+        Output("principios-checklist", "options"),
+        Output("principios-checklist", "value"),
+        Input("url", "pathname"),
+        State("store-principios", "data"),
+    )
+    def cargar_principios(pathname, principios_guardados):
+
+        if pathname != "/dash/filtros":
+            return dash.no_update, dash.no_update
+
+        principios = pd.DataFrame(qr.obtener_principios()).to_dict("records")
+
+        options = [
+            {"label": p["nombre"], "value": str(p["id"])}
+            for p in principios
+        ]
+
+        ids = [str(p["id"]) for p in principios]
+
+        if principios_guardados:
+            value = [v for v in map(str, principios_guardados) if v in ids]
+            if not value:
+                value = ids
+        else:
+            value = ids
+
+        return options, value
+    
+
+    @app.callback(
+        Output("wcag-version-checklist", "options"),
+        Output("wcag-version-checklist", "value"),
+        Input("url", "pathname"),
+        State("store-versiones", "data"),
+    )
+    def cargar_versiones(pathname, versiones_guardadas):
+
+        if pathname != "/dash/filtros":
+            return dash.no_update, dash.no_update
+
+        versiones = pd.DataFrame(qr.obtener_versiones()).to_dict("records")
+
+        options = [
+            {
+                "label": v["version"],
+                "value": str(v["id"])
+            }
+            for v in versiones
+        ]
+
+        ids = [str(v["id"]) for v in versiones]
+
+        if versiones_guardadas:
+            value = [v for v in map(str, versiones_guardadas) if v in ids]
+            if not value:
+                value = ids
+        else:
+            value = ids
+
+        return options, value
+
+
+    @app.callback(
+        Output("nivel-checklist", "options"),
+        Output("nivel-checklist", "value"),
+        Input("url", "pathname"),
+        State("store-niveles", "data"),
+    )
+    def cargar_niveles(pathname, niveles_guardados):
+
+        if pathname != "/dash/filtros":
+            return dash.no_update, dash.no_update
+
+        niveles = pd.DataFrame(qr.obtener_niveles()).to_dict("records")
+
+        options = [
+            {
+                "label": n["nombre"],
+                "value": str(n["id"])
+            }
+            for n in niveles
+        ]
+
+        ids = [str(n["id"]) for n in niveles]
+
+        if niveles_guardados:
+            value = [v for v in map(str, niveles_guardados) if v in ids]
+            if not value:
+                value = ids
+        else:
+            value = ids
+
+        return options, value

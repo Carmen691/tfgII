@@ -5,15 +5,7 @@ from dash_iconify import DashIconify
 
 def layout_datos():
 
-    return dcc.Loading(
-
-        id="loading-datos",
-
-        type="circle",
-
-        fullscreen=False,
-
-        children=html.Div(
+    return html.Div(
 
             [
 
@@ -205,5 +197,3 @@ def layout_datos():
             className="gestion-container"
 
         )
-
-    )
