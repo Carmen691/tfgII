@@ -47,7 +47,35 @@ def registrar_callbacks_routing(app):
             return layout_importar()
 
         return html.H2("Página no encontrada")
+        
+    @app.callback(
+        Output("loading-overlay", "className", allow_duplicate=True),
+        Output("hide-loading", "disabled"),
+        Input("hide-loading", "n_intervals"),
+        prevent_initial_call=True
+    )
+    def ocultar_loading(n):
+        if n == 1:
+            return "loading-overlay hidden", True
+        raise PreventUpdate
     
+    @app.callback(
+        Output("loading-overlay", "className", allow_duplicate=True),
+        Input("url", "pathname"),
+        prevent_initial_call=True
+    )
+    def mostrar_loading(_):
+        return "loading-overlay"
+    
+    @app.callback(
+        Output("hide-loading", "disabled"),
+        Output("hide-loading", "n_intervals"),
+        Input("url", "pathname"),
+        prevent_initial_call=True
+    )
+    def iniciar_temporizador(_):
+        return False, 0
+
 
     @app.callback(
         Output("store-idioma", "data"),

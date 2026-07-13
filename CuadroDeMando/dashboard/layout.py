@@ -259,6 +259,48 @@ def crear_layout():
 
                     ),
 
+                    #############
+                    ## CARGAR  ##
+                    #############
+                    dcc.Interval(
+                        id="hide-loading",
+                        interval=5000,   # 1 segundos
+                        n_intervals=0,
+                        max_intervals=1
+                    ),
+                    html.Div(
+
+                        id="loading-overlay",
+
+                        className="loading-overlay",
+
+                        children=[
+
+                            html.Div(
+
+                                [
+
+                                    dmc.Loader(
+                                        color="blue",
+                                        size="lg",
+                                        type="dots"
+                                    ),
+
+                                    html.Div(
+                                        "Cargando...",
+                                        className="loading-text"
+                                    )
+
+                                ],
+
+                                className="loading-content"
+
+                            )
+
+                        ]
+
+                    ),
+
                     # =============================================
                     # CONTENT
                     # =============================================
