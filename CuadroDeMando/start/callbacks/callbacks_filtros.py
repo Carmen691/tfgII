@@ -154,6 +154,8 @@ def registrar_callbacks_filtros(app):
         Output('store-versiones', 'data'),
         Output('store-niveles', 'data'),
         Output('store-fecha', 'data'),
+        Output("mensaje-filtros", "children"),
+        Output("mensaje-filtros", "style"),
         Input('boton-actualizar', 'n_clicks'),
         State('tipo-entidad-dropdown', 'value'),
         State('entidad-dropdown', 'value'),
@@ -161,12 +163,14 @@ def registrar_callbacks_filtros(app):
         State('wcag-version-checklist', 'value'),
         State('nivel-checklist', 'value'),
         State('version-auditoria-dropdown', 'value'),
+        State("store-idioma", "data"),
         prevent_initial_call=True
     )
-    def actualizar_filtros(n, tipo, entidades, principios, versiones, niveles, fecha):
+    def actualizar_filtros(n, tipo, entidades, principios, versiones, niveles, fecha, idioma):
         if n > 0:
-            return entidades, tipo, principios, versiones, niveles, fecha
-        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+            textos = qr.obtener_textos_seccion(idioma, "filtros")
+            return entidades, tipo, principios, versiones, niveles, fecha, textos["filtros_seleccionados"], {"color": "green"}
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     @app.callback(
         Output("principios-checklist", "children", allow_duplicate=True),
@@ -334,16 +338,19 @@ def registrar_callbacks_filtros(app):
 
         return opciones, opciones[0]["value"]
     
-
     @app.callback(
         Output("tipo_entidad", "children"),
         Output("tipo-entidad-dropdown", "placeholder"),
         Output("fecha_wcag", "children"),
+        Output("escala_visualizacion", "children"),
         Output("entidades", "children"),
         Output("principios_wcag", "children"),
         Output("version_wcag", "children"),
         Output("nivel", "children"),
         Output("boton-actualizar", "children"),
+        Output("txt-deseleccionar", "children"),
+        Output("txt-seleccionar-todas", "children"),
+        Output("titulo-filtros", "children"),
         Input("store-idioma", "data")
     )
     def textos_gestion(idioma):
@@ -356,11 +363,15 @@ def registrar_callbacks_filtros(app):
             filtros["tipo_entidad"],
             usuarios["seleccionar"],
             auditorias["fecha"],
+            filtros["escala_visualizacion"],
             filtros["entidades"],
             filtros["principios"],
             filtros["version"],
             filtros["nivel"],
             filtros["actualizar"],
+            filtros["deseleccionar"],
+            filtros["seleccionar_todo"],
+            filtros["titulo_filtros"]
         )
 
 
@@ -493,3 +504,17 @@ def registrar_callbacks_filtros(app):
             value = ids
 
         return options, value
+    
+
+    @app.callback(
+        Output("div-escala-visualizacion", "style"),
+        Input("tipo-entidad-dropdown", "value")
+    )
+    def mostrar_escala(tipo_entidad):
+
+        escala = qr.obtener_escala_tipo_auditoria(tipo_entidad)[0][0]
+
+        if escala == 1:   # Likert 5
+            return {"display": "block"}
+
+        return {"display": "none"}

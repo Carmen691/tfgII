@@ -56,34 +56,27 @@ def layout_datos():
                         "textAlign": "left",
                         "whiteSpace": "normal",
                         "padding": "10px 16px",
-                        "height": "64px",
-                        "minHeight": "64px",
+                         "height": "auto",
                         "verticalAlign": "middle",
 
                     },
 
                     style_data_conditional=[
+                        # Celda activa (cuando haces clic)
                         {
                             "if": {"state": "active"},
-                            "backgroundColor": "#eff6ff",
-                            "border": "1px solid #93c5fd",
-                             "height": "72px",
+                            "backgroundColor": "inherit",
+                            "border": "none",
                         },
 
+                        # Celda seleccionada
                         {
                             "if": {"state": "selected"},
-                            "backgroundColor": "#dbeafe",
-                             "height": "72px",
+                            "backgroundColor": "inherit",
+                            "border": "none",
                         },
 
-                        # Hover
-                        {
-                            "if": {"state": "active"},
-                            "backgroundColor": "#eff6ff",
-                            "border": "1px solid #93c5fd",
-                        },
-
-                        # Conseguido
+                        # Totalmente conseguido
                         {
                             "if": {
                                 "filter_query": '{Estado} = "Totalmente conseguido"'
@@ -91,7 +84,7 @@ def layout_datos():
                             "backgroundColor": "#c5f9e0",
                         },
 
-                        # Parcialmente conseguido
+                        # Ampliamente conseguido
                         {
                             "if": {
                                 "filter_query": '{Estado} = "Ampliamente conseguido"'
@@ -99,7 +92,7 @@ def layout_datos():
                             "backgroundColor": "#d9fbeb",
                         },
 
-                        # No conseguido
+                        # No aplicable
                         {
                             "if": {
                                 "filter_query": '{Estado} = "No aplicable"'
@@ -107,7 +100,7 @@ def layout_datos():
                             "backgroundColor": "#fffbeb",
                         },
 
-                        # No aplicable
+                        # Parcialmente conseguido
                         {
                             "if": {
                                 "filter_query": '{Estado} = "Parcialmente conseguido"'
@@ -115,32 +108,12 @@ def layout_datos():
                             "backgroundColor": "#f7dec5",
                         },
 
+                        # No conseguido
                         {
                             "if": {
                                 "filter_query": '{Estado} = "No conseguido"'
                             },
                             "backgroundColor": "#f7c3c3",
-                        },
-
-
-                    ],
-
-                    style_cell_conditional=[
-
-                        {
-                            "if": {"column_id": "Criterios"},
-                            "width": "55%",
-                        },
-
-                        {
-                            "if": {"column_id": "Entidades"},
-                            "width": "15%",
-                            "textAlign": "center",
-                        },
-
-                        {
-                            "if": {"column_id": "Valores"},
-                            "width": "30%",
                         },
 
                     ],

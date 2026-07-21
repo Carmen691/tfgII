@@ -92,5 +92,53 @@ def layout_gestion():
                     className="gestion-mensaje"
                 ),
 
+                dmc.Modal(
+                    id="modal-confirmacion-auditoria",
+                    opened=False,
+                    centered=True,
+                    withCloseButton=False,
+                    title=html.Div(
+                        [
+                            DashIconify(
+                                icon="tabler:alert-triangle",
+                                width=22,
+                                color="#dc2626"
+                            ),
+                            html.Span(
+                                id="titulo-modal-auditoria",
+                                style={"marginLeft": "10px"}
+                            ),
+                        ],
+                        className="modal-header-custom",
+                    ),
+                    children=[
+                        html.P(
+                            id="texto-modal-auditoria"
+                        ),
+
+                        html.Div(
+                            [
+                                dmc.Button(
+                                    id="cancelar-auditoria",
+                                    variant="default",
+                                    color="gray",
+                                    radius="md",
+                                ),
+
+                                dmc.Button(
+                                    id="confirmar-auditoria",
+                                    color="red",
+                                    radius="md",
+                                    leftSection=DashIconify(
+                                        icon="tabler:trash",
+                                        width=16
+                                    ),
+                                ),
+                            ],
+                            className="modal-footer-custom",
+                        ),
+                    ],
+                )
+
             ],
         )

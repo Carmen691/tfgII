@@ -43,7 +43,6 @@ def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
     return redirect('/dash')
-    #return render_template('dashboard.html', username=session['user'])
 
 
 @application.route('/logout')
@@ -54,4 +53,5 @@ def logout():
 
 
 if __name__ == '__main__':
+    
     application.run(debug=True)

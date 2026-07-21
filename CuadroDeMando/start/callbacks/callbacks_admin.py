@@ -130,7 +130,7 @@ def registrar_callbacks_admin(app):
         Output("mensaje-usuario-anadir", "style"),
         Output("input-usuario", "value"),
         Output("input-passwd", "value"),
-        Output("check-admin", "value"),
+        Output("check-admin", "checked"),
         Input("borrar-usuario-button", "n_clicks"),
         Input("cancelar-eliminar", "n_clicks"),
         Input("confirmar-eliminar", "n_clicks"),
@@ -142,7 +142,7 @@ def registrar_callbacks_admin(app):
         State("usuarios-dropdown", "value"),
         State("input-usuario", "value"),
         State("input-passwd", "value"),
-        State("check-admin", "value"),
+        State("check-admin", "checked"),
         State("store-idioma", "data"),
     )
     def gestionar_usuarios(
@@ -187,7 +187,7 @@ def registrar_callbacks_admin(app):
 
         def obtener_opciones_usuarios():
             df = pd.DataFrame(
-                qr.obtener_usuarios(),
+                qr.obtener_usuarios_sin_actual(),
                 columns=["id", "usuario"]
             )
 
@@ -435,16 +435,23 @@ def registrar_callbacks_admin(app):
     # ----------------------------
     @app.callback(
         Output("auditorias-dropdown", "data"),
+        Output("modal-confirmacion-auditoria", "opened"),
         Output("mensaje-auditoria", "children"),
         Output("mensaje-auditoria", "style"),
         Input("borrar-auditoria-button", "n_clicks"),
+        Input("cancelar-auditoria", "n_clicks"),
+        Input("confirmar-auditoria", "n_clicks"),
+        State("modal-confirmacion-auditoria", "opened"),
         State("auditorias-dropdown", "value"),
         State("versiones-dropdown", "value"),
         State("store-idioma", "data"),
         prevent_initial_call=True
     )
     def eliminar_auditoria_callback(
-        n_clicks,
+        n_borrar,
+        n_cancelar,
+        n_confirmar,
+        modal_abierto,
         auditoria_seleccionada,
         version_seleccionada,
         idioma
@@ -452,58 +459,87 @@ def registrar_callbacks_admin(app):
 
         textos = qr.obtener_textos_seccion(idioma, "auditorias")
 
-        if not auditoria_seleccionada or not version_seleccionada:
+        ctx = callback_context
+
+        if not ctx.triggered:
+            raise PreventUpdate
+
+        trigger = ctx.triggered[0]["prop_id"].split(".")[0]
+
+        if trigger == "borrar-auditoria-button":
             return (
                 dash.no_update,
-                "❌ " + textos["auditorias_eliminar"],
-                {"color": "red"}
+                True,
+                "",
+                {}
             )
 
-        try:
-
-            qr.eliminar_auditoria(
-                auditoria_seleccionada,
-                version_seleccionada
+        if trigger == "cancelar-auditoria":
+            return (
+                dash.no_update,
+                False,
+                "",
+                {}
             )
 
-            df_actualizado = pd.DataFrame(
-                qr.obtener_auditorias(),
-                columns=[
-                    "id",
-                    "nombre",
-                    "idversion",
-                    "fecha"
+        if trigger == "confirmar-auditoria":
+
+            if not auditoria_seleccionada or not version_seleccionada:
+                return (
+                    dash.no_update,
+                    False,
+                    textos["auditorias_eliminar"],
+                    {"color": "orange"}
+                )
+
+            try:
+
+                qr.eliminar_auditoria(
+                    auditoria_seleccionada,
+                    version_seleccionada
+                )
+
+                df = pd.DataFrame(
+                    qr.obtener_auditorias(),
+                    columns=[
+                        "id",
+                        "nombre",
+                        "idversion",
+                        "fecha"
+                    ]
+                )
+
+                opciones = [
+                    {
+                        "label": row["nombre"],
+                        "value": str(row["id"])
+                    }
+                    for _, row in df.drop_duplicates(subset=["id"]).iterrows()
                 ]
-            )
 
-            opciones_actualizadas = [
-                {
-                    "label": str(aud),
-                    "value": str(aud)
-                }
-                for aud in df_actualizado["nombre"].unique()
-            ]
+                qr.registrar_auditoria(
+                    session.get("user"),
+                    "DELETE",
+                    f"Auditoria {auditoria_seleccionada} eliminada"
+                )
 
-            qr.registrar_auditoria(
-                session.get("user"),
-                "DELETE",
-                f"Auditoria {auditoria_seleccionada} eliminada"
-            )
+                return (
+                    opciones,
+                    False,
+                    textos["auditoria_eliminar_ok"],
+                    {"color": "green"}
+                )
 
-            return (
-                opciones_actualizadas,
-                "✅ " + textos["auditoria_eliminar_ok"],
-                {"color": "green"}
-            )
+            except Exception as e:
 
-        except Exception as e:
+                return (
+                    dash.no_update,
+                    False,
+                    textos["auditoria_eliminar_ko"] + ": " + str(e),
+                    {"color": "red"}
+                )
 
-            return (
-                dash.no_update,
-                "❌ " + textos["auditoria_eliminar_ko"] + f": {e}",
-                {"color": "red"}
-            )
-
+        raise PreventUpdate
 
     @app.callback(
         Output("usuarios-dropdown", "data", allow_duplicate=True),
@@ -515,7 +551,7 @@ def registrar_callbacks_admin(app):
         if pathname != "/dash/administracion/usuarios":
             raise PreventUpdate
 
-        usuarios = qr.obtener_usuarios()
+        usuarios = qr.obtener_usuarios_sin_actual()
 
         df = pd.DataFrame(usuarios)
 
@@ -529,6 +565,10 @@ def registrar_callbacks_admin(app):
         Output("versiones-dropdown", "placeholder"),
         Output("auditorias-dropdown", "placeholder"),
         Output("borrar-auditoria-button", "children"),
+        Output("titulo-modal-auditoria", "children"),
+        Output("texto-modal-auditoria", "children"),
+        Output("cancelar-auditoria", "children"),
+        Output("confirmar-auditoria", "children"),
         Input("store-idioma", "data")
     )
     def textos_gestion(idioma):
@@ -540,6 +580,10 @@ def registrar_callbacks_admin(app):
             t["auditorias"],
             t["versiones"],
             [html.Span(t["eliminar"])],
+            t["confirmacion"],
+            t["msg_confirmacion"],
+            t["cancelar"],
+            t["eliminar"],
         )
     
 
@@ -600,7 +644,7 @@ def registrar_callbacks_admin(app):
             t["btn_confirmar_pwd"],
             t["btn_body_pwd"],
             t["btn_cancelar_pwd"],
-            t["btn_aceptar_pwd"],
+            t["btn_aceptar_pwd"]
         )
         
     @app.callback(
@@ -681,15 +725,15 @@ def registrar_callbacks_admin(app):
         return not is_open
 
     @app.callback(
-        Output("mensaje-password","children"),
+        Output("mensaje-password", "children"),
         Output("mensaje-password", "style"),
-        Output("input-password-actual","value"),
-        Output("input-password-nueva","value"),
-        Output("input-password-confirmar","value"),
-        Input("confirmar-password","n_clicks"),
-        State("input-password-actual","value"),
-        State("input-password-nueva","value"),
-        State("input-password-confirmar","value"),
+        Output("input-password-actual", "value"),
+        Output("input-password-nueva", "value"),
+        Output("input-password-confirmar", "value"),
+        Input("confirmar-password", "n_clicks"),
+        State("input-password-actual", "value"),
+        State("input-password-nueva", "value"),
+        State("input-password-confirmar", "value"),
         State("store-idioma", "data"),
         prevent_initial_call=True
     )
@@ -700,15 +744,10 @@ def registrar_callbacks_admin(app):
         textos_usuario = qr.obtener_textos_seccion(idioma, "usuarios")
         textos_sesion = qr.obtener_textos_seccion(idioma, "sesion")
 
-        estilo = {
-            "color": "orange",
-            "marginTop": "10px"
-        }
-
         if not usuario:
             return (
                 textos_sesion["sesion_exp"],
-                estilo,
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -717,7 +756,7 @@ def registrar_callbacks_admin(app):
         if nueva != confirmar:
             return (
                 textos_usuario["pwd_change"],
-                estilo,
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -726,7 +765,16 @@ def registrar_callbacks_admin(app):
         if len(nueva) < 7:
             return (
                 textos_usuario["pwd_min_caract"],
-                estilo,
+                {"color": "orange"},
+                actual,
+                nueva,
+                confirmar
+            )
+
+        if actual == nueva:
+            return (
+                textos_usuario["pwd_coinciden"],
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -735,7 +783,7 @@ def registrar_callbacks_admin(app):
         if not re.search(r"[a-z]", nueva):
             return (
                 textos_usuario["pwd_minuscula"],
-                estilo,
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -744,7 +792,7 @@ def registrar_callbacks_admin(app):
         if not re.search(r"[A-Z]", nueva):
             return (
                 textos_usuario["pwd_mayuscula"],
-                estilo,
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -753,7 +801,7 @@ def registrar_callbacks_admin(app):
         if not re.search(r"\d", nueva):
             return (
                 textos_usuario["pwd_numero"],
-                estilo,
+                {"color": "orange"},
                 actual,
                 nueva,
                 confirmar
@@ -767,10 +815,7 @@ def registrar_callbacks_admin(app):
         ):
             return (
                 textos_usuario["pwd_incorrecta"],
-                {
-                    "color": "red",
-                    "marginTop": "10px"
-                },
+                {"color": "red"},
                 actual,
                 nueva,
                 confirmar
@@ -789,20 +834,16 @@ def registrar_callbacks_admin(app):
         qr.registrar_auditoria(
             usuario,
             "UPDATE",
-            "Usuario " + str(usuario) + " actualizó su contraseña"
+            f"Usuario {usuario} actualizó su contraseña"
         )
 
         return (
             textos_usuario["pwd_actualizada"],
-            {
-                "color": "green",
-                "marginTop": "10px"
-            },
+            {"color": "green"},
             "",
             "",
             ""
         )
-    
 
     @app.callback(
         Output("borrar-auditoria-button", "disabled"),

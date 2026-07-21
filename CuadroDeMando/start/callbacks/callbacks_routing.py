@@ -94,6 +94,8 @@ def registrar_callbacks_routing(app):
         Output("link-usuarios", "children"),
         Output("link-auditorias", "children"),
         Output("logout-button", "children"),
+        Output("titulo-dash", "children"),
+        Output("cargando", "children"),
         Input("store-idioma", "data")
     )
     def actualizar_textos_menu(idioma):
@@ -122,6 +124,8 @@ def registrar_callbacks_routing(app):
             item("tabler:users", textos["usuarios"]),
             item("tabler:file-description", textos["gestion_auditorias"]),
             item("tabler:logout", textos["cerrar_sesion"]),
+            textos["titulo_dash"],
+            textos["cargando"]
         )
 
 

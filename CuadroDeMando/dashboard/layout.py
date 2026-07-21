@@ -95,7 +95,7 @@ def crear_layout():
                                     [
 
                                         html.Div(
-                                            "Audit Dashboard",
+                                            id='titulo-dash',
                                             className="header-title"
                                         ),
 
@@ -264,7 +264,7 @@ def crear_layout():
                     #############
                     dcc.Interval(
                         id="hide-loading",
-                        interval=5000,   # 1 segundos
+                        interval=3000,   # 1 segundos
                         n_intervals=0,
                         max_intervals=1
                     ),
@@ -287,7 +287,7 @@ def crear_layout():
                                     ),
 
                                     html.Div(
-                                        "Cargando...",
+                                        id='cargando',
                                         className="loading-text"
                                     )
 

@@ -1,11 +1,23 @@
-import dash
 from dash import Input, Output, State
 from dash import html
 from dash.exceptions import PreventUpdate
 import plotly.express as px
 import pandas as pd
 import data.querys as qr
+import plotly.express as px
+import pandas as pd
 
+COLOR_ESTADOS = {
+    "No conseguido": "#efb4b4",
+    "Parcialmente conseguido": "#f4d5b4",
+    "No aplicable": "#fef6d6",
+    "Ampliamente conseguido": "#cdeedb",
+    "Totalmente conseguido": "#b4e8cf",
+}
+COLORES = {
+    "texto": "#334155",
+    "grid": "#E5E7EB",
+}
 
 
 def registrar_callbacks_graficos(app):
@@ -46,6 +58,7 @@ def registrar_callbacks_graficos(app):
         Output("grafico-heat", "figure"),
         Output("grafico-problematicos", "figure"),
         Input("url", "pathname"),
+        Input('store-idioma', 'data'),
         State("store-entidad", "data"),
         State("store-principios", "data"),
         State("store-versiones", "data"),
@@ -54,7 +67,7 @@ def registrar_callbacks_graficos(app):
         State("store-tipo-entidad", "data"),
         prevent_initial_call=False
     )
-    def actualizar_graficos(pathname, entidades, principios, versiones, niveles, fecha, tipo_aud):
+    def actualizar_graficos(pathname, idioma, entidades, principios, versiones, niveles, fecha, tipo_aud):
         if pathname != "/dash/cuadroMando":
             raise PreventUpdate
         
@@ -101,13 +114,16 @@ def registrar_callbacks_graficos(app):
         suma_cumplimiento, columnas = qr.obtener_suma_cumplimiento(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha)
         porcentaje_cumplimiento = pd.DataFrame(suma_cumplimiento, 
                                             columns = columnas)
+        
+        graficos = qr.obtener_textos_seccion(idioma, "graficos")
+
         renombrar = {
             "principio": "Principio",
-            "no_conseguido": "No Conseguido",
-            "parcialmente_conseguido": "Parcialmente Conseguido",
-            "no_aplicable": "No Aplicable",
-            "ampliamente_conseguido": "Ampliamente Conseguido",
-            "totalmente_conseguido": "Totalmente Conseguido"
+            "no_conseguido": "No conseguido",
+            "parcialmente_conseguido": "Parcialmente conseguido",
+            "no_aplicable": "No aplicable",
+            "ampliamente_conseguido": "Ampliamente conseguido",
+            "totalmente_conseguido": "Totalmente conseguido"
         }
 
         df_porcentajes = porcentaje_cumplimiento.rename(columns=renombrar)
@@ -135,9 +151,10 @@ def registrar_callbacks_graficos(app):
             x="Porcentaje",
             y="Principio",
             color="Estado",
+            color_discrete_map=COLOR_ESTADOS,
             orientation="h",
             text="Porcentaje",
-            title="Porcentaje por principios"
+            title=graficos["titulo_principios"]
         )
 
         fig1.update_traces(
@@ -146,12 +163,14 @@ def registrar_callbacks_graficos(app):
 
         fig1.update_layout(
             barmode="stack",
-            xaxis_title="% de cumplimiento",
+            xaxis_title=graficos["porcentaje_cumplimiento"],
             yaxis_title="",
-            legend_title="Estado",
+            legend_title=graficos["estado"],
             xaxis_range=[0, 100],
-            height=450)
+            height=450
+        )
         
+        fig1 = aplicar_estilo(fig1)
 
         datos_por_niveles = qr.obtener_cumplimiento_niveles(entidades_sql, principios_sql, versiones_sql, niveles_sql, fecha)
         df_niveles = pd.DataFrame(datos_por_niveles)
@@ -171,22 +190,25 @@ def registrar_callbacks_graficos(app):
             x="nombre",
             y="porcentaje",
             text="porcentaje",
-            title="Porcentaje de cumplimiento por niveles WCAG"
+            title=graficos["titulo_niveles"]
         )
 
         # Mejoras visuales
         fig2.update_traces(
             texttemplate='%{text:.2f}%',
-            textposition='outside'
+            textposition='outside',
+            marker_color="#cdeedb"
         )
 
         fig2.update_layout(
-            yaxis_title="% Cumplimiento",
-            xaxis_title="Nivel WCAG",
+            yaxis_title=graficos["porcentaje_cumplimiento"],
+            xaxis_title=graficos["nivel_wcag"],
             yaxis_range=[0, 100],
             height=400,
             margin=dict(l=20, r=20, t=50, b=20)
         )
+
+        fig2 = aplicar_estilo(fig2)
 
         df_ent = pd.DataFrame(df_datos)
 
@@ -204,12 +226,13 @@ def registrar_callbacks_graficos(app):
             y="Entidades",
             orientation="h",
             text="Porcentaje",
-            title="Porcentaje de cumplimiento por entidad"
+            title=graficos["titulo_entidades"]
         )
 
         fig3.update_traces(
             texttemplate='%{text:.1f}%',
-            textposition='outside'
+            textposition='outside',
+            marker_color="#93c5fd"
         )
 
         fig3.update_layout(
@@ -228,7 +251,7 @@ def registrar_callbacks_graficos(app):
                     yanchor="top",
                     buttons=[
                         dict(
-                            label="Top 10",
+                            label=graficos["top10"],
                             method="update",
                             args=[
                                 {
@@ -242,7 +265,7 @@ def registrar_callbacks_graficos(app):
                             ]
                         ),
                         dict(
-                            label="Bottom 10",
+                            label=graficos["bottom10"],
                             method="update",
                             args=[
                                 {
@@ -256,7 +279,7 @@ def registrar_callbacks_graficos(app):
                             ]
                         ),
                         dict(
-                            label="Todos",
+                            label=graficos["todos"],
                             method="update",
                             args=[
                                 {
@@ -274,22 +297,24 @@ def registrar_callbacks_graficos(app):
             ]
         )
 
+        fig3 = aplicar_estilo(fig3)
+
         datos_niveles =  {fila[0]: fila[1] for fila in datos_por_niveles}
 
         est = [
-            html.H4("% Por niveles"),
+            html.H4(graficos["por_niveles"]),
             html.P(f"A: {round(datos_niveles.get('A', 0), 2)}%"),
             html.P(f"AA: {round(datos_niveles.get('AA', 0), 2)}%"),
             html.P(f"AAA: {round(datos_niveles.get('AAA', 0), 2)}%"),
         ]
 
         datos_wcag = html.Div([
-            html.H4("DATOS WCAG"),
-            html.P(f"Total Entidades: {qr.obtener_numero_entidades(entidades_sql)}"),
-            html.P(f"Total Mediciones: {qr.obtener_numero_mediciones(entidades_sql)}"),
-            html.P(f"Cumplimientos: {qr.obtener_numero_cumplimientos(entidades_sql)}"),
+            html.H4(graficos["datos_wcag"]),
+            html.P(f"{graficos['total_entidades']}: {qr.obtener_numero_entidades(entidades_sql)}"),
+            html.P(f"{graficos['total_mediciones']}: {qr.obtener_numero_mediciones(entidades_sql)}"),
+            html.P(f"{graficos['cumplimientos']}: {qr.obtener_numero_cumplimientos(entidades_sql)}"),
             html.P(
-                f"Porcentaje Cumplimiento: "
+                f"{graficos['porcentaje_cumplimiento_kpi']}: "
                 f"{qr.obtener_porcentaje_cumplimiento(entidades_sql)} %"
             )
         ])
@@ -299,11 +324,11 @@ def registrar_callbacks_graficos(app):
         datos_principios = {fila[0]: fila[1] for fila in datos_lista_principios}
 
         cumplimiento = [
-            html.H4("% Cumplimiento"),
-            html.P(f"Operable: {round(datos_principios.get('Operable', 0), 2)}%"),
-            html.P(f"Comprensible: {round(datos_principios.get('Understandable', 0), 2)}%"),
-            html.P(f"Robusto: {round(datos_principios.get('Robust', 0), 2)}%"),
-            html.P(f"Perceptible: {round(datos_principios.get('Perceivable', 0), 2)}%"),
+            html.H4(graficos["cumplimiento"]),
+            html.P(f"{graficos['operable']}: {round(datos_principios.get('Operable', 0), 2)}%"),
+            html.P(f"{graficos['comprensible']}: {round(datos_principios.get('Understandable', 0), 2)}%"),
+            html.P(f"{graficos['robusto']}: {round(datos_principios.get('Robust', 0), 2)}%"),
+            html.P(f"{graficos['perceptible']}: {round(datos_principios.get('Perceivable', 0), 2)}%"),
         ]
 
 
@@ -317,8 +342,13 @@ def registrar_callbacks_graficos(app):
             x="Principios",
             y="Entidades",
             z="Porcentaje",
-            color_continuous_scale="Blues",
-            title="Heatmap de cumplimiento (Entidad vs Principio)"
+            color_continuous_scale=[
+                "#f8fafc",
+                "#cbd5e1",
+                "#94a3b8",
+                "#3b82f6"
+            ],
+            title=graficos["titulo_heatmap"]
         )
 
         fig_heat.update_layout(
@@ -336,7 +366,7 @@ def registrar_callbacks_graficos(app):
 
                     buttons=[
                         dict(
-                            label="Top 10",
+                            label=graficos["top10"],
                             method="update",
                             args=[
                                 {
@@ -348,7 +378,7 @@ def registrar_callbacks_graficos(app):
                         ),
 
                         dict(
-                            label="Bottom 10",
+                            label=graficos["bottom10"],
                             method="update",
                             args=[
                                 {
@@ -360,7 +390,7 @@ def registrar_callbacks_graficos(app):
                         ),
 
                         dict(
-                            label="Todos",
+                            label=graficos["todos"],
                             method="update",
                             args=[
                                 {
@@ -374,6 +404,8 @@ def registrar_callbacks_graficos(app):
                 )
             ]
         )
+
+        fig_heat = aplicar_estilo(fig_heat)
 
        # Fig 4
 
@@ -396,7 +428,8 @@ def registrar_callbacks_graficos(app):
             orientation="h",
             text="Porcentaje",
             color="Estado",
-            title="Distribución de estados"
+            title=graficos["titulo_estados"],
+            color_discrete_map=COLOR_ESTADOS
         )
 
         fig4.update_traces(
@@ -407,10 +440,12 @@ def registrar_callbacks_graficos(app):
         fig4.update_layout(
             showlegend=False,
             xaxis_range=[0, 100],
-            xaxis_title="% del total",
+            xaxis_title=graficos["porcentaje_total"],
             yaxis_title="",
             height=400
         )
+
+        fig4 = aplicar_estilo(fig4)
 
         return fig1, fig2, fig3, est, datos_wcag, cumplimiento, fig_heat, fig4
     
@@ -494,3 +529,46 @@ def preparar_heatmap(df, modo="top", n=10):
         entidades = df["Entidades"].unique()
 
     return df[df["Entidades"].isin(entidades)]
+
+
+
+
+def aplicar_estilo(fig):
+
+    fig.update_layout(
+        template="simple_white",
+
+        font=dict(
+            family="Arial",
+            size=13,
+            color=COLORES["texto"]
+        ),
+
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+
+        margin=dict(
+            l=40,
+            r=20,
+            t=60,
+            b=40
+        ),
+
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)"
+        )
+    )
+
+    fig.update_xaxes(
+        showgrid=True,
+        gridcolor=COLORES["grid"],
+        zeroline=False
+    )
+
+    fig.update_yaxes(
+        showgrid=False,
+        zeroline=False
+    )
+
+    return fig
+

@@ -32,19 +32,6 @@
 }
 
 
-/* ==========================================================
-   BOTONES
-========================================================== */
-
-.boton-con-mensaje{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:12px;
-
-}
 
 /* ==========================================================
    BOTONES MANTINE
@@ -89,47 +76,6 @@
     font-size:15px;
 
 }
-
-.mensaje{
-
-    min-height:24px;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    border-radius:10px;
-
-    padding:12px 16px;
-
-}
-
-.mensaje:empty{
-
-    display:none;
-
-}
-
-.mensaje[style*="green"]{
-
-    color:#047857!important;
-
-    background:#ecfdf5;
-
-    border:1px solid #a7f3d0;
-
-}
-
-.mensaje[style*="red"]{
-
-    color:#b91c1c!important;
-
-    background:#fef2f2;
-
-    border:1px solid #fecaca;
-
-}
-
 
 /* ==========================
    TITULO
@@ -196,17 +142,10 @@
 /* Zona del botón */
 
 .boton-con-mensaje{
-
     display:flex;
-
     flex-direction:column;
-
     align-items:flex-start;
-
     gap:12px;
-
-    margin-top:8px;
-
 }
 
 .usuarios-container{
@@ -299,4 +238,46 @@
 .mantine-Modal-overlay{
     backdrop-filter:blur(3px);
     background:rgba(15,23,42,.35);
+}
+
+.mensaje[style]{
+
+    display:inline-block;
+
+}
+
+.mensaje[style*="green"]{
+
+    color:#2b8a3e !important;
+
+    background:#ebfbee;
+
+    border:1px solid #b2f2bb;
+
+}
+
+.mensaje[style*="red"]{
+
+    color:#c92a2a !important;
+
+    background:#fff5f5;
+
+    border:1px solid #ffc9c9;
+
+}
+
+.mensaje[style*="orange"]{
+
+    color:#e67700 !important;
+
+    background:#fff9db;
+
+    border:1px solid #ffe066;
+
+}
+
+.mensaje:empty{
+
+    display:none;
+
 }

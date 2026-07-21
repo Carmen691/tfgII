@@ -173,9 +173,9 @@ def registrar_callbacks_datos(app):
     def sincronizar_tabla_actual(data):
         return data
 
-    
     @app.callback(
         Output("mensaje-guardar", "children"),
+        Output("mensaje-guardar", "className"),
         Output("btn-guardar-tabla", "disabled"),
         Input("btn-guardar-tabla", "n_clicks"),
         State("tabla-actual-store", "data"),
@@ -201,7 +201,7 @@ def registrar_callbacks_datos(app):
     ):
 
         if n_clicks <= 0:
-            return no_update
+            raise PreventUpdate
 
         textos = qr.obtener_textos_seccion(idioma, "tabla")
 
@@ -270,24 +270,31 @@ def registrar_callbacks_datos(app):
             suffixes=("_new", "_old")
         )
 
-        cambios = df[
-            df["Valores_new"] != df["Valores_old"]
-        ]
+        cambios = df[df["Valores_new"] != df["Valores_old"]]
 
         if cambios.empty:
-            return no_update, textos["guardar_vacio"]
+            return (
+                textos["guardar_vacio"],
+                "mensaje mensaje-warning",
+                True
+            )
+
+        if (
+            cambios["Valores_new"].isna().any()
+            or cambios["Valores_new"].eq("").any()
+        ):
+            return (
+                textos["valor_obligatorio"],
+                "mensaje mensaje-warning",
+                False
+            )
 
         tuplas_update = [
-            (
-                row["Valores_new"],
-                row["Id"]
-            )
+            (row["Valores_new"], row["Id"])
             for _, row in cambios.iterrows()
         ]
 
-        result = qr.actualizar_datos_mediciones(
-            tuplas_update
-        )
+        result = qr.actualizar_datos_mediciones(tuplas_update)
 
         if result > 0:
 
@@ -299,11 +306,13 @@ def registrar_callbacks_datos(app):
 
             return (
                 textos["guardar_ok"],
+                "mensaje mensaje-success",
                 True
             )
 
         return (
             textos["guardar_ko"],
+            "mensaje mensaje-error",
             False
         )
 

@@ -1,5 +1,6 @@
 import re
 import bcrypt
+from flask import session
 import pandas as pd
 from sqlalchemy import create_engine, text
 import os
@@ -84,9 +85,10 @@ def obtener_porcentaje_cumplimiento(entidades):
     return round(100 * num / den, 2) if den else 0
     
 
-def obtener_usuarios():
+def obtener_usuarios_sin_actual():
+    usuario_logado = session.get("user")
     with engine.begin() as conn:
-        result = conn.execute(text("SELECT id, usuario FROM usuarios"))
+        result = conn.execute(text(f"SELECT id, usuario FROM usuarios where usuario != '{usuario_logado}'"))
         datos = result.fetchall()
         return datos
 

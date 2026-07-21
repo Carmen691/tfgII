@@ -7,9 +7,6 @@
     width:100%;
 
     overflow-x:auto;
-
-    margin-bottom:34px;
-
 }
 
 
@@ -64,13 +61,6 @@
     margin-top:18px;
 
 }
-
-.boton-con-mensaje{
-
-    margin-top:20px;
-
-}
-
 /* ==========================================================
    DROPDOWN DATATABLE
 ========================================================== */
@@ -259,7 +249,7 @@
     font-weight:600;
 
 }
-
+/* 
 .Select{
 
     width:100%;
@@ -286,9 +276,9 @@
 
     overflow:visible !important;
 
-}
+} */
 
-.dash-dropdown{
+/* .dash-dropdown{
 
     overflow:visible !important;
 
@@ -306,7 +296,7 @@
     height:auto !important;
     min-height:44px !important;
 
-}
+} */
 
 .previous-next-container{
 
@@ -362,5 +352,47 @@
     width:44px;
 
     height:36px;
+
+}
+
+#tabla-datos .Select-clear-zone{
+    display: none !important;
+}
+
+.mensaje{
+
+    min-height:24px;
+    font-size:14px;
+    font-weight:500;
+    border-radius:8px;
+    padding:10px 14px;
+    margin-top:12px;
+}
+
+.mensaje:empty{
+    display:none;
+}
+
+.mensaje-success{
+
+    color:#047857;
+    background:#ecfdf5;
+    border:1px solid #a7f3d0;
+
+}
+
+.mensaje-error{
+
+    color:#b91c1c;
+    background:#fef2f2;
+    border:1px solid #fecaca;
+
+}
+
+.mensaje-warning{
+
+    color:#b45309;
+    background:#fffbeb;
+    border:1px solid #fde68a;
 
 }

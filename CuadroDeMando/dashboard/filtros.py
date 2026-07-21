@@ -76,6 +76,27 @@ def layout_filtros():
 
                         ),
 
+                        html.Div(
+                            [
+                                html.Label(
+                                    id="escala_visualizacion",
+                                    className="gestion-label"
+                                ),
+
+                                dmc.Select(
+                                    id="escala-visualizacion-dropdown",
+                                    data=[],
+                                    clearable=False,
+                                    searchable=False,
+                                    radius="md",
+                                    size="md",
+                                    w=300,
+                                ),
+                            ],
+                            id="div-escala-visualizacion",
+                            className="gestion-campo"
+                        ),
+
                     ],
 
                     className="gestion-fila"
@@ -110,7 +131,7 @@ def layout_filtros():
                                 ),
 
                                 html.Span(
-                                    "Seleccionar todas",
+                                    "",
                                     id="txt-seleccionar-todas",
                                     className="accion-entidades"
                                 ),
@@ -128,7 +149,7 @@ def layout_filtros():
                                 ),
 
                                 html.Span(
-                                    "Deseleccionar",
+                                    "",
                                     id="txt-deseleccionar",
                                     className="accion-entidades"
                                 ),
@@ -261,6 +282,11 @@ def layout_filtros():
                                 icon="tabler:filter-check",
                                 width=18
                             ),
+                        ),
+
+                        html.Div(
+                            id="mensaje-filtros",
+                            className="mensaje"
                         ),
 
                     ],

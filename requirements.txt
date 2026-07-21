@@ -10,6 +10,5 @@ dash-bootstrap-components
 bcrypt
 cryptography
 openpyxl
-re
 dash-mantine-components
 dash_iconify
