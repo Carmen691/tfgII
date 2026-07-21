@@ -515,6 +515,28 @@ def registrar_callbacks_filtros(app):
         escala = qr.obtener_escala_tipo_auditoria(tipo_entidad)[0][0]
 
         if escala == 1:   # Likert 5
-            return {"display": "block"}
+            return {}
 
         return {"display": "none"}
+    
+
+    @app.callback(
+        Output("escala-visualizacion-dropdown", "data"),
+        Output("escala-visualizacion-dropdown", "value"),
+        Input('url', 'pathname')
+    )
+    def dropdown_escala_filtros(pathname):
+        if pathname != "/dash/filtros":
+            raise PreventUpdate
+
+        escalas = pd.DataFrame(qr.obtener_escalas())
+
+        opciones_escala = [
+            {"label": row["descripcion"], "value": str(row["id"])}
+            for _, row in escalas.iterrows()
+        ]
+
+        # Seleccionar la primera opción por defecto
+        valor = opciones_escala[0]["value"] if opciones_escala else None
+
+        return opciones_escala, valor

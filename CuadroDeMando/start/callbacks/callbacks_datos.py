@@ -121,10 +121,12 @@ def registrar_callbacks_datos(app):
             {
                 "name": textos["criterios"],
                 "id": "Criterios",
+                "editable": False,
             },
             {
                 "name": textos["entidades"],
                 "id": "Entidades",
+                "editable": False,
             },
             {
                 "name": textos["valores"],

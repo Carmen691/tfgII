@@ -45,14 +45,6 @@
 }
 
 
-/* Hover */
-
-#tabla-datos tr:hover td{
-
-    background:#f8fbff !important;
-
-}
-
 
 /* Paginación */
 
@@ -249,54 +241,6 @@
     font-weight:600;
 
 }
-/* 
-.Select{
-
-    width:100%;
-
-}
-
-.dash-spreadsheet td{
-
-    overflow:visible !important;
-
-}
-
-.dash-cell-value{
-
-    height:auto !important;
-
-    overflow:visible !important;
-
-}
-
-.dash-cell-value-container{
-
-    height:auto !important;
-
-    overflow:visible !important;
-
-} */
-
-/* .dash-dropdown{
-
-    overflow:visible !important;
-
-}
-
-.dash-dropdown-cell-value-container{
-
-    height:auto !important;
-    min-height:44px !important;
-
-}
-
-.dash-cell-value-container{
-
-    height:auto !important;
-    min-height:44px !important;
-
-} */
 
 .previous-next-container{
 
@@ -395,4 +339,92 @@
     background:#fffbeb;
     border:1px solid #fde68a;
 
+}
+
+/* Quitar el hover blanco del DataTable */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner {
+    --hover: inherit;
+}
+
+/* Input de la celda en edición */
+#tabla-datos .dash-cell-value{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+}
+
+/* Contenedor */
+#tabla-datos .dash-input-cell-value-container{
+    background: transparent !important;
+}
+
+/* Input activo */
+#tabla-datos input.input-active{
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+#tabla-datos .dash-input-cell-value-container,
+#tabla-datos .input-active,
+#tabla-datos .dash-cell-value-container {
+    background: transparent !important;
+}
+
+#tabla-datos .cell--selected * {
+    background: transparent !important;
+}
+
+/* Control */
+#tabla-datos .Select-control{
+    background: transparent !important;
+    border: 1px solid rgba(0,0,0,.08) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+/* Valor */
+#tabla-datos .Select-value,
+#tabla-datos .Select-value-label{
+    background: transparent !important;
+}
+
+/* Input */
+#tabla-datos .Select-input{
+    background: transparent !important;
+}
+
+/* Flecha */
+#tabla-datos .Select-arrow-zone{
+    background: transparent !important;
+}
+
+/* Al abrir */
+#tabla-datos .is-open > .Select-control{
+    background: white !important;
+}
+
+/* Menú */
+#tabla-datos .Select-menu-outer{
+    background: white !important;
+    border-radius: 10px !important;
+}
+
+#tabla-datos .Select-control{
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+#tabla-datos .Select-placeholder,
+#tabla-datos .Select-value,
+#tabla-datos .Select-value-label{
+    background: transparent !important;
+}
+
+#tabla-datos .Select-arrow-zone{
+    background: transparent !important;
 }
