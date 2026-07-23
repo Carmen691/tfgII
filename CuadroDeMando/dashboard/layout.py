@@ -41,7 +41,7 @@ def crear_layout():
             dcc.Store(id="store-fecha", storage_type="session"),
 
             dcc.Store(id="tabla-actual-store", storage_type="session"),
-
+            dcc.Store(id="tabla-original-store"),
             dcc.Store(id="auth-status", storage_type="session"),
 
             # =====================================================

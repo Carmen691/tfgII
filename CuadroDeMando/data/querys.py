@@ -16,20 +16,24 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
-def obtener_opciones_filtros():
+def obtener_opciones_filtros(fecha):
     with engine.begin() as conn:
-        result = conn.execute(text("""SELECT DISTINCT
-                p.id AS id_principio,
-                v.id AS id_version,
-                n.id AS id_nivel
-                FROM criterios_wcag c
-                JOIN criterio_version cv ON c.id = cv.id_criterio 
-                JOIN niveles n ON n.id = c.nivel
-                JOIN pautas pa ON pa.id = c.id_pauta
-                JOIN principios p ON p.id = pa.id_principio
-                JOIN versiones_wcag v ON v.id = cv.id_version;"""))
+        result = conn.execute(text(f"""SELECT DISTINCT
+            p.id AS id_principio,
+            v.id AS id_version,
+            n.id AS id_nivel
+            FROM mediciones_wcag m
+            JOIN criterios_wcag c ON c.id = m.id_criterio
+            JOIN niveles n ON n.id = c.nivel
+            JOIN pautas pa ON pa.id = c.id_pauta
+            JOIN principios p ON p.id = pa.id_principio
+            JOIN criterio_version cv ON cv.id_criterio = c.id
+            JOIN versiones_wcag v ON v.id = cv.id_version
+            where m.id_entidad in (Select id from entidades e where e.id_version = (
+            Select id from versiones v where v.id = {fecha} ));"""))
         datos = result.fetchall()
         return datos
+
 
 def registrar_auditoria(usuario, accion, descripcion):
     datos = [{'usuario': usuario, 'accion': accion, 'descripcion': descripcion}]

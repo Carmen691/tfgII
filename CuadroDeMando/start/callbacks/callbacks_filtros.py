@@ -136,14 +136,17 @@ def registrar_callbacks_filtros(app):
 
     @app.callback(
         Output('store-tipo-entidad', 'data', allow_duplicate=True),
+        Output('store-fecha', 'data', allow_duplicate=True),
         Input('tipo-entidad-dropdown', 'value'),
+        Input('version-auditoria-dropdown', 'value'),
         State('store-tipo-entidad', 'data'),
+        State('store-fecha', 'data'),
         prevent_initial_call='initial_duplicate'
     )
-    def init_filtros(tipo, tipo_store):
+    def init_filtros(tipo, fecha, tipo_store, tipo_fecha):
 
-        if tipo_store is None:
-            return tipo
+        if tipo_store is None and tipo_fecha is None:
+            return tipo, fecha
         return dash.no_update
 
     
@@ -179,15 +182,18 @@ def registrar_callbacks_filtros(app):
         Input("principios-checklist", "value"),
         Input("wcag-version-checklist", "value"),
         Input("nivel-checklist", "value"),
+        Input("tipo-entidad-dropdown", "value"),
+        Input("version-auditoria-dropdown", "value"),
         prevent_initial_call=True
     )
-    def actualizar_filtros_dependientes(principios_sel, wcag_sel, nivel_sel):
+    def actualizar_filtros_dependientes(principios_sel, wcag_sel, nivel_sel, _, id_fecha):
 
         principios_sel = principios_sel or []
         wcag_sel = wcag_sel or []
         nivel_sel = nivel_sel or []
 
-        df = pd.DataFrame(qr.obtener_opciones_filtros())
+        df = pd.DataFrame(qr.obtener_opciones_filtros(id_fecha))
+        
 
         niveles = pd.DataFrame(qr.obtener_niveles()).to_dict("records")
         wcag = pd.DataFrame(qr.obtener_tipos_wcag()).to_dict("records")

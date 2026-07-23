@@ -8,7 +8,12 @@ def layout_datos():
     return html.Div(
 
             [
-
+                dcc.Interval(
+                    id="tabla-ready",
+                    interval=1,
+                    n_intervals=0,
+                    max_intervals=1
+                ),
                 html.H2(
                     id="titulo-datos",
                     className="gestion-titulo"
@@ -60,158 +65,7 @@ def layout_datos():
 
                     },
 
-                    style_data_conditional=[
-
-                    # -------------------------
-                    # Sin borde al seleccionar
-                    # -------------------------
-
-                    {
-                        "if": {"state": "active"},
-                        "border": "none",
-                    },
-
-                    {
-                        "if": {"state": "selected"},
-                        "border": "none",
-                    },
-
-                    # =========================
-                    # Totalmente conseguido
-                    # =========================
-
-                    {
-                        "if": {
-                            "filter_query": '{Estado} = "Totalmente conseguido"'
-                        },
-                        "backgroundColor": "#c5f9e0",
-                    },
-                    {
-                        "if": {
-                            "state": "active",
-                            "filter_query": '{Estado} = "Totalmente conseguido"'
-                        },
-                        "backgroundColor": "#c5f9e0",
-                        "border": "none",
-                    },
-                    {
-                        "if": {
-                            "state": "selected",
-                            "filter_query": '{Estado} = "Totalmente conseguido"'
-                        },
-                        "backgroundColor": "#c5f9e0",
-                        "border": "none",
-                    },
-
-                    # =========================
-                    # Ampliamente conseguido
-                    # =========================
-
-                    {
-                        "if": {
-                            "filter_query": '{Estado} = "Ampliamente conseguido"'
-                        },
-                        "backgroundColor": "#d9fbeb",
-                    },
-                    {
-                        "if": {
-                            "state": "active",
-                            "filter_query": '{Estado} = "Ampliamente conseguido"'
-                        },
-                        "backgroundColor": "#d9fbeb",
-                        "border": "none",
-                    },
-                    {
-                        "if": {
-                            "state": "selected",
-                            "filter_query": '{Estado} = "Ampliamente conseguido"'
-                        },
-                        "backgroundColor": "#d9fbeb",
-                        "border": "none",
-                    },
-
-                    # =========================
-                    # No aplicable
-                    # =========================
-
-                    {
-                        "if": {
-                            "filter_query": '{Estado} = "No aplicable"'
-                        },
-                        "backgroundColor": "#fffbeb",
-                    },
-                    {
-                        "if": {
-                            "state": "active",
-                            "filter_query": '{Estado} = "No aplicable"'
-                        },
-                        "backgroundColor": "#fffbeb",
-                        "border": "none",
-                    },
-                    {
-                        "if": {
-                            "state": "selected",
-                            "filter_query": '{Estado} = "No aplicable"'
-                        },
-                        "backgroundColor": "#fffbeb",
-                        "border": "none",
-                    },
-
-                    # =========================
-                    # Parcialmente conseguido
-                    # =========================
-
-                    {
-                        "if": {
-                            "filter_query": '{Estado} = "Parcialmente conseguido"'
-                        },
-                        "backgroundColor": "#f7dec5",
-                    },
-                    {
-                        "if": {
-                            "state": "active",
-                            "filter_query": '{Estado} = "Parcialmente conseguido"'
-                        },
-                        "backgroundColor": "#f7dec5",
-                        "border": "none",
-                    },
-                    {
-                        "if": {
-                            "state": "selected",
-                            "filter_query": '{Estado} = "Parcialmente conseguido"'
-                        },
-                        "backgroundColor": "#f7dec5",
-                        "border": "none",
-                    },
-
-                    # =========================
-                    # No conseguido
-                    # =========================
-
-                    {
-                        "if": {
-                            "filter_query": '{Estado} = "No conseguido"'
-                        },
-                        "backgroundColor": "#f7c3c3",
-                    },
-                    {
-                        "if": {
-                            "state": "active",
-                            "filter_query": '{Estado} = "No conseguido"'
-                        },
-                        "backgroundColor": "#f7c3c3",
-                        "border": "none",
-                    },
-                    {
-                        "if": {
-                            "state": "selected",
-                            "filter_query": '{Estado} = "No conseguido"'
-                        },
-                        "backgroundColor": "#f7c3c3",
-                        "border": "none",
-                    },
-
-                ],
+                    style_data_conditional=[],
 
                 ),
 

@@ -127,14 +127,3 @@ def registrar_callbacks_routing(app):
             textos["titulo_dash"],
             textos["cargando"]
         )
-
-
-    @app.callback(
-        Output('url', 'pathname'),
-        Input('session-check', 'n_intervals')
-    )
-    def comprobar_sesion(n):
-        if not session.get('user'):
-            return '/login'
-
-        return dash.no_update
